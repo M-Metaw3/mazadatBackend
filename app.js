@@ -1,0 +1,64 @@
+const express = require('express');
+const morgan = require('morgan');
+
+const passport = require('passport');
+const session = require('express-session');
+const AppError = require('./utils/appError');
+const globalErrorHandler = require('./controllers/errorcontroller/errorController');
+const bodyParser = require('body-parser');
+
+const http = require('http');
+const socketIo = require('socket.io');
+const app = express();
+const server = http.createServer(app);
+const handleMulterErrors = require('./controllers/errorcontroller/multerErrors');
+const { googleCallback, generateJWT } = require('./controllers/authcontroller/authcontroller');
+const CategoryRoute = require('./routes/CategoryRoute');
+const ItemsRoute = require('./routes/ItemsRoute');
+const authRoute = require('./routes/authrouter');
+const DepositRoute = require('./routes/depositeRoute');
+const subcategory = require('./routes/subercategoryRoute');
+const path = require('path');
+
+
+
+
+// 1) MIDDLEWARES
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+app.use(express.json());
+// app.use(express.static(`${__dirname}/public`));
+app.use('/images', express.static(path.join(__dirname, 'images')));
+app.use((req, res, next) => {
+
+  req.requestTime = new Date().toISOString();
+
+  next();
+});
+
+app.get('/', (req, res) => {
+  res.send('Welcome to the Online Auction System API MAZADAT');
+});
+
+
+app.use('/api/v1/categories', CategoryRoute);
+app.use('/api/v1/subcategory', subcategory);
+
+// app.use('/api/v1/deposite', DepositRoute);
+app.use('/api/v1/items', ItemsRoute);
+app.use('/api/v1/auth', authRoute);
+
+
+
+
+
+app.all('*', (req, res, next) => {
+  next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
+
+// app.use(handleMulterErrors);
+app.use(globalErrorHandler);
+module.exports = server;
