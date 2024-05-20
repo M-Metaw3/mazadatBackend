@@ -6,6 +6,10 @@ const user = new Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   specialist: { type: String },
+  companyname: { type: String },
+  address: { type: String },
+
+
 
   birthdate: { type: Date, required: true },
   phoneNumber: { type: String, required: true, unique: true },
@@ -16,9 +20,16 @@ const user = new Schema({
     name: String,
     path: String,
     pathname: String
+  },default: {
+    name: 'default.png',
+    path: 'default.png',
+    pathname: 'default.png'
   },
-  required: [true, 'Please upload an image for the profileImage!'],
-  unique: true},  // Path to profile image
+
+  }, 
+  
+  
+  // Path to profile image
   idNumber: { type: String, unique: true },  // ID number
   idImage: {     type: {
     name: String,

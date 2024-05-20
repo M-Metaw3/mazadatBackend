@@ -158,8 +158,8 @@ const jwt = require('jsonwebtoken');
 
 const registerUser = async (req, res ,next) => {
   try {
-    const { name, email, birthdate, phoneNumber, password ,idImage,idNumber,profileImage} = req.body;
-console.log("done")
+    const { name, email, birthdate, phoneNumber, password ,idImage,idNumber,companyname,adress,specialist} = req.body;
+console.log(idNumber)
 
     const existingUser = await User.findOne({ $or: [{ email }, { phoneNumber }] });
 console.log('existingUser',existingUser)
@@ -170,7 +170,7 @@ console.log('existingUser',existingUser)
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const newUser = new User({ name, email, birthdate, phoneNumber, passwordHash,idImage,idNumber,profileImage });
+    const newUser = new User({ name, email, birthdate, phoneNumber, passwordHash,idImage,idNumber,companyname,adress,specialist });
     await newUser.save();
     console.log(newUser)
 

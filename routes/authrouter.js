@@ -53,11 +53,11 @@ router.post('/register',upload.fields([
   ])
   ,(req,res,next)=>{
   
-  console.log(req.files)
-  if (!req.files && req.files.profileImage && req.files.profileImage.length > 0) {
-    // return ne.status(400).send('No file uploaded.');
-    return  next(new AppError('No file uploaded. idImage', 400));
-  }
+  // console.log(req.files)
+  // if (!req.files && req.files.profileImage && req.files.profileImage.length > 0) {
+  //   // return ne.status(400).send('No file uploaded.');
+  //   return  next(new AppError('No file uploaded. idImage', 400));
+  // }
 
   if (!req.files && req.files.idImage && req.files.idImage.length > 0) {
     // return ne.status(400).send('No file uploaded.');
@@ -65,7 +65,7 @@ router.post('/register',upload.fields([
   }
   req.body.idImage ={name:req.files.idImage[0].originalname,path: generateValidFilePath(req.files.idImage[0].path),pathname:req.files.idImage[0].filename};
 
-  req.body.profileImage ={name:req.files.profileImage[0].originalname,path: generateValidFilePath(req.files.profileImage[0].path),pathname:req.files.profileImage[0].filename};
+  // req.body.profileImage ={name:req.files.profileImage[0].originalname,path: generateValidFilePath(req.files.profileImage[0].path),pathname:req.files.profileImage[0].filename};
 next()
 
 }, userValidator.register, validationMiddleware, registerUser);
@@ -88,13 +88,13 @@ router.put('/update-profile', authMiddleware, upload.fields([
     };
   }
 
-  if (req.files && req.files.profileImage && req.files.profileImage.length > 0) {
-    req.body.profileImage = {
-      name: req.files.profileImage[0].originalname,
-      path: generateValidFilePath(req.files.profileImage[0].path),
-      pathname: req.files.profileImage[0].filename
-    };
-  }
+  // if (req.files && req.files.profileImage && req.files.profileImage.length > 0) {
+  //   req.body.profileImage = {
+  //     name: req.files.profileImage[0].originalname,
+  //     path: generateValidFilePath(req.files.profileImage[0].path),
+  //     pathname: req.files.profileImage[0].filename
+  //   };
+  // }
 
   next();
 }, userValidator.updateProfile, validationMiddleware, updateProfile);

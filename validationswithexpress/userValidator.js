@@ -9,7 +9,7 @@ const userValidator = {
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
     body('idNumber').isLength({ min: 14 }).withMessage('Password must be at least 15 characters long'),
     body('idImage').notEmpty().withMessage('Invalid ID image'),
-    body('profileImage').notEmpty().withMessage('Invalid profile image image'),
+    // body('profileImage').notEmpty().withMessage('Invalid profile image image'),
 
 
 
