@@ -19,7 +19,7 @@ function generateValidFilePath(filename) {
 
 router.get('/',getAllCategory );
 router.get('/:id', getCategory);
-router.post('/', authMiddleware, upload.single('cover'),(req,res,next)=>{
+router.post('/', upload.single('cover'),(req,res,next)=>{
   
   console.log(req.file)
   if (!req.file) {
@@ -37,7 +37,7 @@ next()
 
 
 
-router.put('/:id', authMiddleware, upload.single('cover') , (req,res,next)=>{
+router.put('/:id', upload.single('cover') , (req,res,next)=>{
   
   
     if (req.file) {

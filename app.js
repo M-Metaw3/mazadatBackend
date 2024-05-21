@@ -6,7 +6,7 @@ const session = require('express-session');
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorcontroller/errorController');
 const bodyParser = require('body-parser');
-
+const cors = require('cors')
 const http = require('http');
 const socketIo = require('socket.io');
 const app = express();
@@ -27,6 +27,7 @@ const path = require('path');
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
+app.use(cors("*"))
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.json());

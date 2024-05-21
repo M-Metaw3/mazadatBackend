@@ -13,11 +13,11 @@ const createMulterUpload = (filePath) => {
   });
 
   const fileFilter = (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true); // Accept only image files
-    } else {
-      cb(new AppError('Invalid file type please provide image file', 400), false);
-    }
+    // if (file.mimetype.startsWith('image/')) {
+    //   cb(null, true); // Accept only image files
+    // } else {
+    //   cb(new AppError('Invalid file type please provide image file', 400), false);
+    // }
   };
 
   const limits = {

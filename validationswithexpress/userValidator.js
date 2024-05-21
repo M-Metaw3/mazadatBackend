@@ -4,10 +4,10 @@ const userValidator = {
   register: [
     body('name').notEmpty().withMessage('Name is required'),
     body('email').isEmail().withMessage('Invalid email'),
-    body('birthdate').isDate().withMessage('Invalid birthdate'),
+    body('birthdate').notEmpty().withMessage('Invalid birthdate'),
     body('phoneNumber').notEmpty().withMessage('Phone number is required'),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
-    body('idNumber').isLength({ min: 14 }).withMessage('Password must be at least 15 characters long'),
+    body('idNumber').isLength({ min: 14 }).withMessage('id number  must be at least 15 characters long'),
     body('idImage').notEmpty().withMessage('Invalid ID image'),
     // body('profileImage').notEmpty().withMessage('Invalid profile image image'),
 

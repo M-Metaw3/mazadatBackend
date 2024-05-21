@@ -16,6 +16,7 @@ const user = new Schema({
   passwordHash: { type: String, required: true },
   verified: { type: Boolean, default: false },
   
+
   profileImage: {    type: {
     name: String,
     path: String,
@@ -25,9 +26,8 @@ const user = new Schema({
     path: 'default.png',
     pathname: 'default.png'
   },
-
+select:false
   }, 
-  
   
   // Path to profile image
   idNumber: { type: String, unique: true },  // ID number
@@ -39,7 +39,21 @@ const user = new Schema({
   required: [true, 'Please upload an image for the id image!'],
   unique: true },  // Path to ID image
 }, {
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
   timestamps: true
+});
+
+
+user.virtual('age').get(function() {
+  const today = new Date();
+  const birthDate = new Date(this.birthdate);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
 });
 
 const User = mongoose.model('User', user);
