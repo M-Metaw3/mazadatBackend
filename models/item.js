@@ -57,7 +57,22 @@ const itemSchema = new mongoose.Schema({
     required: true
   }
 }, {
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
   timestamps: true
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 module.exports = mongoose.model('Item', itemSchema);

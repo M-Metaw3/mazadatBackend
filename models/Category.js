@@ -39,7 +39,7 @@ categorySchema.virtual('subcategoryCount', {
   ref: 'Subcategory',
   localField: '_id',
   foreignField: 'categoryId',
-  count: true // This tells Mongoose to count the number of related documents
+  // count: true // This tells Mongoose to count the number of related documents
 });
 // Middleware to cascade delete subcategories when a category is deleted
 categorySchema.pre('findOneAndDelete', async function (next) {

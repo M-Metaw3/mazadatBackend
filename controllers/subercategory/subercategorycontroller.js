@@ -7,7 +7,7 @@ const factory = require('../../utils/apiFactory');
 
 
 exports.getAllCategory = factory.getAll(CategorySchema);
-exports.getCategory = factory.getOne(CategorySchema,{ path: 'categoryId' });
+exports.getCategory = factory.getOne(CategorySchema,{ path: 'items' });
 exports.createCategory = factory.createOne(CategorySchema);
 exports.updateCategory = factory.updateOne(CategorySchema);
 exports.deleteCategory = factory.deleteOne(CategorySchema);

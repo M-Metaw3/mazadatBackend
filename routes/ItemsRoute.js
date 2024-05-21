@@ -41,7 +41,7 @@ function generateValidFilePath(filename) {
 
 
 
-router.post('/',authMiddleware,upload.fields([
+router.post('/',upload.fields([
     { name: 'coverphoto', maxCount: 1 },
     { name: 'thubnailphoto', maxCount: 1 }
   ])
@@ -72,7 +72,7 @@ router.get('/:id', getitems);
 
 
 
-router.put('/:id',authMiddleware,upload.fields([
+router.put('/:id',upload.fields([
     { name: 'coverphoto', maxCount: 1 },
     { name: 'thubnailphoto', maxCount: 1 }
   ]),(req,res,next)=>{

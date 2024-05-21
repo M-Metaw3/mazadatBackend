@@ -31,6 +31,14 @@ const subcategorySchema = new mongoose.Schema({
   timestamps: true
 });
 
+
+
+subcategorySchema.virtual('items', {
+  ref: 'Item',
+  localField: '_id',
+  foreignField: 'subcategoryId',
+  // count: true // This tells Mongoose to count the number of related documents
+});
 // Middleware to cascade delete items when a subcategory is deleted
 subcategorySchema.pre('findOneAndDelete', async function (next) {
   const Item = mongoose.model('Item');
