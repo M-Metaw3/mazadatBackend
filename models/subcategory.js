@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const item =require('./item');
 const subcategorySchema = new mongoose.Schema({
   name: {
     type: String,
@@ -10,6 +10,10 @@ const subcategorySchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true
+  },
+  itemscount: {
+    type: String,
+
   },
   categoryId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -38,6 +42,10 @@ subcategorySchema.virtual('items', {
   localField: '_id',
   foreignField: 'subcategoryId',
   // count: true // This tells Mongoose to count the number of related documents
+});
+subcategorySchema.pre('find', async function(next) {
+  this.populate('categoryId');
+  next();
 });
 // Middleware to cascade delete items when a subcategory is deleted
 subcategorySchema.pre('findOneAndDelete', async function (next) {
