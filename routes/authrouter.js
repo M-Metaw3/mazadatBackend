@@ -22,6 +22,7 @@ const express = require('express');
 const {
   registerUser,
   verifyOTP,
+  getallusers,
   loginUser,
   forgotPassword,
   resetPassword,
@@ -46,7 +47,7 @@ function generateValidFilePath(filename) {
 
 
 
-
+router.get('/get',getallusers);
 router.post('/register',upload.fields([
     { name: 'profileImage', maxCount: 1 },
     { name: 'idImage', maxCount: 1 }

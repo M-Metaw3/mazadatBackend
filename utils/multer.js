@@ -24,7 +24,9 @@ const createMulterUpload = (filePath) => {
     fileSize: 1024 * 1024 * 5, // 5MB file size limit
   };
 
-  return multer({ storage, fileFilter, limits });
+  // return multer({ storage, fileFilter, limits });
+  return multer({ storage, limits });
+
 };
 
 module.exports = createMulterUpload;

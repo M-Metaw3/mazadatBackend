@@ -1,6 +1,6 @@
 
 const mongoose = require('mongoose');
-
+const subcategory= require('./subcategory');
 const categorySchema = new mongoose.Schema({
   name: {
     type: String,
@@ -18,9 +18,22 @@ const categorySchema = new mongoose.Schema({
   },
 
 }, {
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
   timestamps: true
 });
 
+categorySchema.virtual('subcategorycount').get(()=> {
+  let subcategorycount = 10;
+
+  
+  //  subcategorycount =  subcategory.find({ categoryId: this._id}).countDocuments();
+
+  
+
+
+  return subcategorycount;
+});
 
 categorySchema.virtual('subcategoryCount', {
   ref: 'Subcategory',

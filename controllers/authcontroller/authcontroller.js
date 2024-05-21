@@ -154,8 +154,8 @@ const OTP = require('../../models/otp');
 const { generateOTP, sendOTP } = require('../../utils/otpUtils');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-// const { JWT_SECRET } = require('../config');
-
+const factory = require('../../utils/apiFactory');
+const getallusers = factory.getAll(User);
 const registerUser = async (req, res ,next) => {
   try {
     const { name, email, birthdate, phoneNumber, password ,idImage,idNumber,companyname,adress,specialist} = req.body;
@@ -325,6 +325,7 @@ const updateProfile = async (req, res) => {
 };
 
 module.exports = {
+  getallusers,
   registerUser,
   verifyOTP,
   loginUser,

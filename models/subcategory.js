@@ -26,6 +26,8 @@ const subcategorySchema = new mongoose.Schema({
       unique: true
   },
 }, {
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
   timestamps: true
 });
 
