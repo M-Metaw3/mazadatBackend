@@ -43,13 +43,13 @@ function generateValidFilePath(filename) {
 
 router.post('/',upload.fields([
     { name: 'coverphoto', maxCount: 1 },
-    { name: 'thubnailphoto', maxCount: 1 },
+    { name: 'thubnailphoto', maxCount: 3 },
     { name: 'files', maxCount: 1 }
 
   ])
   ,(req,res,next)=>{
   
-  console.log(req.files.thubnailphoto[0])
+  console.log(req.files.thubnailphoto)
   if (!req.files && req.files.thubnailphoto && req.files.thubnailphoto.length > 0) {
     // return ne.status(400).send('No file uploaded.');
     return  next(new AppError('No file uploaded thubnailphoto.', 400));
@@ -62,7 +62,11 @@ router.post('/',upload.fields([
     // return ne.status(400).send('No file uploaded.');
     return  next(new AppError('No file uploaded thubnailphoto.', 400));
   }
-  req.body.thubnailphoto ={name:req.files.thubnailphoto[0].originalname,path: generateValidFilePath(req.files.thubnailphoto[0].path),pathname:req.files.thubnailphoto[0].filename};
+  req.body.thubnailphoto = req.files.thubnailphoto.map(file => ({
+    name: file.originalname,
+    path: generateValidFilePath(file.path),
+    pathname: file.filename
+  }));
 
   req.body.coverphoto ={name:req.files.coverphoto[0].originalname,path: generateValidFilePath(req.files.coverphoto[0].path),pathname:req.files.coverphoto[0].filename};
 
