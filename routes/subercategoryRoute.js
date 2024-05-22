@@ -1,6 +1,6 @@
 const express = require('express');
 const {
-createCategory,deleteCategory,getAllCategory,getCategory,updateCategory
+createCategory,deleteCategory,getAllCategory,getCategory,updateCategory,getSubcategories
 } = require('../controllers/subercategory/subercategorycontroller');
 const authMiddleware = require('../middleware/authMiddleware');
 const validationMiddleware = require('../middleware/validationMiddleware');
@@ -17,7 +17,7 @@ function generateValidFilePath(filename) {
     return validPath;
   }
 
-router.get('/',getAllCategory );
+router.get('/',getSubcategories );
 router.get('/:id', getCategory);
 router.post('/', upload.single('imagecover'),(req,res,next)=>{
   

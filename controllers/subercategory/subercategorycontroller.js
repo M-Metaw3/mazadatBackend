@@ -1,7 +1,9 @@
 const jwt = require('jsonwebtoken');
 const CategorySchema = require('../../models/subcategory');
+const Subcategory = require('../../models/subcategory');
+const Item = require('../../models/item');
 
-
+const APIFeatures = require('../../utils/apiFeatures');
 const catchAsync = require('../../utils/catchAsync');
 const factory = require('../../utils/apiFactory');
 
@@ -12,9 +14,81 @@ exports.createCategory = factory.createOne(CategorySchema);
 exports.updateCategory = factory.updateOne(CategorySchema);
 exports.deleteCategory = factory.deleteOne(CategorySchema);
 
+exports.getSubcategories = async (req, res) => {
+    try {
+      const features = await new APIFeatures(Subcategory.find().populate('items'), req.query)
+        .filter()
+        .sort()
+        .limitFields()
+        .paginate();
+  
+      const subcategories = await features.query.lean();
+  
+      const subcategoriesWithNearestItem = await Promise.all(subcategories.map(async (subcategory) => {
+        const nearestItem = await Item.findOne({
+          subcategoryId: subcategory._id,
+          startDate: { $gte: new Date() }
+        }).sort({ startDate: 1 }).select('startDate _id name').lean().exec() || null;
+  
+        // delete subcategory.items;
+  
+        return {
+          subcategory,
+          nearestItem
+        };
+      }));
+        res.status(200).json({
+        status: 'success',
+        Result:subcategoriesWithNearestItem.length,
+        data: subcategoriesWithNearestItem
+      });
 
+    } catch (error) {
+      res.status(500).json({
+        status: 'error',
+        message: error.message
+      });
+    }
+  };
+  
 
+// exports.getSubcategories = async (req, res) => {
+//     try {
+//       const subcategories = await Subcategory.find().populate('items').select('startDate _id');
+  
+//       const subcategoriesWithNearestItem = await Promise.all(subcategories.map(async (subcategory) => {
+//         const nearestItem = await Item.findOne({
+//           subcategoryId: subcategory._id,
+//           startDate: { $gte: new Date() }
+//         }).sort({ startDate: 1 }).limit(1).select("starData").exec() || null; // Ensure nearestItem is null if no future item is found
+//     console.log(subcategory.items)
 
+//         return {
+//             subcategory,
+//             nearestItem
+//         };
+//     }));
+//     res.status(200).json({
+//         status: 'success',
+//         results: subcategoriesWithNearestItem.length,
+
+//         data: {
+//           data: subcategoriesWithNearestItem
+//         }
+//       });
+
+//     //   res.status(200).json({
+//     //     status: 'success',
+//     //     Result:subcategoriesWithNearestItem.length,
+//     //     data: subcategoriesWithNearestItem
+//     //   });
+//     } catch (error) {
+//       res.status(500).json({
+//         status: 'error',
+//         message: error.message
+//       });
+//     }
+//   };
 
 
 
