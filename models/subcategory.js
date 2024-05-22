@@ -20,6 +20,10 @@ const subcategorySchema = new mongoose.Schema({
     ref: 'Category',
     required: true
   },
+  seletedtoslider: {
+type: Boolean,
+default: false
+  },
   imagecover: {
     type: {
         name: String,
@@ -53,7 +57,7 @@ subcategorySchema.pre('find', async function(next) {
 subcategorySchema.pre('find', async function(next) {
   this.populate({
     path: 'items',
-    select: 'name'})
+    select: 'name startDate endDate'})
   next();
 });
 

@@ -18,6 +18,8 @@ const ItemsRoute = require('./routes/ItemsRoute');
 const authRoute = require('./routes/authrouter');
 const DepositRoute = require('./routes/depositesroute');
 const subcategory = require('./routes/subercategoryRoute');
+const appfeatures = require('./routes/appfeatures');
+
 const path = require('path');
 
 
@@ -46,6 +48,8 @@ app.get('/', (req, res) => {
 
 
 app.use('/api/v1/categories', CategoryRoute);
+app.use('/api/v1/appfeatures', appfeatures);
+
 app.use('/api/v1/subcategory', subcategory);
 app.use('/api/v1/deposite', DepositRoute);
 app.use('/api/v1/items', ItemsRoute);
