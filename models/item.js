@@ -48,6 +48,15 @@ const itemSchema = new mongoose.Schema({
       required: [true, 'Please upload an image for the item!'],
       unique: true
   },
+  files:{
+    type: {
+        name: String,
+        path: String,
+        pathname: String
+      },
+      required: [true, 'Please upload an image for the item!'],
+      unique: true
+  },
   startDate: {
     type: Date,
     required: true

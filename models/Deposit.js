@@ -1,11 +1,23 @@
 const mongoose = require('mongoose');
-const Item = require('./Item'); // Adjust the path as needed
+const Item = require('./item'); // Adjust the path as needed
 
 const depositSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   item: { type: mongoose.Schema.Types.ObjectId, ref: 'Item' },
   amount: Number,
+  billImage: {
+    type: {
+        name: String,
+        path: String,
+        pathname: String
+      },
+      required: [true, 'Please upload an image for the Category!'],
+      unique: true
+  },
   status: { type: String, enum: ['pending', 'approved', 'rejected'],default:"pending" },
+  billingmethod: { type: String, enum: ['fawry', 'cash', 'instapay'],required: true },
+  seenByadmin: { type: Boolean, default: false },
+  seenByuser: { type: Boolean, default: false ,select: false },
 });
 
 // Creating a compound index on userId and item to ensure uniqueness
@@ -20,8 +32,8 @@ depositSchema.pre('save', async function (next) {
     const item = await Item.findById(this.item);
     if (item) {
       // this.amount = item.depositAmount; // Set amount to item's price
-      if (item.endTime && item.endTime > Date.now()) {
-        this.amount = item.depositAmount; // Set amount to item's depositAmount if not expired
+      if (item.endDate && item.endDate > Date.now()) {
+        this.amount = item.deposit; // Set amount to item's depositAmount if not expired
       } else {
         throw new Error('Item is expired');
       }
@@ -38,7 +50,7 @@ depositSchema.pre("find", function(next) {
     select: 'name email photo'
   }).populate({
     path: 'item',
-    select: 'photo endTime startTime category'
+    select: 'coverphoto endDate startDate subcategoryId'
   });
 
   next();

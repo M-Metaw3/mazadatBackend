@@ -43,7 +43,9 @@ function generateValidFilePath(filename) {
 
 router.post('/',upload.fields([
     { name: 'coverphoto', maxCount: 1 },
-    { name: 'thubnailphoto', maxCount: 1 }
+    { name: 'thubnailphoto', maxCount: 1 },
+    { name: 'files', maxCount: 1 }
+
   ])
   ,(req,res,next)=>{
   
@@ -56,10 +58,18 @@ router.post('/',upload.fields([
     // return ne.status(400).send('No file uploaded.');
     return  next(new AppError('No file uploaded thubnailphoto.', 400));
   }
-
+  if (!req.files && req.files.files && req.files.files.length > 0) {
+    // return ne.status(400).send('No file uploaded.');
+    return  next(new AppError('No file uploaded thubnailphoto.', 400));
+  }
   req.body.thubnailphoto ={name:req.files.thubnailphoto[0].originalname,path: generateValidFilePath(req.files.thubnailphoto[0].path),pathname:req.files.thubnailphoto[0].filename};
 
   req.body.coverphoto ={name:req.files.coverphoto[0].originalname,path: generateValidFilePath(req.files.coverphoto[0].path),pathname:req.files.coverphoto[0].filename};
+
+  if (req.files && req.files.files && req.files.files.length > 0) {
+    // return ne.status(400).send('No file uploaded.');
+    req.body.files ={name:req.files.files[0].originalname,path: generateValidFilePath(req.files.files[0].path),pathname:req.files.files[0].filename};
+  }
 next()
 
 },createitems );
@@ -74,21 +84,27 @@ router.get('/:id', getitems);
 
 router.put('/:id',upload.fields([
     { name: 'coverphoto', maxCount: 1 },
-    { name: 'thubnailphoto', maxCount: 1 }
+    { name: 'thubnailphoto', maxCount: 1 },
+
   ]),(req,res,next)=>{
   
-  
+  console.log(req.files)
     if (req.files && req.files.thubnailphoto && req.files.thubnailphoto.length > 0) {
       // return ne.status(400).send('No file uploaded.');
       req.body.thubnailphoto ={name:req.files.thubnailphoto[0].originalname,path: generateValidFilePath(req.files.thubnailphoto[0].path),pathname:req.files.thubnailphoto[0].filename};
     }
-    if (req.coverphoto && req.files.coverphoto && req.files.coverphoto.length > 0) {
+    if (req.files && req.files.files && req.files.files.length > 0) {
+      // return ne.status(400).send('No file uploaded.');
+      req.body.files ={name:req.files.files[0].originalname,path: generateValidFilePath(req.files.files[0].path),pathname:req.files.files[0].filename};
+    }
+    if (req.files &&req.coverphoto && req.files.coverphoto && req.files.coverphoto.length > 0) {
         // return ne.status(400).send('No file uploaded.');
         req.body.coverphoto ={name:req.files.coverphoto[0].originalname,path: generateValidFilePath(req.files.coverphoto[0].path),pathname:req.files.coverphoto[0].filename};
+      }else{
+  next()
+        
       }
     
-  
-
   next()
   
   },updateitems);
