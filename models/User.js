@@ -15,6 +15,8 @@ const user = new Schema({
   phoneNumber: { type: String, required: true, unique: true },
   passwordHash: { type: String, required: true },
   verified: { type: Boolean, default: false },
+  blocked: { type: Boolean, default: false },
+
   
 
   profileImage: {    type: {

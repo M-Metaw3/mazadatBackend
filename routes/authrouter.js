@@ -27,7 +27,7 @@ const {
   forgotPassword,
   resetPassword,
   changePassword,
-  updateProfile
+  updateProfile,getuser,blockUser
 } = require('../controllers/authcontroller/authcontroller');
 const authMiddleware = require('../middleware/authMiddleware');
 const validationMiddleware = require('../middleware/validationMiddleware');
@@ -48,13 +48,15 @@ function generateValidFilePath(filename) {
 
 
 router.get('/get',getallusers);
+router.get('/:id',getuser);
+
 router.post('/register',upload.fields([
-    { name: 'profileImage', maxCount: 1 },
+
     { name: 'idImage', maxCount: 1 }
   ])
   ,(req,res,next)=>{
   
-  // console.log(req.files)
+  console.log(req.files)
   // if (!req.files && req.files.profileImage && req.files.profileImage.length > 0) {
   //   // return ne.status(400).send('No file uploaded.');
   //   return  next(new AppError('No file uploaded. idImage', 400));
@@ -99,6 +101,15 @@ router.put('/update-profile', authMiddleware, upload.fields([
 
   next();
 }, userValidator.updateProfile, validationMiddleware, updateProfile);
+
+
+
+
+
+
+
+
+router.patch('/:userId/block', blockUser);
 
 
 module.exports = router;

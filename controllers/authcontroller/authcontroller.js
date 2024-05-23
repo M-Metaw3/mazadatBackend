@@ -156,6 +156,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const factory = require('../../utils/apiFactory');
 const getallusers = factory.getAll(User);
+ const getuser= factory.getOne(User);
+
 const registerUser = async (req, res ,next) => {
   try {
     const { name, email, birthdate, phoneNumber, password ,idImage,idNumber,companyname,adress,specialist} = req.body;
@@ -324,6 +326,14 @@ const updateProfile = async (req, res) => {
   }
 };
 
+
+const blockUser = async (req, res) => {
+  const { userId } = req.params;
+  const { status } = req.body;
+
+  const user = await User.findByIdAndUpdate(userId, { blocked: status }, { new: true });
+
+  res.json({status:"success",data:user})};
 module.exports = {
   getallusers,
   registerUser,
@@ -332,5 +342,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   changePassword,
-  updateProfile
+  updateProfile,getuser,blockUser
 };

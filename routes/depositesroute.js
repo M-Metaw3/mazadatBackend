@@ -32,6 +32,10 @@ router.post('/',upload.single('billImage'),(req,res,next)=>{
   
   },authMiddleware,validateDeposit, depositController.createDeposit);
 router.get('/notifications/admin', depositController.getAdminNotifications);
+router.get('/', depositController.getAllDeposit);
+router.get('/:id', depositController.getDeposit);
+
+
 router.get('/notifications/user/:userId',authMiddleware, depositController.getUserNotifications);
 router.patch('/:depositId/approve', depositController.approveDeposit);
 router.patch('/:depositId/reject', depositController.rejectDeposit);

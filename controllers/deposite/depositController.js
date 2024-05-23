@@ -3,11 +3,9 @@
 
 
 // const catchAsync = require('../../utils/catchAsync');
-// const factory = require('../../utils/apiFactory');
-// exports.getAllDeposit = factory.getAll(DepositeSchema);
+const factory = require('../../utils/apiFactory');
 // exports.getDeposit = factory.getOne(DepositeSchema);
 // exports.createDeposit = factory.createOne(DepositeSchema);
-// exports.updateDeposit = factory.updateOne(DepositeSchema);
 // exports.deleteDeposit = factory.deleteOne(DepositeSchema);
 
 
@@ -15,6 +13,9 @@
 const Deposit = require('../../models/Deposit');
 // const Item = require('../../models/item');
 const ItemsSchema = require('../../models/item');
+exports.getAllDeposit = factory.getAll(Deposit);
+exports.getDeposit = factory.getOne(Deposit);
+
 
 // Create a new deposit
 exports.createDeposit = async (req, res) => {
@@ -52,7 +53,7 @@ exports.getUserNotifications = async (req, res) => {
   try {
     const { userId } = req.params;
     const deposits = await Deposit.find({ userId, seenByuser: false });
-    res.status(200).json(deposits);
+    res.status(200).json({data: deposits});
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
