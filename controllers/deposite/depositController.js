@@ -52,8 +52,10 @@ exports.getAdminNotifications = async (req, res) => {
 exports.getUserNotifications = async (req, res) => {
   try {
     const { userId } = req.params;
-    const deposits = await Deposit.find({ userId, seenByuser: false });
-    res.status(200).json({data: deposits});
+    const deposits = await Deposit.findOne({ userId, seenByuser: false }).populate({path: 'item', select: 'name _id'}).exec();
+    deposits.userId=undefined;
+    console.log(deposits)
+    res.status(200).json({data:{message:"تم دفع مبلغ التامين بنجاح و سيتم التحقق من المالية في اقرب وقت ممكن",data: {itemdata:deposits.item._id,itemname:deposits.item.name,status:deposits.status}}});
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
