@@ -50,7 +50,7 @@ depositSchema.pre("find", function(next) {
     select: 'name email photo'
   }).populate({
     path: 'item',
-    select: 'coverphoto endDate startDate subcategoryId'
+    select: 'coverphoto name endDate startDate subcategoryId'
   });
 
   next();

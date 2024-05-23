@@ -48,18 +48,38 @@ exports.getAdminNotifications = async (req, res) => {
   }
 };
 
-// Fetch notifications for a specific user
 exports.getUserNotifications = async (req, res) => {
   try {
     const { userId } = req.params;
-    const deposits = await Deposit.findOne({ userId, seenByuser: false }).populate({path: 'item', select: 'name _id'}).exec();
-    deposits.userId=undefined;
-    console.log(deposits)
-    res.status(200).json({data:{message:"تم دفع مبلغ التامين بنجاح و سيتم التحقق من المالية في اقرب وقت ممكن",data: {itemdata:deposits.item._id,itemname:deposits.item.name,status:deposits.status}}});
+    
+    // Fetch deposits and populate item field but only select name and _id
+    const deposits = await Deposit.find({ userId, seenByuser: false })
+      .populate({ path: 'item', select: 'name _id' })
+      .select('status item');
+
+    // Transform the deposits data to remove userId and include only item name
+    const transformedDeposits = deposits.map(deposit => ({
+      _id: deposit._id,
+      _iditem: deposit.item._id,
+
+      item: deposit.item.name,  // Include only the name of the item
+      status: deposit.status,
+    }));
+
+    // Respond with the transformed data
+    res.status(200).json({
+      data: {
+        message: "تم دفع مبلغ التامين بنجاح و سيتم التحقق من المالية في اقرب وقت ممكن",
+        data: {
+          notifcatios: transformedDeposits
+        }
+      }
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
+
 
 // Approve a deposit
 exports.approveDeposit = async (req, res) => {
