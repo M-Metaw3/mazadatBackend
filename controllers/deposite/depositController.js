@@ -51,25 +51,40 @@ exports.getAdminNotifications = async (req, res) => {
 exports.getUserNotifications = async (req, res) => {
   try {
     const { userId } = req.params;
-    
+
     // Fetch deposits and populate item field but only select name and _id
     const deposits = await Deposit.find({ userId, seenByuser: false })
       .populate({ path: 'item', select: 'name _id' })
-      .select('status item');
+      .select('status item createdAt updatedAt');
 
-    // Transform the deposits data to remove userId and include only item name
-    const transformedDeposits = deposits.map(deposit => ({
-      _id: deposit._id,
-      _iditem: deposit.item._id,
-
-      item: deposit.item.name,  // Include only the name of the item
-      status: deposit.status,
-    }));
-
+      const transformedDeposits = deposits.map(deposit => {
+        let message;
+        switch (deposit.status) {
+          case 'pending':
+            message = "تم دفع مبلغ التامين بنجاح و سيتم التحقق من المالية في اقرب وقت ممكن";
+            break;
+          case 'approved':
+            message = "تمت الموافقة على الطلب بنجاح";
+            break;
+          case 'rejected':
+            message = "تم رفض الطلب";
+            break;
+          default:
+            message = "حالة غير معروفة";
+        }
+  
+        return {
+          _id: deposit._id,
+          _iditem: deposit.item._id,
+          item: deposit.item.name,  // Include only the name of the item
+          status: deposit.status,
+          notification: message,
+        };
+      });
     // Respond with the transformed data
     res.status(200).json({
       data: {
-        message: "تم دفع مبلغ التامين بنجاح و سيتم التحقق من المالية في اقرب وقت ممكن",
+
         data: {
           notifcatios: transformedDeposits
         }

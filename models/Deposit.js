@@ -18,6 +18,8 @@ const depositSchema = new mongoose.Schema({
   billingmethod: { type: String, enum: ['fawry', 'cash', 'instapay'],required: true },
   seenByadmin: { type: Boolean, default: false },
   seenByuser: { type: Boolean, default: false ,select: false },
+},{
+  timestamps: true,
 });
 
 // Creating a compound index on userId and item to ensure uniqueness
