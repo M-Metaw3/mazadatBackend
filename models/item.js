@@ -136,7 +136,7 @@ const itemSchema = new mongoose.Schema({
   ,
   files: {
     type: imageSchema,
-    required: [true, 'Please upload a file for the files!'],
+    // required: [true, 'Please upload a file for the files!'],
     unique: true
   },
   startDate: {

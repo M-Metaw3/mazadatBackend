@@ -622,62 +622,93 @@ const factory = require('../utils/apiFactory');
 
 
 
-const jwt = require('jsonwebtoken');
-const Bid = require('../models/Bid');
-const Item = require('../models/item');
-const Deposit = require('../models/Deposit');
-const Notification = require('../models/notification');
-const mongoose = require('mongoose');
-let auctionNamespace;
+// const jwt = require('jsonwebtoken');
+// const Bid = require('../models/Bid');
+// const Item = require('../models/item');
+// const Deposit = require('../models/Deposit');
+// const Notification = require('../models/notification');
+// const mongoose = require('mongoose');
+// let auctionNamespace;
 
-const checkDepositAndItemStatus = async (socket, next) => {
-  try {
-    const token = socket.handshake.query.token;
-    const { userId, itemId } = socket.handshake.query;
+// const checkDepositAndItemStatus = async (socket, next) => {
+//   try {
+//     // const token = socket.handshake.query.token;
+//     const { userId, itemId } = socket.handshake.auth;
 
-    if (!token) {
-      return next(new Error('Authentication token is required.'));
-    }
+//     // if (!token) {
+//     //   return next(new Error('Authentication token is required.'));
+//     // }
 
-    // Verify the token
-    jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
-      if (err) {
-        return next(new Error('Invalid token.'));
-      }
 
-      // Ensure the decoded user ID matches the provided user ID
-      if (decoded.userId !== userId) {
-        return next(new Error('User ID does not match token.'));
-      }
 
-      // Check if the user has paid the deposit
-      const deposit = await Deposit.findOne({ userId, item: itemId, status: 'approved' });
-      if (!deposit) {
-        return next(new Error('User has not paid the deposit for this item.'));
-      }
 
-      // Check if the item is still active and has started
-      const item = await Item.findById(itemId);
-      const now = new Date();
-      if (!item) {
-        return next(new Error('Item not found.'));
-      }
-      if (item.startDate > now) {
-        return next(new Error('Auction for this item has not started yet.'));
-      }
-      if (item.endDate <= now) {
-        return next(new Error('Auction for this item has ended.'));
-      }
+//     // jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
+//     //   if (err) {
+//     //     return next(new Error('Invalid token.'));
+//     //   }
 
-      // Store item and user info in socket
-      socket.item = item;
-      socket.userId = userId;
-      next();
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+//     //   // Ensure the decoded user ID matches the provided user ID
+//     //   if (decoded.userId !== userId) {
+//     //     return next(new Error('User ID does not match token.'));
+//     //   }
+
+//     //   // Check if the user has paid the deposit
+//     //   const deposit = await Deposit.findOne({ userId, item: itemId, status: 'approved' });
+//     //   if (!deposit) {
+//     //     return next(new Error('User has not paid the deposit for this item.'));
+//     //   }
+
+//     //   // Check if the item is still active and has started
+//     //   const item = await Item.findById(itemId);
+//     //   const now = new Date();
+//     //   if (!item) {
+//     //     return next(new Error('Item not found.'));
+//     //   }
+//     //   if (item.startDate > now) {
+//     //     return next(new Error('Auction for this item has not started yet.'));
+//     //   }
+//     //   if (item.endDate <= now) {
+//     //     return next(new Error('Auction for this item has ended.'));
+//     //   }
+
+//     //   // Store item and user info in socket
+//     //   socket.item = item;
+//     //   socket.userId = userId;
+//     //   next();
+//     // });
+//     // Verify the token
+
+
+
+//       // Check if the user has paid the deposit
+//       const deposit = await Deposit.findOne({ userId, item: itemId, status: 'approved' });
+//       console.log(deposit)
+//       if (!deposit) {
+//         return next(new Error('User has not paid the deposit for this item.'));
+//       }
+
+//       // Check if the item is still active and has started
+//       const item = await Item.findById(itemId);
+//       const now = new Date();
+//       if (!item) {
+//         return next(new Error('Item not found.'));
+//       }
+//       if (item.startDate > now) {
+//         return next(new Error('Auction for this item has not started yet.'));
+//       }
+//       if (item.endDate <= now) {
+//         return next(new Error('Auction for this item has ended.'));
+//       }
+
+//       // Store item and user info in socket
+//       socket.item = item;
+//       socket.userId = userId;
+//       next();
+    
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
 
 
@@ -715,18 +746,423 @@ const checkDepositAndItemStatus = async (socket, next) => {
 
 
 
+// const createAuctionNamespace = (io) => {
+//   auctionNamespace = io.of('/auction');
+//   auctionNamespace.use(checkDepositAndItemStatus);
+
+//   auctionNamespace.on('connection', (socket) => {
+//     console.log('User connected:', socket.userId);
+
+//     socket.join(socket.item._id.toString());
+
+//     const room = auctionNamespace.adapter.rooms.get(socket.item._id.toString());
+//     const userCount = room ? room.size : 0;
+//     const bidCount = Bid.countDocuments({ item: socket.item._id });
+
+//     socket.emit('itemDetails', {
+//       item: socket.item,
+//       userCount,
+//       bidCount
+//     });
+
+//     auctionNamespace.to(socket.item._id.toString()).emit('userCountUpdated', { userCount });
+
+//     socket.on('placeBid', async (bidData) => {
+//       try {
+//         const { itemId, amount } = bidData;
+//         const item = await Item.findById(itemId);
+
+//         if (amount < item.startPrice + item.minBidIncrement) {
+//           socket.emit('bidError', `Bid amount must be greater than or equal to the minimum bid amount (${item.minBidIncrement}).`);
+//           return;
+//         }
+
+//         const bid = new Bid({
+//           userId: socket.userId,
+//           item: itemId,
+//           amount,
+//           bidTime: new Date(),
+//         });
+//         await bid.save();
+
+//         item.startPrice = amount;
+
+//         const now = new Date();
+//         const timeRemaining = item.endDate - now;
+//         const tenMinutes = 10 * 60 * 1000;
+//         const twentyMinutes = 20 * 60 * 1000;
+
+//         if (timeRemaining <= tenMinutes) {
+//           item.endDate = new Date(now.getTime() + twentyMinutes);
+
+//           if (!socket.firstExtensionDone) {
+//             socket.firstExtensionDone = true;
+//           } else {
+//             item.minBidIncrement *= 2;
+//           }
+
+//           auctionNamespace.to(itemId).emit('auctionExtended', {
+//             newEndTime: item.endDate,
+//             newMinBidIncrement: item.minBidIncrement
+//           });
+//         }
+
+//         await item.save();
+
+//         const deposits = await Deposit.find({ item: itemId, status: 'approved' });
+//         const notificationPromises = deposits.map(deposit => {
+//           const notification = new Notification({
+//             userId: deposit.userId,
+//             message: `A new bid of ${amount} has been placed on item ${item.name}`,
+//             itemId,
+//           });
+//           return notification.save();
+//         });
+//         await Promise.all(notificationPromises);
+
+//         auctionNamespace.to(itemId).emit('newBid', { userId: socket.userId, amount });
+
+//       } catch (error) {
+//         socket.emit('bidError', error.message);
+//       }
+//     });
+
+//     socket.on('disconnect', () => {
+//       console.log('User disconnected:', socket.userId);
+
+//       const room = auctionNamespace.adapter.rooms.get(socket.item._id.toString());
+//       const userCount = room ? room.size : 0;
+//       auctionNamespace.to(socket.item._id.toString()).emit('userCountUpdated', { userCount });
+//     });
+//   });
+// };
+
+// const checkAuctionEnd = async () => {
+//   const items = await Item.find({ endDate: { $lte: new Date() } });
+//   for (const item of items) {
+//     const bids = await Bid.find({ item: item._id }).sort({ amount: -1 }).limit(1);
+//     const winnerBid = bids[0];
+//     const deposits = await Deposit.find({ item: item._id, status: 'approved' });
+
+//     if (winnerBid) {
+//       const winnerNotification = new Notification({
+//         userId: winnerBid.userId,
+//         message: `Congratulations! You have won the auction for item ${item.name} with a bid of ${winnerBid.amount}.`,
+//         itemId: item._id,
+//       });
+//       await winnerNotification.save();
+
+//       auctionNamespace.to(item._id.toString()).emit('auctionEnded', {
+//         message: `Auction for item ${item.name} has ended. Winner: ${winnerBid.userId}, Amount: ${winnerBid.amount}`,
+//       });
+//     }
+
+//     const endNotifications = deposits.map(deposit => {
+//       const notification = new Notification({
+//         userId: deposit.userId,
+//         message: `The auction for item ${item.name} has ended.`,
+//         itemId: item._id,
+//       });
+//       return notification.save();
+//     });
+//     await Promise.all(endNotifications);
+//   }
+// };
+
+// setInterval(checkAuctionEnd, 60 * 1000);
+
+// module.exports = createAuctionNamespace;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// const jwt = require('jsonwebtoken');
+// const Bid = require('../models/Bid');
+// const Item = require('../models/item');
+// const Deposit = require('../models/Deposit');
+// const Notification = require('../models/notification');
+// const mongoose = require('mongoose');
+
+// let auctionNamespace;
+
+// const checkDepositAndItemStatus = async (socket, next) => {
+//   try {
+//     const { userId, itemId } = socket.handshake.auth;
+
+//     const deposit = await Deposit.findOne({ userId, item: itemId, status: 'approved' });
+//     if (!deposit) {
+//       return next(new Error('User has not paid the deposit for this item.'));
+//     }
+
+//     const item = await Item.findById(itemId);
+//     const now = new Date();
+//     if (!item) {
+//       return next(new Error('Item not found.'));
+//     }
+//     if (item.startDate > now) {
+//       return next(new Error('Auction for this item has not started yet.'));
+//     }
+//     if (item.endDate <= now) {
+//       return next(new Error('Auction for this item has ended.'));
+//     }
+
+//     socket.item = item;
+//     socket.userId = userId;
+//     next();
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+// const notifyItemStart = async () => {
+//   const now = new Date();
+//   const items = await Item.find({ startDate: { $lte: now }, notifiedStart: { $ne: true } });
+
+//   for (const item of items) {
+//     const deposits = await Deposit.find({ item: item._id, status: 'approved' });
+
+//     const startNotifications = deposits.map(deposit => {
+//       const notification = new Notification({
+//         userId: deposit.userId,
+//         message: `The auction for item ${item.name} has started.`,
+//         itemId: item._id,
+//       });
+//       return notification.save();
+//     });
+
+//     await Promise.all(startNotifications);
+
+//     item.notifiedStart = true;
+//     await item.save();
+
+//     auctionNamespace.to(item._id.toString()).emit('itemStarted', {
+//       message: `The auction for item ${item.name} has started.`,
+//     });
+//   }
+// };
+
+// const createAuctionNamespace = (io) => {
+//   auctionNamespace = io.of('/auction');
+//   auctionNamespace.use(checkDepositAndItemStatus);
+
+//   auctionNamespace.on('connection', async (socket) => {
+//     console.log('User connected:', socket.userId);
+
+//     socket.join(socket.item._id.toString());
+
+//     const room = auctionNamespace.adapter.rooms.get(socket.item._id.toString());
+//     const userCount = room ? room.size : 0;
+//     const bidCount = await Bid.countDocuments({ item: socket.item._id });
+
+//     socket.emit('itemDetails', {
+//       item: socket.item,
+//       userCount,
+//       bidCount
+//     });
+
+//     auctionNamespace.to(socket.item._id.toString()).emit('userCountUpdated', { userCount });
+//     auctionNamespace.to(socket.item._id.toString()).emit('usercount', { userCount });
+
+
+//     socket.on('placeBid', async (bidData) => {
+//       try {
+//         const { itemId, amount } = bidData;
+//         const item = await Item.findById(itemId);
+
+//         if (amount < item.startPrice + item.minBidIncrement) {
+//           socket.emit('bidError', `Bid amount must be greater than or equal to the minimum bid amount (${item.minBidIncrement}).`);
+//           return;
+//         }
+
+//         const bid = new Bid({
+//           userId: socket.userId,
+//           item: itemId,
+//           amount,
+//           bidTime: new Date(),
+//         });
+//         await bid.save();
+
+//         item.startPrice = amount;
+
+//         const now = new Date();
+//         const timeRemaining = item.endDate - now;
+//         const tenMinutes = 10 * 60 * 1000;
+//         const twentyMinutes = 20 * 60 * 1000;
+
+//         if (timeRemaining <= tenMinutes) {
+//           item.endDate = new Date(now.getTime() + twentyMinutes);
+
+//           if (!socket.firstExtensionDone) {
+//             socket.firstExtensionDone = true;
+//           } else {
+//             item.minBidIncrement *= 2;
+//           }
+
+//           auctionNamespace.to(itemId).emit('auctionExtended', {
+//             newEndTime: item.endDate,
+//             newMinBidIncrement: item.minBidIncrement
+//           });
+//         }
+
+//         await item.save();
+
+//         const deposits = await Deposit.find({ item: itemId, status: 'approved' });
+//         const notificationPromises = deposits.map(deposit => {
+//           const notification = new Notification({
+//             userId: deposit.userId,
+//             message: `A new bid of ${amount} has been placed on item ${item.name}`,
+//             itemId,
+//           });
+//           return notification.save();
+//         });
+//         await Promise.all(notificationPromises);
+
+//         auctionNamespace.to(itemId).emit('newBid', { userId: socket.userId, amount });
+
+//       } catch (error) {
+//         socket.emit('bidError', error.message);
+//       }
+//     });
+
+//     socket.on('disconnect', () => {
+//       console.log('User disconnected:', socket.userId);
+
+//       const room = auctionNamespace.adapter.rooms.get(socket.item._id.toString());
+//       const userCount = room ? room.size : 0;
+//       auctionNamespace.to(socket.item._id.toString()).emit('userCountUpdated', { userCount });
+//     auctionNamespace.to(socket.item._id.toString()).emit('usercount', { userCount });
+
+//     });
+//   });
+// };
+
+// const checkAuctionEnd = async () => {
+//   const items = await Item.find({ endDate: { $lte: new Date() } });
+//   for (const item of items) {
+//     const bids = await Bid.find({ item: item._id }).sort({ amount: -1 }).limit(1);
+//     const winnerBid = bids[0];
+//     const deposits = await Deposit.find({ item: item._id, status: 'approved' });
+
+//     if (winnerBid) {
+//       const winnerNotification = new Notification({
+//         userId: winnerBid.userId,
+//         message: `Congratulations! You have won the auction for item ${item.name} with a bid of ${winnerBid.amount}.`,
+//         itemId: item._id,
+//       });
+//       await winnerNotification.save();
+
+//       auctionNamespace.to(item._id.toString()).emit('auctionEnded', {
+//         message: `Auction for item ${item.name} has ended. Winner: ${winnerBid.userId}, Amount: ${winnerBid.amount}`,
+//       });
+//     }
+
+//     const endNotifications = deposits.map(deposit => {
+//       const notification = new Notification({
+//         userId: deposit.userId,
+//         message: `The auction for item ${item.name} has ended.`,
+//         itemId: item._id,
+//       });
+//       return notification.save();
+//     });
+//     await Promise.all(endNotifications);
+//   }
+// };
+
+// setInterval(checkAuctionEnd, 60 * 1000);
+// setInterval(notifyItemStart, 60 * 1000);
+
+// module.exports = createAuctionNamespace;
+
+
+const jwt = require('jsonwebtoken');
+const Bid = require('../models/Bid');
+const Item = require('../models/item');
+const Deposit = require('../models/Deposit');
+const Notification = require('../models/notification');
+const mongoose = require('mongoose');
+
+let auctionNamespace;
+
+const checkDepositAndItemStatus = async (socket, next) => {
+  try {
+    const { userId, itemId } = socket.handshake.auth;
+
+    const deposit = await Deposit.findOne({ userId, item: itemId, status: 'approved' });
+    if (!deposit) {
+      return next(new Error('User has not paid the deposit for this item.'));
+    }
+
+    const item = await Item.findById(itemId);
+    const now = new Date();
+    if (!item) {
+      return next(new Error('Item not found.'));
+    }
+    if (item.startDate > now) {
+      return next(new Error('Auction for this item has not started yet.'));
+    }
+    if (item.endDate <= now) {
+      return next(new Error('Auction for this item has ended.'));
+    }
+
+    socket.item = item;
+    socket.userId = userId;
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
+const notifyItemStart = async () => {
+  const now = new Date();
+  const items = await Item.find({ startDate: { $lte: now }, notifiedStart: { $ne: true } });
+
+  for (const item of items) {
+    const deposits = await Deposit.find({ item: item._id, status: 'approved' });
+
+    const startNotifications = deposits.map(deposit => {
+      const notification = new Notification({
+        userId: deposit.userId,
+        message: `The auction for item ${item.name} has started.`,
+        itemId: item._id,
+      });
+      return notification.save();
+    });
+
+    await Promise.all(startNotifications);
+
+    item.notifiedStart = true;
+    await item.save();
+
+    auctionNamespace.to(item._id.toString()).emit('itemStarted', {
+      message: `The auction for item ${item.name} has started.`,
+    });
+  }
+};
+
 const createAuctionNamespace = (io) => {
   auctionNamespace = io.of('/auction');
   auctionNamespace.use(checkDepositAndItemStatus);
 
-  auctionNamespace.on('connection', (socket) => {
+  auctionNamespace.on('connection', async (socket) => {
     console.log('User connected:', socket.userId);
 
     socket.join(socket.item._id.toString());
 
     const room = auctionNamespace.adapter.rooms.get(socket.item._id.toString());
     const userCount = room ? room.size : 0;
-    const bidCount = Bid.countDocuments({ item: socket.item._id });
+    const bidCount = await Bid.countDocuments({ item: socket.item._id });
 
     socket.emit('itemDetails', {
       item: socket.item,
@@ -735,13 +1171,14 @@ const createAuctionNamespace = (io) => {
     });
 
     auctionNamespace.to(socket.item._id.toString()).emit('userCountUpdated', { userCount });
+    auctionNamespace.to(socket.item._id.toString()).emit('usercount', { userCount });
 
     socket.on('placeBid', async (bidData) => {
       try {
         const { itemId, amount } = bidData;
         const item = await Item.findById(itemId);
 
-        if (amount < item.startPrice + item.minBidIncrement) {
+        if (amount < item.minBidIncrement) {
           socket.emit('bidError', `Bid amount must be greater than or equal to the minimum bid amount (${item.minBidIncrement}).`);
           return;
         }
@@ -754,7 +1191,7 @@ const createAuctionNamespace = (io) => {
         });
         await bid.save();
 
-        item.startPrice = amount;
+        item.startPrice += amount;
 
         const now = new Date();
         const timeRemaining = item.endDate - now;
@@ -777,7 +1214,7 @@ const createAuctionNamespace = (io) => {
         }
 
         await item.save();
-
+        const bidCount = await Bid.countDocuments({ item: socket.item._id });
         const deposits = await Deposit.find({ item: itemId, status: 'approved' });
         const notificationPromises = deposits.map(deposit => {
           const notification = new Notification({
@@ -787,9 +1224,10 @@ const createAuctionNamespace = (io) => {
           });
           return notification.save();
         });
+        
         await Promise.all(notificationPromises);
 
-        auctionNamespace.to(itemId).emit('newBid', { userId: socket.userId, amount });
+        auctionNamespace.to(itemId).emit('newBid', { userId: socket.userId, itemId:item._id,amount,newprice:item.startPrice,bidcount:bidCount });
 
       } catch (error) {
         socket.emit('bidError', error.message);
@@ -802,6 +1240,7 @@ const createAuctionNamespace = (io) => {
       const room = auctionNamespace.adapter.rooms.get(socket.item._id.toString());
       const userCount = room ? room.size : 0;
       auctionNamespace.to(socket.item._id.toString()).emit('userCountUpdated', { userCount });
+      auctionNamespace.to(socket.item._id.toString()).emit('usercount', { userCount });
     });
   });
 };
@@ -839,5 +1278,6 @@ const checkAuctionEnd = async () => {
 };
 
 setInterval(checkAuctionEnd, 60 * 1000);
+setInterval(notifyItemStart, 60 * 1000);
 
 module.exports = createAuctionNamespace;
