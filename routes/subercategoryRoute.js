@@ -11,6 +11,11 @@ const upload = mult('images/parentcategory');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
+const catchAsync = require('../utils/catchAsync');
+const jwt = require('jsonwebtoken');
+const { promisify } = require('util');
+const User = require('../models/User');
+
 // const {deleteFileIfExists} =require('../utils/deleteimages');
 function generateValidFilePath(filename) {
     const parts = filename.split(/[\\/]/); // Split the filename by both forward slash (/) and backslash (\)
@@ -20,7 +25,43 @@ function generateValidFilePath(filename) {
   }
 
 router.get('/',getSubcategories );
-router.get('/:id', getCategory);
+router.get('/:id',catchAsync(async (req, res, next) => {
+  // 1) Getting token and check of it's there
+if (!req.headers.authorization) {
+  return next()
+}
+  let token;
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
+  }
+console.log(req.headers)
+  if (!token) {
+    return next()
+  }
+
+  // 2) Verification token
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+  // 3) Check if user still exists
+  const currentUser = await User.findById(decoded.id);
+  if (!currentUser) {
+    return next(
+      new AppError(
+        'The user belonging to this token does no longer exist.',
+        401
+      )
+    );
+  }
+
+  req.user = currentUser;
+
+next();
+}), getCategory);
 // router.post('/',upload.fields([
 //   { name: 'imagecover', maxCount: 1 },
 //   { name: 'files', maxCount: 1 }

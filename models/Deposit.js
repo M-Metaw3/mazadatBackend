@@ -52,7 +52,7 @@ depositSchema.pre("find", function(next) {
     select: 'name email photo'
   }).populate({
     path: 'item',
-    select: 'cover name endDate startDate categoryId'
+    select: ' imagecover name endDate startDate subcategoryId'
   });
 
   next();
@@ -75,3 +75,68 @@ depositSchema.pre('findOne', function(next) {
 const Deposit = mongoose.model('Deposit', depositSchema);
 
 module.exports = Deposit;
+
+
+// const depositSchema = new mongoose.Schema({
+//   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+//   subcategory: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory' },
+//   amount: Number,
+//   billImage: {
+//     type: {
+//       name: String,
+//       path: String,
+//       pathname: String
+//     },
+//     required: [true, 'Please upload an image for the Category!'],
+//     unique: true
+//   },
+//   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+//   billingmethod: { type: String, enum: ['fawry', 'cash', 'instapay'], required: true },
+//   seenByadmin: { type: Boolean, default: false },
+//   seenByuser: { type: Boolean, default: false, select: false },
+// }, {
+//   timestamps: true,
+// });
+
+// // Creating a compound index on userId and subcategory to ensure uniqueness
+// depositSchema.index({ userId: 1, subcategory: 1 }, { unique: true });
+
+// depositSchema.pre('save', async function (next) {
+//   const subcategory = await mongoose.model('Subcategory').findById(this.subcategory);
+//   if (subcategory) {
+//     if (subcategory.endDate && subcategory.endDate > Date.now()) {
+//       this.amount = subcategory.deposit; // Set amount to subcategory's deposit
+//     } else {
+//       throw new Error('Subcategory auction is expired');
+//     }
+//   }
+//   next();
+// });
+
+// depositSchema.pre("find", function (next) {
+//   this.populate({
+//     path: 'userId',
+//     select: 'name email photo'
+//   }).populate({
+//     path: 'subcategory',
+//     select: 'name endDate startDate categoryId'
+//   });
+
+//   next();
+// });
+
+// depositSchema.pre('findOne', function (next) {
+//   this.populate({
+//     path: 'userId',
+//     select: '-password -salt -__v' // Excluding password, salt, and __v fields
+//   }).populate({
+//     path: 'subcategory',
+//     select: '-__v'
+//   });
+
+//   next();
+// });
+
+// const Deposit = mongoose.model('Deposit', depositSchema);
+
+// module.exports = Deposit;

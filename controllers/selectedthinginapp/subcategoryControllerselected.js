@@ -32,26 +32,26 @@ const { Result } = require('express-validator');
 // };
 exports.getSelectedSubcategories = async (req, res) => {
     try {
-      const subcategories = await Subcategory.find({ seletedtoslider: true }).populate('items').select('startDate _id');
+      const subcategories = await Subcategory.find({ seletedtoslider: true }).select('-categoryId -items -__v')
   
-      const subcategoriesWithNearestItem = await Promise.all(subcategories.map(async (subcategory) => {
-        const nearestItem = await Item.findOne({
-          subcategoryId: subcategory._id,
-          startDate: { $gte: new Date() }
-        }).sort({ startDate: 1 }).limit(1).exec() || null; // Ensure nearestItem is null if no future item is found
-         subcategory.items=undefined;
-    console.log(subcategory.items)
+    //   const subcategoriesWithNearestItem = await Promise.all(subcategories.map(async (subcategory) => {
+    //     const nearestItem = await Item.findOne({
+    //       subcategoryId: subcategory._id,
+    //       startDate: { $gte: new Date() }
+    //     }).sort({ startDate: 1 }).limit(1).exec() || null; // Ensure nearestItem is null if no future item is found
+    //      subcategory.items=undefined;
+    // console.log(subcategory.items)
 
-        return {
-            subcategory,
-            nearestItem
-        };
-    }));
+    //     return {
+    //         subcategory,
+    //         nearestItem
+    //     };
+    // }));
 
       res.status(200).json({
         status: 'success',
-        Result:subcategoriesWithNearestItem.length,
-        data: subcategoriesWithNearestItem
+        Result:subcategories.length,
+        data: subcategories
       });
     } catch (error) {
       res.status(500).json({

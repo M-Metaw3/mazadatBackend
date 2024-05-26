@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const CategorySchema = require('../../models/subcategory');
 const Subcategory = require('../../models/subcategory');
+const Deposit = require('../../models/Deposit');
 const Item = require('../../models/item');
 
 const APIFeatures = require('../../utils/apiFeatures');
@@ -9,7 +10,40 @@ const factory = require('../../utils/apiFactory');
 
 
 exports.getAllCategory = factory.getAll(CategorySchema);
-exports.getCategory = factory.getOne(CategorySchema,{ path: 'items' });
+exports.getCategory = async (req, res) => {
+  const { id } = req.params;
+  const userId = req.user ? req.user._id : null;
+console.log(userId)
+  try {
+    let deposit = null;
+    let subcategory = null;
+
+    if (userId) {
+      deposit = await Deposit.findOne({ userId:userId, item: id }).populate('item');
+      console.log(deposit)
+    }
+
+    if (!deposit) {
+      subcategory = await CategorySchema.findById(id).populate('items');
+    }
+
+    // return res.status(200).json({
+    //   depositStatus: deposit ? deposit.status : 'false',
+    //   subcategory: deposit ? deposit.item : subcategory
+    // });
+
+    return    res.status(200).json({
+      status: 'success',
+      data: {
+        depositStatus: deposit ? deposit.status : 'false',
+        subcategory: deposit ? deposit.item : subcategory
+      }
+    });
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({ error: 'An error occurred' });
+  }
+};
 exports.createCategory = factory.createOne(CategorySchema);
 exports.updateCategory = factory.updateOne(CategorySchema);
 exports.deleteCategory = factory.deleteOne(CategorySchema);

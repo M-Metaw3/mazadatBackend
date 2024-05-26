@@ -1098,11 +1098,20 @@ let auctionNamespace;
 const checkDepositAndItemStatus = async (socket, next) => {
   try {
     const { userId, itemId } = socket.handshake.auth;
-
-    const deposit = await Deposit.findOne({ userId, item: itemId, status: 'approved' });
-    if (!deposit) {
-      return next(new Error('User has not paid the deposit for this item.'));
+    const item = await Item.findById(itemId).populate('subcategoryId');
+    if (!item) {
+      return next(new Error('Item not found.'));
     }
+
+    const deposit = await Deposit.findOne({ userId, subcategory: item.subcategoryId._id, status: 'approved' });
+    if (!deposit) {
+      return next(new Error('User has not paid the deposit for this subcategory.'));
+    }
+
+    // const deposit = await Deposit.findOne({ userId, item: itemId, status: 'approved' });
+    // if (!deposit) {
+    //   return next(new Error('User has not paid the deposit for this item.'));
+    // }
 
     const item = await Item.findById(itemId);
     const now = new Date();
