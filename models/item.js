@@ -115,18 +115,9 @@ const itemSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
-  deposit: {
-    type: Number,
-    required: true
-  },
-  numberofitem: {
-    type: Number,
-    required: true
-  },
   coverphoto: {
     type: imageSchema,
     required: [true, 'Please upload an image for the coverphoto!'],
-    unique: true
   },
   thubnailphoto: [{
     name: String,
@@ -134,19 +125,8 @@ const itemSchema = new mongoose.Schema({
     pathname: String
   }]
   ,
-  files: {
-    type: imageSchema,
-    // required: [true, 'Please upload a file for the files!'],
-    unique: true
-  },
-  startDate: {
-    type: Date,
-    required: true
-  },
-  endDate: {
-    type: Date,
-    required: true
-  }
+
+
 }, {
   toJSON: { virtuals: true },
   toObject: { virtuals: true },

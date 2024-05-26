@@ -1,5 +1,10 @@
 const mongoose = require('mongoose');
 const item =require('./item');
+const imageSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  path: { type: String, required: true },
+  pathname: { type: String, required: true }
+});
 const subcategorySchema = new mongoose.Schema({
   name: {
     type: String,
@@ -11,9 +16,15 @@ const subcategorySchema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  itemscount: {
-    type: String,
-
+  deposit: {
+    type: Number,
+    min: 0,
+    required: true
+  },
+  files: {
+    type: imageSchema,
+    required: [true, 'Please upload a file for the files!'],
+    unique: true
   },
   categoryId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -33,6 +44,14 @@ default: false
       required: [true, 'Please upload an image for the Banner!'],
       unique: true
   },
+  startDate: {
+    type: Date,
+    required: true
+  },
+  endDate: {
+    type: Date,
+    required: true
+  }
 }, {
   toJSON: { virtuals: true },
   toObject: { virtuals: true },
@@ -45,7 +64,8 @@ subcategorySchema.virtual('items', {
   ref: 'Item',
   localField: '_id',
   foreignField: 'subcategoryId',
-  // count: true // This tells Mongoose to count the number of related documents
+  // count: true 
+  // This tells Mongoose to count the number of related documents
 });
 subcategorySchema.pre('find', async function(next) {
   this.populate({
@@ -57,7 +77,7 @@ subcategorySchema.pre('find', async function(next) {
 subcategorySchema.pre('find', async function(next) {
   this.populate({
     path: 'items',
-    select: 'name startDate endDate'})
+    select: 'name startDate endDate coverphoto'})
   next();
 });
 

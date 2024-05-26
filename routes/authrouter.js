@@ -77,7 +77,7 @@ router.post('/login', userValidator.login, validationMiddleware, loginUser);
 router.post('/forgot-password', userValidator.forgotPassword, validationMiddleware, forgotPassword);
 router.post('/reset-password', userValidator.resetPassword, validationMiddleware, resetPassword);
 router.post('/change-password', authMiddleware, userValidator.changePassword, validationMiddleware, changePassword);
-router.put('/update-profile', authMiddleware, upload.fields([
+router.put('/update-profile/:userId', upload.fields([
   { name: 'profileImage', maxCount: 1 },
   { name: 'idImage', maxCount: 1 }
 ]), (req, res, next) => {

@@ -44,10 +44,12 @@ exports.getSubcategories = async (req, res) => {
       });
 
     } catch (error) {
+      console.log(req.body)
       res.status(500).json({
         status: 'error',
         message: error.message
       });
+      // next(error);
     }
   };
   

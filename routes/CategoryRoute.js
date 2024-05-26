@@ -26,9 +26,9 @@ router.post('/', upload.single('cover'),(req,res,next)=>{
     // return ne.status(400).send('No file uploaded.');
     return  next(new AppError('No file uploaded.', 400));
   }
-
-
   req.body.cover ={name:req.file.originalname,path: generateValidFilePath(req.file.path),pathname:req.file.filename};
+
+
 
 
 next()
@@ -38,7 +38,6 @@ next()
 
 
 router.put('/:id', upload.single('cover') , (req,res,next)=>{
-  
   
     if (req.file) {
       // return ne.status(400).send('No file uploaded.');
@@ -53,6 +52,6 @@ router.put('/:id', upload.single('cover') , (req,res,next)=>{
   next()
   
   },updateCategory);
-router.delete('/:id', authMiddleware, deleteCategory);
+router.delete('/:id', deleteCategory);
 
 module.exports = router;

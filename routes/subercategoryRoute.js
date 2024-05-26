@@ -9,7 +9,9 @@ const mult = require('../utils/multer');
 const AppError = require('../utils/appError');
 const upload = mult('images/parentcategory');
 const router = express.Router();
-
+const fs = require('fs');
+const path = require('path');
+// const {deleteFileIfExists} =require('../utils/deleteimages');
 function generateValidFilePath(filename) {
     const parts = filename.split(/[\\/]/); // Split the filename by both forward slash (/) and backslash (\)
     const formattedParts = parts.map(part => part.replace(/\\/g, '/')); // Replace backslashes (\) with forward slashes (/)
@@ -19,39 +21,131 @@ function generateValidFilePath(filename) {
 
 router.get('/',getSubcategories );
 router.get('/:id', getCategory);
-router.post('/', upload.single('imagecover'),(req,res,next)=>{
+// router.post('/',upload.fields([
+//   { name: 'imagecover', maxCount: 1 },
+//   { name: 'files', maxCount: 1 }
+
+// ]),(req,res,next)=>{
   
-  console.log(req.file)
-  if (!req.file) {
-    // return ne.status(400).send('No file uploaded.');
-    return  next(new AppError('No file uploaded.', 400));
+//   console.log(req.file)
+//   if (!req.file) {
+//     // return ne.status(400).send('No file uploaded.');
+//     return  next(new AppError('No file uploaded.', 400));
+//   }
+
+
+//   req.body.imagecover ={name:req.file.originalname,path: generateValidFilePath(req.file.path),pathname:req.file.filename};
+
+
+// next()
+
+// }, createCategory);
+
+
+
+
+
+
+
+
+
+
+
+router.post('/', upload.fields([
+  { name: 'imagecover', maxCount: 1 },
+  { name: 'files', maxCount: 1 }
+]), (req, res, next) => {
+  console.log(req.files)
+  if (!req.files || !req.files.imagecover || !req.files.files) {
+    return next(new AppError('No file uploaded.', 400));
   }
 
+  req.body.imagecover = {
+    name: req.files.imagecover[0].originalname,
+    path: generateValidFilePath(req.files.imagecover[0].path),
+    pathname: req.files.imagecover[0].filename
+  };
+  req.body.files = {
+    name: req.files.files[0].originalname,
+    path: generateValidFilePath(req.files.files[0].path),
+    pathname: req.files.files[0].filename
+  };
 
-  req.body.imagecover ={name:req.file.originalname,path: generateValidFilePath(req.file.path),pathname:req.file.filename};
+  next();
+}, async (req, res, next) => {
+  try {
+    await createCategory(req, res,next);
+  } catch (error) {
+    // Cleanup the uploaded file if there's an error
+    // console.log(error)
+    // if (req.body.imagecover && req.body.imagecover.path || req.body.files && req.body.files.path) {
+    //   fs.unlink(path.resolve(req.body.imagecover.path), (err) => {
+    //     if (err) console.error('Failed to delete file:', err);
+    //   });
+// console.log(path.join(__dirname, '../images/parentcategory',  req.body.imagecover.pathname))
+// console.log(path.resolve(req.body.imagecover.path))
 
 
-next()
+      // deleteFileIfExists(path.join(__dirname, '../images/parentcategory',  req.body.imagecover.pathname))
+      // deleteFileIfExists(path.join(__dirname, '../images/parentcategory',  req.body.files.pathname))
 
-}, createCategory);
+    // }
+    // next(error);
+  }
+});
 
 
 
-router.put('/:id', upload.single('imagecover') , (req,res,next)=>{
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+router.put('/:id',upload.fields([
+  { name: 'imagecover', maxCount: 1 },
+  { name: 'files', maxCount: 1 }
+]), (req,res,next)=>{
   
+  // console.log(req.files.imagecover[0])
+    if (req.files && req.files.imagecover && req.files.imagecover.length>0) {
   
-    if (req.file) {
-  
-        req.body.imagecover ={name:req.file.originalname,path: generateValidFilePath(req.file.path),pathname:req.file.filename};
+     
+      req.body.imagecover = {
+        name: req.files.imagecover[0].originalname,
+        path: generateValidFilePath(req.files.imagecover[0].path),
+        pathname: req.files.imagecover[0].filename
+      };
+      // req.body.imagecover ={name:req.file.originalname,path: generateValidFilePath(req.file.path),pathname:req.file.filename};
     }
-    console.log(req.file)
+
+    if (req.files && req.files.files && req.files.files.length>0) {
+      req.body.files = {
+        name: req.files.files[0].originalname,
+        path: generateValidFilePath(req.files.files[0].path),
+        pathname: req.files.files[0].filename
+      };
+    }
+
   
   
-console.log(req.body)
+
   
   next()
   
   },updateCategory);
-router.delete('/:id', authMiddleware, deleteCategory);
+router.delete('/:id', deleteCategory);
 
 module.exports = router;

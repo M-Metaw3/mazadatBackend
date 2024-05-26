@@ -42,7 +42,7 @@ categorySchema.virtual('subcategoryCount', {
   // count: true // This tells Mongoose to count the number of related documents
 });
 // Middleware to cascade delete subcategories when a category is deleted
-categorySchema.pre('findOneAndDelete', async function (next) {
+categorySchema.pre('findByIdAndDelete', async function (next) {
   const Subcategory = mongoose.model('Subcategory');
   await Subcategory.deleteMany({ categoryId: this._id });
   next();

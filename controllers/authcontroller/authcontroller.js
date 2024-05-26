@@ -309,12 +309,12 @@ const changePassword = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const { userId } = req.user;
-    const { name, birthdate, phoneNumber, idNumber ,profileImage,idImage} = req.body;
+    const { userId } = req.params;
+    const { name, birthdate, phoneNumber, idNumber ,profileImage,specialist,companyname,address,idImage} = req.body;
     // const profileImage = req.files.profileImage ? req.files.profileImage[0].path : null;
     // const idImage = req.files && req.files.idImage ? req.files.idImage[0].path : null;
 
-    const updates = { name, birthdate, phoneNumber, idNumber };
+    const updates = { name, birthdate, phoneNumber, idNumber,specialist, companyname,address};
     if (profileImage) updates.profileImage = profileImage;
     if (idImage) updates.idImage = idImage;
 
