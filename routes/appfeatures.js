@@ -4,6 +4,8 @@ const subcategoryController = require('../controllers/selectedthinginapp/subcate
 const router = express.Router();
 
 router.get('/selected', subcategoryController.getSelectedSubcategories);
+router.get('/search', subcategoryController.search);
+
 router.patch('/:id/slider', subcategoryController.updateSubcategorySlider);
 
 module.exports = router;

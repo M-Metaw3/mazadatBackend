@@ -1,6 +1,35 @@
-const Subcategory = require('../../models/subcategory');
 const Item = require('../../models/item');
 const { Result } = require('express-validator');
+const Category = require('../../models/Category');
+const Subcategory = require('../../models/subcategory');
+
+exports.search = async (req, res) => {
+  const { term } = req.query;
+
+  if (!term) {
+    return res.status(400).json({ error: 'Search term is required' });
+  }
+
+  try {
+    const categoryResults = await Category.find({ name: { $regex: `^${term}`, $options: 'i' } }).select('name cover').setOptions({ noPopulate: true }).lean()
+    .exec();;
+    const subcategoryResults = await Subcategory.find({ name: { $regex: `^${term}`, $options: 'i' } }).select('name imagecover description').setOptions({ noPopulate: true }).lean()
+    .exec();
+    const itemResults = await Item.find({ name: { $regex: `^${term}`, $options: 'i' } }).select('name coverphoto description startPrice') .setOptions({ noPopulate: true }).lean()
+    .exec();
+
+    return res.status(200).json({
+      categoriessearchresult: categoryResults?.length,
+      categories: categoryResults,
+      subcategoriessearchresult: subcategoryResults?.length,
+      subcategories: subcategoryResults,
+      itemssearchresult: itemResults?.length,
+      items: itemResults,
+    });
+  } catch (error) {
+    return res.status(500).json({ error: 'An error occurred during the search' });
+  }
+};
 
 // Get all subcategories with `seletedtoslider` true and nearest starting item
 // exports.getSelectedSubcategories = async (req, res) => {
@@ -118,3 +147,4 @@ exports.getSubcategories = async (req, res) => {
       });
     }
   };
+
