@@ -96,7 +96,8 @@ const imageSchema = new mongoose.Schema({
 const itemSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
   description: {
     type: String,

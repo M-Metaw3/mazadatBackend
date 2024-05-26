@@ -47,8 +47,7 @@ router.post('/',upload.fields([
 
   ])
   ,(req,res,next)=>{
-  console.log(req.body)
-  console.log(req.files.coverphoto)
+
   if (!req.files && req.files.thubnailphoto && req.files.thubnailphoto.length > 0) {
     // return ne.status(400).send('No file uploaded.');
     return  next(new AppError('No file uploaded thubnailphoto.', 400));
@@ -83,8 +82,8 @@ router.put('/:id',upload.fields([
     { name: 'thubnailphoto', maxCount: 1 },
 
   ]),(req,res,next)=>{
-  
   console.log(req.files)
+  console.log(req.body)
     if (req.files && req.files.thubnailphoto && req.files.thubnailphoto.length > 0) {
       // return ne.status(400).send('No file uploaded.');
       req.body.thubnailphoto ={name:req.files.thubnailphoto[0].originalname,path: generateValidFilePath(req.files.thubnailphoto[0].path),pathname:req.files.thubnailphoto[0].filename};
@@ -99,5 +98,5 @@ router.put('/:id',upload.fields([
 
 
 
-router.delete('/:id', authMiddleware, deleteitems);
+router.delete('/:id', deleteitems);
 module.exports = router;

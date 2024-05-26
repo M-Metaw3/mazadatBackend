@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
-const Item = require('./item'); // Adjust the path as needed
+const Item = require('./subcategory'); // Adjust the path as needed
 
 const depositSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-  item: { type: mongoose.Schema.Types.ObjectId, ref: 'Item' },
+  item: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory' },
   amount: Number,
   billImage: {
     type: {
@@ -52,7 +52,7 @@ depositSchema.pre("find", function(next) {
     select: 'name email photo'
   }).populate({
     path: 'item',
-    select: 'coverphoto name endDate startDate subcategoryId'
+    select: 'cover name endDate startDate categoryId'
   });
 
   next();

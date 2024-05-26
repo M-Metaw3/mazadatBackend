@@ -67,7 +67,7 @@ const authMiddleware = catchAsync(async (req, res, next) => {
       )
     );
   }
-  console.log(currentUser)
+
   req.user = currentUser;
 
 next();

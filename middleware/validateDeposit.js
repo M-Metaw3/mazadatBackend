@@ -1,4 +1,4 @@
-const Items = require('../models/item');
+const Items = require('../models/subcategory');
 // Middleware for validation
 const validateDeposit = async (req, res, next) => {
 

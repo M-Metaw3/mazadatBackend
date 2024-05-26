@@ -17,8 +17,7 @@ function generateValidFilePath(filename) {
     return validPath;
   }
 router.post('/',upload.single('billImage'),(req,res,next)=>{
-  
-    console.log(req.file)
+
     if (!req.file) {
       // return ne.status(400).send('No file uploaded.');
       return  next(new AppError('No file uploaded.', 400));
@@ -34,8 +33,6 @@ router.post('/',upload.single('billImage'),(req,res,next)=>{
 router.get('/notifications/admin', depositController.getAdminNotifications);
 router.get('/', depositController.getAllDeposit);
 router.get('/:id', depositController.getDeposit);
-
-
 router.get('/notifications/user/:userId',authMiddleware, depositController.getUserNotifications);
 router.patch('/:depositId/approve', depositController.approveDeposit);
 router.patch('/:depositId/reject', depositController.rejectDeposit);
