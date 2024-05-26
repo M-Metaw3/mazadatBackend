@@ -1113,7 +1113,7 @@ const checkDepositAndItemStatus = async (socket, next) => {
     //   return next(new Error('User has not paid the deposit for this item.'));
     // }
 
-    const item = await Item.findById(itemId);
+    // const item = await Item.findById(itemId);
     const now = new Date();
     if (!item) {
       return next(new Error('Item not found.'));
