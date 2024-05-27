@@ -11,7 +11,11 @@ const bidSchema = new mongoose.Schema({
     default: Date.now(),
   },
 });
+bidSchema.pre('find', function (next) {
 
+this.populate('item');
+next()
+})
 const Bid = mongoose.model('Bid', bidSchema);
 
 module.exports = Bid;
