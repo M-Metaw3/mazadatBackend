@@ -1278,7 +1278,9 @@ const createAuctionNamespace = (io) => {
 
         auctionNamespace.to(itemId).emit('newBid', {
           userId: socket.userId,
-          itemId: item._id,
+          // itemId: item._id,
+          itemId: item,
+
           amount,
           newprice: item.startPrice,
           bidcount: bidCount
