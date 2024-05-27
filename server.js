@@ -10,7 +10,10 @@ const socketIo = require('socket.io');
 
 dotenv.config({ path: './.env' });
 const app = require('./app');
-const io = socketIo(app);
+const io = socketIo(app,    {cors: {
+  origin: 'http://109.106.244.229',  // Allow only this origin
+  
+}});
 
 const DB = process.env.DATABASE.replace(
   '<PASSWORD>',

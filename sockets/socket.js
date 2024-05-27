@@ -1193,9 +1193,8 @@ const notifySubcategoryStart = async () => {
   }
 };
 
-
 const createAuctionNamespace = (io) => {
-  auctionNamespace = io.of('/auction');
+  const auctionNamespace = io.of('/auction');
   auctionNamespace.use(checkDepositAndItemStatus);
 
   auctionNamespace.on('connection', async (socket) => {
@@ -1220,6 +1219,12 @@ const createAuctionNamespace = (io) => {
         const { itemId, amount } = bidData;
         const item = await Item.findById(itemId).populate('subcategoryId');
 
+        const now = new Date();
+        if (now > item.subcategoryId.endDate) {
+          socket.emit('bidError', 'The auction for this item has ended.');
+          return;
+        }
+
         if (amount < item.minBidIncrement) {
           socket.emit('bidError', `Bid amount must be greater than or equal to the minimum bid amount (${item.minBidIncrement}).`);
           return;
@@ -1229,19 +1234,18 @@ const createAuctionNamespace = (io) => {
           userId: socket.userId,
           item: itemId,
           amount,
-          bidTime: new Date(),
+          bidTime: now,
         });
         await bid.save();
 
         item.startPrice += amount;
 
-        const now = new Date();
         const timeRemaining = item.subcategoryId.endDate - now;
-        const tenMinutes = 10* 60 * 1000;
-        const twentyMinutes = 2 * 60 * 1000;
+        const tenMinutes = 10 * 60 * 1000;
+        const twentyMinutes = 5 * 60 * 1000;
 
         if (timeRemaining <= tenMinutes) {
-          item.subcategoryId.endDate = new Date(now.getTime() + twentyMinutes);
+          item.subcategoryId.endDate = new Date(now.getTime()+ tenMinutes + twentyMinutes);
 
           if (!socket.firstExtensionDone) {
             socket.firstExtensionDone = true;
@@ -1249,13 +1253,16 @@ const createAuctionNamespace = (io) => {
             item.minBidIncrement *= 2;
           }
 
+          await item.subcategoryId.save();
+          await item.save();
+
           auctionNamespace.to(itemId).emit('auctionExtended', {
+            itemId: item._id,
             newEndTime: item.subcategoryId.endDate,
             newMinBidIncrement: item.minBidIncrement
           });
         }
-        await item.subcategoryId.save();
-        await item.save()
+
         const bidCount = await Bid.countDocuments({ item: socket.item._id });
         const deposits = await Deposit.find({ subcategory: item.subcategoryId._id, status: 'approved' });
         const notificationPromises = deposits.map(deposit => {
@@ -1269,7 +1276,13 @@ const createAuctionNamespace = (io) => {
 
         await Promise.all(notificationPromises);
 
-        auctionNamespace.to(itemId).emit('newBid', { userId: socket.userId, itemId: item._id, amount, newprice: item.startPrice, bidcount: bidCount });
+        auctionNamespace.to(itemId).emit('newBid', {
+          userId: socket.userId,
+          itemId: item._id,
+          amount,
+          newprice: item.startPrice,
+          bidcount: bidCount
+        });
 
       } catch (error) {
         socket.emit('bidError', error.message);
@@ -1285,6 +1298,9 @@ const createAuctionNamespace = (io) => {
     });
   });
 };
+
+module.exports = createAuctionNamespace;
+
 
 // const createAuctionNamespace = (io) => {
 //   auctionNamespace = io.of('/auction');
@@ -1412,7 +1428,7 @@ const checkAuctionEnd = async () => {
   }
 };
 
-setInterval(checkAuctionEnd, 60 * 1000);
-setInterval(notifySubcategoryStart, 60 * 1000);
+// setInterval(checkAuctionEnd, 60 * 1000);
+// setInterval(notifySubcategoryStart, 60 * 1000);
 
 module.exports = createAuctionNamespace;
