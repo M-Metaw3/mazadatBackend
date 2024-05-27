@@ -23,8 +23,8 @@ const subcategorySchema = new mongoose.Schema({
   },
   files: {
     type: imageSchema,
-    required: [true, 'Please upload a file for the files!'],
-    unique: true
+    // required: [true, 'Please upload a file for the files!'],
+    // unique: true
   },
   categoryId: {
     type: mongoose.Schema.Types.ObjectId,

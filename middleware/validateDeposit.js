@@ -6,7 +6,7 @@ const validateDeposit = async (req, res, next) => {
   // if (userId!== req.user) {
   //   return res.status(400).json({ error: 'DONT PLAY WITH MY CODE' });
   // }
-  
+  console.log(req.body)
   // Validate required fields
   if (!userId || !item || !billingmethod || !billImage) {
     return res.status(400).json({ error: 'All fields are required.' });

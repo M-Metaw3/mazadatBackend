@@ -234,6 +234,9 @@ const loginUser = async (req, res,next) => {
     if (!user.verified) {
       return next(new AppError('Please verify your phone number first', 400));
     }
+    if (user.blocked) {
+      return next(new AppError('you are blocked', 400));
+    }
 user.passwordHash=undefined;
 return createSendToken(user, 200, res);
   } catch (error) {

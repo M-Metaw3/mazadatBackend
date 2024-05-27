@@ -61,7 +61,11 @@ app.use('/api/v1/auth', authRoute);
 
 
 
-
+app.use(express.static(path.join(__dirname, './build')));
+app.get('/*', async(req, res) => {
+  await res.sendFile(path.resolve('./build/index.html'))
+  
+});
 
 app.all('*', (req, res, next) => {
   next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));

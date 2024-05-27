@@ -1132,32 +1132,68 @@ console.log(item.subcategoryId._id)
   }
 };
 
-const notifyItemStart = async () => {
-  const now = new Date();
-  const items = await Item.find({ startDate: { $lte: now }, notifiedStart: { $ne: true } });
+// const notifyItemStart = async () => {
+//   const now = new Date();
+//   const items = await Item.find({ startDate: { $lte: now }, notifiedStart: { $ne: true } });
 
-  for (const item of items) {
-    const deposits = await Deposit.find({ item: item._id, status: 'approved' });
+//   for (const item of items) {
+//     const deposits = await Deposit.find({ item: item._id, status: 'approved' });
+
+//     const startNotifications = deposits.map(deposit => {
+//       const notification = new Notification({
+//         userId: deposit.userId,
+//         message: `The auction for item ${item.name} has started.`,
+//         itemId: item._id,
+//       });
+//       return notification.save();
+//     });
+
+//     await Promise.all(startNotifications);
+
+//     item.notifiedStart = true;
+//     await item.save();
+
+//     auctionNamespace.to(item._id.toString()).emit('itemStarted', {
+//       message: `The auction for item ${item.name} has started.`,
+//     });
+//   }
+// };
+
+
+
+
+
+
+const notifySubcategoryStart = async () => {
+  const now = new Date();
+  const subcategories = await mongoose.model('Subcategory').find({ startDate: { $lte: now }, notifiedStart: { $ne: true } });
+
+  for (const subcategory of subcategories) {
+    const deposits = await Deposit.find({ subcategory: subcategory._id, status: 'approved' });
 
     const startNotifications = deposits.map(deposit => {
       const notification = new Notification({
         userId: deposit.userId,
-        message: `The auction for item ${item.name} has started.`,
-        itemId: item._id,
+        message: `The auction for subcategory ${subcategory.name} has started.`,
+        subcategoryId: subcategory._id,
       });
       return notification.save();
     });
 
     await Promise.all(startNotifications);
 
-    item.notifiedStart = true;
-    await item.save();
+    subcategory.notifiedStart = true;
+    await subcategory.save();
 
-    auctionNamespace.to(item._id.toString()).emit('itemStarted', {
-      message: `The auction for item ${item.name} has started.`,
+    subcategory.items.forEach(item => {
+      auctionNamespace.to(item._id.toString()).emit('itemStarted', {
+        message: `The auction for item ${item.name} in subcategory ${subcategory.name} has started.`,
+      });
     });
   }
 };
+
+
 const createAuctionNamespace = (io) => {
   auctionNamespace = io.of('/auction');
   auctionNamespace.use(checkDepositAndItemStatus);
@@ -1201,8 +1237,8 @@ const createAuctionNamespace = (io) => {
 
         const now = new Date();
         const timeRemaining = item.subcategoryId.endDate - now;
-        const tenMinutes = 10 * 60 * 1000;
-        const twentyMinutes = 20 * 60 * 1000;
+        const tenMinutes = 10* 60 * 1000;
+        const twentyMinutes = 2 * 60 * 1000;
 
         if (timeRemaining <= tenMinutes) {
           item.subcategoryId.endDate = new Date(now.getTime() + twentyMinutes);
@@ -1219,7 +1255,7 @@ const createAuctionNamespace = (io) => {
           });
         }
         await item.subcategoryId.save();
-        item.save()
+        await item.save()
         const bidCount = await Bid.countDocuments({ item: socket.item._id });
         const deposits = await Deposit.find({ subcategory: item.subcategoryId._id, status: 'approved' });
         const notificationPromises = deposits.map(deposit => {
@@ -1377,6 +1413,6 @@ const checkAuctionEnd = async () => {
 };
 
 setInterval(checkAuctionEnd, 60 * 1000);
-setInterval(notifyItemStart, 60 * 1000);
+setInterval(notifySubcategoryStart, 60 * 1000);
 
 module.exports = createAuctionNamespace;
