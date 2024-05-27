@@ -1102,12 +1102,11 @@ const checkDepositAndItemStatus = async (socket, next) => {
     if (!item) {
       return next(new Error('Item not found.'));
     }
-
-    const deposit = await Deposit.findOne({ userId, subcategory: item.subcategoryId._id, status: 'approved' });
+console.log(item.subcategoryId._id)
+    const deposit = await Deposit.findOne({ userId, item: item.subcategoryId._id, status: 'approved' });
     if (!deposit) {
       return next(new Error('User has not paid the deposit for this subcategory.'));
     }
-
     // const deposit = await Deposit.findOne({ userId, item: itemId, status: 'approved' });
     // if (!deposit) {
     //   return next(new Error('User has not paid the deposit for this item.'));
@@ -1124,9 +1123,9 @@ const checkDepositAndItemStatus = async (socket, next) => {
     if (item.endDate <= now) {
       return next(new Error('Auction for this item has ended.'));
     }
-
     socket.item = item;
     socket.userId = userId;
+    socket.subcategory = item.subcategoryId;
     next();
   } catch (error) {
     next(error);
@@ -1159,7 +1158,6 @@ const notifyItemStart = async () => {
     });
   }
 };
-
 const createAuctionNamespace = (io) => {
   auctionNamespace = io.of('/auction');
   auctionNamespace.use(checkDepositAndItemStatus);
@@ -1179,13 +1177,12 @@ const createAuctionNamespace = (io) => {
       bidCount
     });
 
-    auctionNamespace.to(socket.item._id.toString()).emit('userCountUpdated', { userCount });
     auctionNamespace.to(socket.item._id.toString()).emit('usercount', { userCount });
 
     socket.on('placeBid', async (bidData) => {
       try {
         const { itemId, amount } = bidData;
-        const item = await Item.findById(itemId);
+        const item = await Item.findById(itemId).populate('subcategoryId');
 
         if (amount < item.minBidIncrement) {
           socket.emit('bidError', `Bid amount must be greater than or equal to the minimum bid amount (${item.minBidIncrement}).`);
@@ -1203,12 +1200,12 @@ const createAuctionNamespace = (io) => {
         item.startPrice += amount;
 
         const now = new Date();
-        const timeRemaining = item.endDate - now;
+        const timeRemaining = item.subcategoryId.endDate - now;
         const tenMinutes = 10 * 60 * 1000;
         const twentyMinutes = 20 * 60 * 1000;
 
         if (timeRemaining <= tenMinutes) {
-          item.endDate = new Date(now.getTime() + twentyMinutes);
+          item.subcategoryId.endDate = new Date(now.getTime() + twentyMinutes);
 
           if (!socket.firstExtensionDone) {
             socket.firstExtensionDone = true;
@@ -1217,26 +1214,26 @@ const createAuctionNamespace = (io) => {
           }
 
           auctionNamespace.to(itemId).emit('auctionExtended', {
-            newEndTime: item.endDate,
+            newEndTime: item.subcategoryId.endDate,
             newMinBidIncrement: item.minBidIncrement
           });
         }
-
-        await item.save();
+        await item.subcategoryId.save();
+        item.save()
         const bidCount = await Bid.countDocuments({ item: socket.item._id });
-        const deposits = await Deposit.find({ item: itemId, status: 'approved' });
+        const deposits = await Deposit.find({ subcategory: item.subcategoryId._id, status: 'approved' });
         const notificationPromises = deposits.map(deposit => {
           const notification = new Notification({
             userId: deposit.userId,
-            message: `A new bid of ${amount} has been placed on item ${item.name}`,
+            message: `A new bid of ${amount} has been placed on item ${item.name} in subcategory ${item.subcategoryId.name}`,
             itemId,
           });
           return notification.save();
         });
-        
+
         await Promise.all(notificationPromises);
 
-        auctionNamespace.to(itemId).emit('newBid', { userId: socket.userId, itemId:item._id,amount,newprice:item.startPrice,bidcount:bidCount });
+        auctionNamespace.to(itemId).emit('newBid', { userId: socket.userId, itemId: item._id, amount, newprice: item.startPrice, bidcount: bidCount });
 
       } catch (error) {
         socket.emit('bidError', error.message);
@@ -1248,11 +1245,104 @@ const createAuctionNamespace = (io) => {
 
       const room = auctionNamespace.adapter.rooms.get(socket.item._id.toString());
       const userCount = room ? room.size : 0;
-      auctionNamespace.to(socket.item._id.toString()).emit('userCountUpdated', { userCount });
       auctionNamespace.to(socket.item._id.toString()).emit('usercount', { userCount });
     });
   });
 };
+
+// const createAuctionNamespace = (io) => {
+//   auctionNamespace = io.of('/auction');
+//   auctionNamespace.use(checkDepositAndItemStatus);
+
+//   auctionNamespace.on('connection', async (socket) => {
+//     console.log('User connected:', socket.userId);
+
+//     socket.join(socket.item._id.toString());
+
+//     const room = auctionNamespace.adapter.rooms.get(socket.item._id.toString());
+//     const userCount = room ? room.size : 0;
+//     const bidCount = await Bid.countDocuments({ item: socket.item._id });
+
+//     socket.emit('itemDetails', {
+//       item: socket.item,
+//       userCount,
+//       bidCount
+//     });
+
+//     auctionNamespace.to(socket.item._id.toString()).emit('userCountUpdated', { userCount });
+//     auctionNamespace.to(socket.item._id.toString()).emit('usercount', { userCount });
+
+//     socket.on('placeBid', async (bidData) => {
+//       try {
+//         const { itemId, amount } = bidData;
+//         const item = await Item.findById(itemId);
+
+//         if (amount < item.minBidIncrement) {
+//           socket.emit('bidError', `Bid amount must be greater than or equal to the minimum bid amount (${item.minBidIncrement}).`);
+//           return;
+//         }
+
+//         const bid = new Bid({
+//           userId: socket.userId,
+//           item: itemId,
+//           amount,
+//           bidTime: new Date(),
+//         });
+//         await bid.save();
+
+//         item.startPrice += amount;
+
+//         const now = new Date();
+//         const timeRemaining = item.endDate - now;
+//         const tenMinutes = 10 * 60 * 1000;
+//         const twentyMinutes = 20 * 60 * 1000;
+
+//         if (timeRemaining <= tenMinutes) {
+//           item.endDate = new Date(now.getTime() + twentyMinutes);
+
+//           if (!socket.firstExtensionDone) {
+//             socket.firstExtensionDone = true;
+//           } else {
+//             item.minBidIncrement *= 2;
+//           }
+
+//           auctionNamespace.to(itemId).emit('auctionExtended', {
+//             newEndTime: item.endDate,
+//             newMinBidIncrement: item.minBidIncrement
+//           });
+//         }
+
+//         await item.save();
+//         const bidCount = await Bid.countDocuments({ item: socket.item._id });
+//         const deposits = await Deposit.find({ item: itemId, status: 'approved' });
+//         const notificationPromises = deposits.map(deposit => {
+//           const notification = new Notification({
+//             userId: deposit.userId,
+//             message: `A new bid of ${amount} has been placed on item ${item.name}`,
+//             itemId,
+//           });
+//           return notification.save();
+//         });
+        
+//         await Promise.all(notificationPromises);
+
+//         auctionNamespace.to(itemId).emit('newBid', { userId: socket.userId, itemId:item._id,amount,newprice:item.startPrice,bidcount:bidCount });
+
+//       } catch (error) {
+//         socket.emit('bidError', error.message);
+//       }
+//     });
+
+//     socket.on('disconnect', () => {
+//       console.log('User disconnected:', socket.userId);
+
+//       const room = auctionNamespace.adapter.rooms.get(socket.item._id.toString());
+//       const userCount = room ? room.size : 0;
+//       auctionNamespace.to(socket.item._id.toString()).emit('userCountUpdated', { userCount });
+//       auctionNamespace.to(socket.item._id.toString()).emit('usercount', { userCount });
+//     });
+//   });
+// };
 
 const checkAuctionEnd = async () => {
   const items = await Item.find({ endDate: { $lte: new Date() } });
