@@ -1238,8 +1238,16 @@ const createAuctionNamespace = (io) => {
           bidTime: now,
         });
         await bid.save();
-
-        item.startPrice += amount;
+        /////////////////////////for testing//////////////////////////////////
+        const totalBids = await Bid.aggregate([
+          { $match: { item: new mongoose.Types.ObjectId(itemId) } },
+          { $group: { _id: null, totalAmount: { $sum: '$amount' } } }
+        ]);
+    
+        const totalBidAmount = totalBids.length ? totalBids[0].totalAmount : 0;
+        item.startPrice = totalBidAmount;
+        ///////////////////////////////////////////////////////////
+        // item.startPrice += amount;
 
         const timeRemaining = item.subcategoryId.endDate - now;
         const tenMinutes = 10 * 60 * 1000;
