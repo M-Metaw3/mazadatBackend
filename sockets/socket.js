@@ -1257,6 +1257,7 @@ const createAuctionNamespace = (io) => {
   
 
           auctionNamespace.to(itemId).emit('auctionExtended', {
+            item: item,
             itemId: item._id,
             newEndTime: item.subcategoryId.endDate,
             newMinBidIncrement: item.minBidIncrement
