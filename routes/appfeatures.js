@@ -22,7 +22,7 @@ router.patch('/:id/slider', subcategoryController.updateSubcategorySlider);
 const getUserBids = async (userId) => {
   const bids = await Bid.find({ userId }).populate({
     path: 'item',
-    select: 'startPrice subcategoryId',
+    // select: 'startPrice subcategoryId',
     options: { lean: true }
   });
 
@@ -46,23 +46,6 @@ const getUserBids = async (userId) => {
   return updatedBids;
 };
 
-// const getWonItems = async (userId) => {
-//   return await Bid.aggregate([
-//     { $match: { userId: new mongoose.Types.ObjectId(userId) } },
-//     { $group: { _id: '$item', maxBid: { $max: '$amount' } } },
-//     {
-//       $lookup: {
-//         from: 'items',  // Correct collection name should be 'items'
-//         localField: '_id',
-//         foreignField: '_id',
-//         as: 'item'
-//       }
-//     },
-//     { $unwind: '$item' },
-//     { $match: { 'item.endDate': { $lte: new Date() } } },
-//     { $sort: { 'item.endDate': -1 } }
-//   ]);
-// };
 
 const getWonItems = async (userId) => {
   return await Bid.aggregate([

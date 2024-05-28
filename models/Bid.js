@@ -13,7 +13,7 @@ const bidSchema = new mongoose.Schema({
 });
 bidSchema.pre('find', function (next) {
 
-this.populate('userId');
+// this.populate('userId');
 next()
 })
 const Bid = mongoose.model('Bid', bidSchema);
