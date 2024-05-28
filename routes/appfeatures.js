@@ -3,13 +3,57 @@ const subcategoryController = require('../controllers/selectedthinginapp/subcate
 
 const Bid = require('../models/Bid');
 const Subcategory = require('../models/subcategory');
-
+const jwt = require('jsonwebtoken');
+const { promisify } = require('util');
+const User = require('../models/User');
 const Item = require('../models/item');
 const mongoose = require('mongoose');
+const catchAsync = require('../utils/catchAsync');
 const router = express.Router();
 
 router.get('/selected', subcategoryController.getSelectedSubcategories);
-router.get('/search', subcategoryController.search);
+router.get('/search',catchAsync(async (req, res, next) => {
+  // 1) Getting token and check of it's there
+  if (
+    !req.headers.authorization &&
+    !req?.headers?.authorization?.startsWith('Bearer')
+  ){
+
+      req.user = null; // No token means guest
+      return next();
+    
+  }
+  let token;
+
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith('Bearer')
+  ) {
+    token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
+  }
+
+
+
+  // 2) Verification token
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+
+  // 3) Check if user still exists
+  const currentUser = await User.findById(decoded.id);
+  if (!currentUser) {
+    return next(
+      new AppError(
+        'The user belonging to this token does no longer exist.',
+        401
+      )
+    );
+  }
+
+  req.user = currentUser;
+
+next();
+}), subcategoryController.search);
 
 router.patch('/:id/slider', subcategoryController.updateSubcategorySlider);
 

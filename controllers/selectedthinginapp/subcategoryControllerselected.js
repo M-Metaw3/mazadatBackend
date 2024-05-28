@@ -2,36 +2,112 @@ const Item = require('../../models/item');
 const { Result } = require('express-validator');
 const Category = require('../../models/Category');
 const Subcategory = require('../../models/subcategory');
+const Deposit = require('../../models/Deposit'); // Ensure
+// exports.search = async (req, res) => {
+//   const { term } = req.query;
+
+//   if (!term) {
+//     return res.status(400).json({ error: 'Search term is required' });
+//   }
+
+//   try {
+//     const categoryResults = await Category.find({ name: { $regex: `^${term}`, $options: 'i' } }).select('name cover').setOptions({ noPopulate: true }).lean()
+//     .exec();;
+//     const subcategoryResults = await Subcategory.find({ name: { $regex: `^${term}`, $options: 'i' } }).select('name imagecover description').setOptions({ noPopulate: true }).lean()
+//     .exec();
+//     // const itemResults = await Item.find({ name: { $regex: `^${term}`, $options: 'i' } }).select('name coverphoto description startPrice') .setOptions({ noPopulate: true }).lean()
+//     // .exec();
+//     const itemResults = await Item.find({ name: { $regex: `^${term}`, $options: 'i' } }).populate('subcategoryId')
+//     .exec();
+
+//     return res.status(200).json({
+//       categoriessearchresult: categoryResults?.length,
+//       categories: categoryResults,
+//       subcategoriessearchresult: subcategoryResults?.length,
+//       subcategories: subcategoryResults,
+//       itemssearchresult: itemResults?.length,
+//       items: itemResults,
+//     });
+//   } catch (error) {
+//     return res.status(500).json({ error: 'An error occurred during the search' });
+//   }
+// };
+
+
+
+
+
 
 exports.search = async (req, res) => {
   const { term } = req.query;
-
+  const userId = req.user ? req.user._id : null;
+console.log(userId)
   if (!term) {
     return res.status(400).json({ error: 'Search term is required' });
   }
 
   try {
-    const categoryResults = await Category.find({ name: { $regex: `^${term}`, $options: 'i' } }).select('name cover').setOptions({ noPopulate: true }).lean()
-    .exec();;
-    const subcategoryResults = await Subcategory.find({ name: { $regex: `^${term}`, $options: 'i' } }).select('name imagecover description').setOptions({ noPopulate: true }).lean()
-    .exec();
-    // const itemResults = await Item.find({ name: { $regex: `^${term}`, $options: 'i' } }).select('name coverphoto description startPrice') .setOptions({ noPopulate: true }).lean()
-    // .exec();
-    const itemResults = await Item.find({ name: { $regex: `^${term}`, $options: 'i' } }).populate('subcategoryId')
-    .exec();
+    const categoryResults = await Category.find({ name: { $regex: `^${term}`, $options: 'i' } })
+      .select('name cover')
+      .lean()
+      .exec();
+
+    const subcategoryResults = await Subcategory.find({ name: { $regex: `^${term}`, $options: 'i' } })
+      .select('name imagecover description')
+      .lean()
+      .exec();
+
+    const itemResults = await Item.find({ name: { $regex: `^${term}`, $options: 'i' } })
+      .populate('subcategoryId')
+      .lean()
+      .exec();
+
+    // Check deposits and add status
+    if (userId) {
+      for (const subcategory of subcategoryResults) {
+        const deposit = await Deposit.findOne({ userId: userId, item: subcategory._id }).lean().exec();
+        subcategory.depositStatus = deposit ? deposit.status : false;
+      }
+
+      for (const item of itemResults) {
+        const deposit = await Deposit.findOne({ userId: userId, item: item.subcategoryId }).lean().exec();
+        item.depositStatus = deposit ? deposit.status : false;
+      }
+    } else {
+      // If no user, set depositStatus to false for all
+      subcategoryResults.forEach(subcategory => subcategory.depositStatus = false);
+      itemResults.forEach(item => item.depositStatus = false);
+    }
 
     return res.status(200).json({
-      categoriessearchresult: categoryResults?.length,
+      categoriessearchresult: categoryResults.length,
       categories: categoryResults,
-      subcategoriessearchresult: subcategoryResults?.length,
+      subcategoriessearchresult: subcategoryResults.length,
       subcategories: subcategoryResults,
-      itemssearchresult: itemResults?.length,
+      itemssearchresult: itemResults.length,
       items: itemResults,
     });
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ error: 'An error occurred during the search' });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Get all subcategories with `seletedtoslider` true and nearest starting item
 // exports.getSelectedSubcategories = async (req, res) => {

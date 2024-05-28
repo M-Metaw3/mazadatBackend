@@ -13,7 +13,6 @@ exports.getAllCategory = factory.getAll(CategorySchema);
 exports.getCategory = async (req, res) => {
   const { id } = req.params;
   const userId = req.user ? req.user._id : null;
-console.log(userId)
   try {
     let deposit = null;
     let subcategory = null;
