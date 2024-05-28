@@ -1282,6 +1282,7 @@ const createAuctionNamespace = (io) => {
           userId: socket.userId,
           itemId: item._id,
           item: item,
+          usercount:userCount,
 
           amount,
           newprice: item.startPrice,
