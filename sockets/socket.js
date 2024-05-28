@@ -1089,6 +1089,8 @@ const factory = require('../utils/apiFactory');
 const jwt = require('jsonwebtoken');
 const Bid = require('../models/Bid');
 const Item = require('../models/item');
+const subcategory = require('../models/subcategory');
+
 const Deposit = require('../models/Deposit');
 const Notification = require('../models/notification');
 const mongoose = require('mongoose');
@@ -1218,7 +1220,6 @@ const createAuctionNamespace = (io) => {
       try {
         const { itemId, amount } = bidData;
         const item = await Item.findById(itemId).populate('subcategoryId');
-
         const now = new Date();
         if (now > item.subcategoryId.endDate) {
           socket.emit('bidError', 'The auction for this item has ended.');
@@ -1242,10 +1243,10 @@ const createAuctionNamespace = (io) => {
 
         const timeRemaining = item.subcategoryId.endDate - now;
         const tenMinutes = 10 * 60 * 1000;
-        const twentyMinutes = 5 * 60 * 1000;
+        const twentyMinutes = 2 * 60 * 1000;
 
         if (timeRemaining <= tenMinutes) {
-          item.subcategoryId.endDate = new Date(now.getTime()+ tenMinutes + twentyMinutes);
+          item.subcategoryId.endDate = new Date(now.getTime() + twentyMinutes);
 
           if (!socket.firstExtensionDone) {
             socket.firstExtensionDone = true;
@@ -1253,8 +1254,7 @@ const createAuctionNamespace = (io) => {
             item.minBidIncrement *= 2;
           }
 
-          await item.subcategoryId.save();
-          await item.save();
+  
 
           auctionNamespace.to(itemId).emit('auctionExtended', {
             itemId: item._id,
@@ -1262,7 +1262,9 @@ const createAuctionNamespace = (io) => {
             newMinBidIncrement: item.minBidIncrement
           });
         }
-
+        await item.subcategoryId.save();
+        await item.save();
+          console.log(item)
         const bidCount = await Bid.countDocuments({ item: socket.item._id });
         const deposits = await Deposit.find({ subcategory: item.subcategoryId._id, status: 'approved' });
         const notificationPromises = deposits.map(deposit => {
@@ -1399,12 +1401,15 @@ module.exports = createAuctionNamespace;
 // };
 
 const checkAuctionEnd = async () => {
-  const items = await Item.find({ endDate: { $lte: new Date() } });
+  const now = new Date();
+  const items = await subcategory.find({ endDate: { $lt: now }}).populate('items');
+
   for (const item of items) {
     const bids = await Bid.find({ item: item._id }).sort({ amount: -1 }).limit(1);
+    
     const winnerBid = bids[0];
     const deposits = await Deposit.find({ item: item._id, status: 'approved' });
-
+console.log(deposits);
     if (winnerBid) {
       const winnerNotification = new Notification({
         userId: winnerBid.userId,
@@ -1430,7 +1435,7 @@ const checkAuctionEnd = async () => {
   }
 };
 
-// setInterval(checkAuctionEnd, 60 * 1000);
+// setInterval(checkAuctionEnd, 10 * 1000);
 // setInterval(notifySubcategoryStart, 60 * 1000);
 
 module.exports = createAuctionNamespace;

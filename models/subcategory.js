@@ -21,6 +21,8 @@ const subcategorySchema = new mongoose.Schema({
     min: 0,
     required: true
   },
+  notifiedStart: { type: Boolean, default: false },  // Add this field
+  notifiedEnd: { type: Boolean, default: false },    // Add this field
   files: {
     type: imageSchema,
     // required: [true, 'Please upload a file for the files!'],

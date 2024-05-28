@@ -10,6 +10,7 @@ const user = new Schema({
   address: { type: String },
 
 
+  walletBalance: number,
 
   birthdate: { type: Date, required: true },
   phoneNumber: { type: String, required: true, unique: true },

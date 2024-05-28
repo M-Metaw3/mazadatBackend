@@ -120,6 +120,9 @@ const itemSchema = new mongoose.Schema({
     type: imageSchema,
     required: [true, 'Please upload an image for the coverphoto!'],
   },
+  commission1: Number, // 3% commission
+  commission2: Number, // 14% commission
+  commission3: Number, // 20% commission
   thubnailphoto: [{
     name: String,
     path: String,
