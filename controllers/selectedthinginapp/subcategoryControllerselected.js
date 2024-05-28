@@ -15,7 +15,9 @@ exports.search = async (req, res) => {
     .exec();;
     const subcategoryResults = await Subcategory.find({ name: { $regex: `^${term}`, $options: 'i' } }).select('name imagecover description').setOptions({ noPopulate: true }).lean()
     .exec();
-    const itemResults = await Item.find({ name: { $regex: `^${term}`, $options: 'i' } }).select('name coverphoto description startPrice') .setOptions({ noPopulate: true }).lean()
+    // const itemResults = await Item.find({ name: { $regex: `^${term}`, $options: 'i' } }).select('name coverphoto description startPrice') .setOptions({ noPopulate: true }).lean()
+    // .exec();
+    const itemResults = await Item.find({ name: { $regex: `^${term}`, $options: 'i' } })
     .exec();
 
     return res.status(200).json({
