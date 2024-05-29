@@ -511,8 +511,8 @@ console.log("object")
           status: 'winner',
         });
         await winnerEntry.save();
-console.log(winnerEntry)
-console.log("winnerEntry")
+// console.log(winnerEntry)
+// console.log("winnerEntry")
 
         // Mark the item as notified for the winner
         item.notifiedWinner = true;
@@ -535,6 +535,8 @@ console.log("winnerEntry")
         if (!winnerBid || !winnerBid.userId.equals(deposit.userId)||!subcategory.notifiedEnd) {
           // Process refund for users who didn't win
           const user = await User.findById(deposit.userId);
+console.log(user)
+console.log(deposit.userId)
 
           if (typeof deposit.amount === 'number' && !isNaN(deposit.amount)) {
             // user.walletBalance += deposit.amount;
@@ -557,12 +559,9 @@ console.log("winnerEntry")
 console.log(deposit.userId._id)
           // Emit real-time notification about the refund
 
-
-          // notificationNamespace.to(`user_${deposit.userId._id}`).emit('notification', {
-          //   message: `The auction for item ${item.name} in subcategory ${subcategory.name} has ended. Your deposit has been refunded.`,
-          // });
+          
           notificationNamespace.to(`user_${deposit.userId._id}`).emit('notification', {
-            message: `The auction for item ${item.name} in subcategory ${subcategory.name} has ended`,
+            message: `The auction for item ${item.name} in subcategory ${subcategory.name} has ended. Your deposit has been refunded.`,
           });
           const loserEntry = new Winner({
             userId: deposit.userId,
@@ -584,7 +583,7 @@ console.log(deposit.userId._id)
 
     // Emit real-time notification to all users about the auction end
     deposits.forEach(deposit => {
-      notificationNamespace.to(`user_${deposit.userId}`).emit('notification', {
+      notificationNamespace.to(`user_${deposit.userId._id}`).emit('notification', {
         message: `The auction for subcategory ${subcategory.name} has ended.`,
       });
 

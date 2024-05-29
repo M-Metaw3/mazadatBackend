@@ -7,7 +7,7 @@ const winnerSchema = new mongoose.Schema({
   // status:{type: { type: String, enum: ['winner', 'loser','cancelled'] }},
   status: {
     type: String,
-    enum: ['winner', 'loser', 'cancelled'],
+    enum: ['winner', 'loser', 'cancelled','inprogress'],
 
   },
   timestamp: { type: Date, default: Date.now },

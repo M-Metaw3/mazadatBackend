@@ -11,12 +11,16 @@ const user = new Schema({
 
 
   walletBalance: { type: Number, default: 0 },
+
+
   walletTransactions: [{
     amount: Number,
     type: { type: String, enum: ['deposit', 'refund'] },
     description: String,
     timestamp: { type: Date, default: Date.now },
   }],
+
+  
   birthdate: { type: Date, required: true },
   phoneNumber: { type: String, required: true, unique: true },
   passwordHash: { type: String, required: true },
