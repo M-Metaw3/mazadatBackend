@@ -108,14 +108,14 @@ depositSchema.pre('save', async function (next) {
   console.log("done");
 
   // You can add your logic here to calculate or set the amount based on userId, item, etc.
-  const item = await Item.findById(this.item);
-  if (item) {
-    if (item.endDate && item.endDate > Date.now()) {
-      this.amount = item.deposit; // Set amount to item's depositAmount if not expired
-    } else {
-      throw new Error('Item is expired');
-    }
-  }
+  // const item = await Item.findById(this.item);
+  // if (item) {
+  //   if (item.endDate && item.endDate > Date.now()) {
+  //     this.amount = item.deposit; // Set amount to item's depositAmount if not expired
+  //   } else {
+  //     throw new Error('Item is expired');
+  //   }
+  // }
 
   next();
 });

@@ -535,28 +535,31 @@ console.log("object")
         if (!winnerBid || !winnerBid.userId.equals(deposit.userId)||!subcategory.notifiedEnd) {
           // Process refund for users who didn't win
           const user = await User.findById(deposit.userId);
-console.log(user)
-console.log(deposit.userId)
+          
+          
+          // if (typeof deposit.amount === 'number' && !isNaN(deposit.amount)) {
+            user.walletBalance += parseInt(deposit.amount);
+            user.walletTransactions.push({
+              amount: deposit.amount,
+              type: 'refund',
+              description: `Refund for item ${item.name} in subcategory ${subcategory.name}`,
+            });
 
-          if (typeof deposit.amount === 'number' && !isNaN(deposit.amount)) {
-            // user.walletBalance += deposit.amount;
-            // user.walletTransactions.push({
-            //   amount: deposit.amount,
-            //   type: 'refund',
-            //   description: `Refund for item ${item.name} in subcategory ${subcategory.name}`,
-            // });
+            console.log(`User ${user._id} wallet balance updated. New balance: ${user.walletBalance}`);
+            
+            await user.save();
+            console.log(user)
+            console.log("user")
 
-            // console.log(`User ${user._id} wallet balance updated. New balance: ${user.walletBalance}`);
-
-            // await user.save();
-          } else {
-            console.error(`Invalid deposit amount for user ${deposit.userId}: ${deposit.amount}`);
-          }
+          // } else {
+          //   console.error(`Invalid deposit amount for user ${deposit.userId}: ${deposit.amount}`);
+          // }
 
           // Update deposit status to 'refunded'
-          // deposit.status = 'refunded';
-          // await deposit.save();
-console.log(deposit.userId._id)
+       
+          deposit.status = 'refunded';
+          await deposit.save({validateBeforeSave: false});
+          console.log(deposit.userId._id)
           // Emit real-time notification about the refund
 
           
