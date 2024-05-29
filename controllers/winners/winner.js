@@ -4,6 +4,7 @@ const winnerschemaSchema = require('../../models/Winner');
 
 const catchAsync = require('../../utils/catchAsync');
 const factory = require('../../utils/apiFactory');
+const { options } = require('joi');
 exports.getallwinners = factory.getAll(winnerschemaSchema);
 exports.getwinners = async (req, res) => {
     const { id } = req.params;
@@ -12,7 +13,14 @@ exports.getwinners = async (req, res) => {
 
   
       if (id) {
-        winner = await winnerschemaSchema.find({ userId:id }).populate('itemId');
+        winner = await winnerschemaSchema.find({ userId:id }).populate({path:'itemId',
+          populate: {
+            path: 'subcategoryId',
+            select: 'name -categoryId -items',
+            options: { virtuals: false }
+              // Only select the name field
+        }}).setOptions({ noPopulate: true }).lean()
+        .exec();
       }
   
       if (!winner) {
