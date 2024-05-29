@@ -12,7 +12,7 @@ exports.getwinners = async (req, res) => {
 
   
       if (id) {
-        winner = await winnerschemaSchema.findOne({ userId:userId }).populate('itemId');
+        winner = await winnerschemaSchema.find({ userId:userId }).populate('itemId');
       }
   
       if (!winner) {
