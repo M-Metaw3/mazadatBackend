@@ -537,7 +537,7 @@ console.log("object")
           const user = await User.findById(deposit.userId);
           
           
-          // if (typeof deposit.amount === 'number' && !isNaN(deposit.amount)) {
+   
             user.walletBalance += parseInt(deposit.amount);
             user.walletTransactions.push({
               amount: deposit.amount,
@@ -551,9 +551,7 @@ console.log("object")
             console.log(user)
             console.log("user")
 
-          // } else {
-          //   console.error(`Invalid deposit amount for user ${deposit.userId}: ${deposit.amount}`);
-          // }
+      
 
           // Update deposit status to 'refunded'
        

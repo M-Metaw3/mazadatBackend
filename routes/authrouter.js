@@ -27,7 +27,7 @@ const {
   forgotPassword,
   resetPassword,
   changePassword,
-  updateProfile,getuser,blockUser
+  updateProfile,getuser,blockUser,getme
 } = require('../controllers/authcontroller/authcontroller');
 const authMiddleware = require('../middleware/authMiddleware');
 const validationMiddleware = require('../middleware/validationMiddleware');
@@ -46,6 +46,7 @@ function generateValidFilePath(filename) {
 
 
 
+  router.get('/getme/:id',authMiddleware ,getme);
 
 router.get('/get',getallusers);
 router.get('/:id',getuser);

@@ -337,6 +337,15 @@ const blockUser = async (req, res) => {
   const user = await User.findByIdAndUpdate(userId, { blocked: status }, { new: true });
 
   res.json({status:"success",data:user})};
+
+
+  const getme = async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+  
+    const user = await User.findById(id).select('walletBalance walletTransactions');
+  
+    res.json({status:"success",data:user})};
 module.exports = {
   getallusers,
   registerUser,
@@ -345,5 +354,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   changePassword,
-  updateProfile,getuser,blockUser
+  updateProfile,getuser,blockUser,getme
 };
