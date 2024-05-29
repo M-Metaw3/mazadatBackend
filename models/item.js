@@ -120,9 +120,16 @@ const itemSchema = new mongoose.Schema({
     type: imageSchema,
     required: [true, 'Please upload an image for the coverphoto!'],
   },
-  commission1: Number, // 3% commission
-  commission2: Number, // 14% commission
-  commission3: Number, // 20% commission
+  status: {
+    type: String,
+    enum: ['cancelled', 'inprogress', 'completed'],
+    default: 'inprogress'
+  },
+  notifiedWinner: { type: Boolean, default: false },
+  notifiedLosers: { type: Boolean, default: false },
+  commission1: Number, 
+  commission2: Number, 
+  commission3: Number, 
   thubnailphoto: [{
     name: String,
     path: String,

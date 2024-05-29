@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
-
+const { createNotificationNamespace, setupNotificationInterval } = require('./sockets/notifications');
 process.on('uncaughtException', err => {
   console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
   console.log(err.name, err.message);
@@ -20,6 +20,8 @@ const DB = process.env.DATABASE.replace(
   process.env.DATABASE_PASSWORD
 );
 require('./sockets/socket')(io);
+const notificationNamespace = createNotificationNamespace(io);
+setupNotificationInterval(notificationNamespace);
 mongoose
   .connect(DB, {
     // useUnifiedTopology: true ,

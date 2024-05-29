@@ -21,6 +21,8 @@ const subcategory = require('./routes/subercategoryRoute');
 const appfeatures = require('./routes/appfeatures');
 const splashroute = require('./routes/splashrouter');
 const bidingroute = require('./routes/bidroute');
+const getwinners = require('./routes/winnerroute');
+
 
 
 
@@ -52,6 +54,8 @@ app.get('/', (req, res) => {
 
 
 app.use('/api/v1/categories', CategoryRoute);
+app.use('/api/v1/mylots', getwinners);
+
 app.use('/api/v1/bid', bidingroute);
 
 app.use('/api/v1/splash', splashroute);
