@@ -22,6 +22,8 @@ const appfeatures = require('./routes/appfeatures');
 const splashroute = require('./routes/splashrouter');
 const bidingroute = require('./routes/bidroute');
 const getwinners = require('./routes/winnerroute');
+const notificationsroute = require('./routes/notificationsroute');
+
 
 
 
@@ -35,7 +37,7 @@ const path = require('path');
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
-app.use(cors())
+app.use(cors("*"))
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.json());
@@ -54,6 +56,8 @@ app.get('/', (req, res) => {
 
 
 app.use('/api/v1/categories', CategoryRoute);
+app.use('/api/v1/notifications', notificationsroute);
+
 app.use('/api/v1/mylots', getwinners);
 
 app.use('/api/v1/bid', bidingroute);
