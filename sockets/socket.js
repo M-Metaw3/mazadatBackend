@@ -1245,7 +1245,7 @@ const createAuctionNamespace = (io) => {
         ]);
     
         const totalBidAmount = totalBids.length ? totalBids[0].totalAmount : 0;
-        item.startPrice = totalBidAmount;
+        item.startPrice += totalBidAmount;
         ///////////////////////////////////////////////////////////
         // item.startPrice += amount;
 
