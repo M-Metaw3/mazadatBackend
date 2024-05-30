@@ -12,6 +12,8 @@ const router = express.Router();
 
 // router.get('/notifications/admin', depositController.getAdminNotifications);
 router.get('/:id',authMiddleware,notification.getusersNotifications );
+router.post('/:id',authMiddleware,notification.readallnotifications );
+
 
 
 module.exports = router;

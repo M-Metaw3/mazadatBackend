@@ -33,3 +33,22 @@ exports.getusersNotifications = async (req, res) => {
     }
   };
   
+
+  exports.readallnotifications = async (req, res) => {
+    try {
+    const {id}=req.params;
+    if(!id){
+      return res.status(400).json({error: "You are not authorized to view this content"});
+    }
+
+      const notify = await notification.updateMany({userId: req.params.id},{read: false},null,{multi: true}); 
+      if(!notify){
+        return res.status(400).json({error: "You are not authorized to view this content"});
+      }
+
+
+      res.status(200).json({meesage: "All notifications are read"});
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
