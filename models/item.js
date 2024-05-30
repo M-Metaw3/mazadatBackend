@@ -86,7 +86,7 @@
 
 // module.exports = mongoose.model('Item', itemSchema);
 const mongoose = require('mongoose');
-
+const bids =require('./Bid');
 const imageSchema = new mongoose.Schema({
   name: { type: String, required: true },
   path: { type: String, required: true },
@@ -143,5 +143,25 @@ const itemSchema = new mongoose.Schema({
   toObject: { virtuals: true },
   timestamps: true
 });
+// itemSchema.pre('findOneAndDelete', async function (next) {
+//   console.log(this._id)
+//   const Subcategory = mongoose.model('Bid');
+//   await Subcategory.deleteMany({ item: this._id });
 
+//   console.log("object",Subcategory)
+//   return ;
+// })
+
+
+itemSchema.pre('findOneAndDelete', async function (next) {
+  try {
+    const itemId = this.getQuery()._id;
+    console.log(itemId)
+    await bids.deleteMany({ item: itemId });
+    next();
+  } catch (err) {
+    console.log(err)
+    next(err);
+  }
+});
 module.exports = mongoose.model('Item', itemSchema);

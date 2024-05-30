@@ -88,11 +88,25 @@ subcategorySchema.pre('findOne', function(next) {
   next();
 });
 // Middleware to cascade delete items when a subcategory is deleted
+// subcategorySchema.pre('findOneAndDelete', async function (next) {
+//   const Item = mongoose.model('Item');
+//   await Item.deleteMany({ subcategoryId: this._id });
+//   next();
+// });
+
 subcategorySchema.pre('findOneAndDelete', async function (next) {
-  const Item = mongoose.model('Item');
-  await Item.deleteMany({ subcategoryId: this._id });
-  next();
+  try {
+    const itemId = this.getQuery()._id;
+    console.log(itemId)
+    await item.deleteMany({ subcategoryId: itemId });
+    next();
+  } catch (err) {
+    console.log(err)
+    next(err);
+  }
 });
+
+
 
 module.exports = mongoose.model('Subcategory', subcategorySchema);
 
