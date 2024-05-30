@@ -1254,7 +1254,7 @@ const createAuctionNamespace = (io) => {
         const twentyMinutes = 2 * 60 * 1000;
 
         if (timeRemaining <= tenMinutes) {
-          item.subcategoryId.endDate = new Date(now.getTime() + twentyMinutes);
+          item.subcategoryId.endDate = new Date(item.subcategoryId.endDate+ twentyMinutes);
 
           if (!socket.firstExtensionDone) {
             socket.firstExtensionDone = true;
