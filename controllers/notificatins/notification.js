@@ -41,7 +41,7 @@ exports.getusersNotifications = async (req, res) => {
       return res.status(400).json({error: "You are not authorized to view this content"});
     }
 
-      const notify = await notification.updateMany({userId: req.params.id},{read: false},null,{multi: true}); 
+      const notify = await notification.updateMany({userId: req.params.id},{read: true},null,{multi: true}); 
       if(!notify){
         return res.status(400).json({error: "You are not authorized to view this content"});
       }
