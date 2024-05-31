@@ -11,6 +11,7 @@ const winnerSchema = new mongoose.Schema({
 
   },
   timestamp: { type: Date, default: Date.now },
+  adminApproval: { type: Boolean, default: false }, 
 });
 
 module.exports = mongoose.model('Winner', winnerSchema);

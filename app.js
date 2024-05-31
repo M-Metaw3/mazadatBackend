@@ -23,6 +23,8 @@ const splashroute = require('./routes/splashrouter');
 const bidingroute = require('./routes/bidroute');
 const getwinners = require('./routes/winnerroute');
 const notificationsroute = require('./routes/notificationsroute');
+const testrout = require('./routes/testrouting');
+
 
 
 
@@ -57,6 +59,8 @@ app.get('/', (req, res) => {
 
 app.use('/api/v1/categories', CategoryRoute);
 app.use('/api/v1/notifications', notificationsroute);
+app.use('/api/v1/test', testrout);
+
 
 app.use('/api/v1/mylots', getwinners);
 

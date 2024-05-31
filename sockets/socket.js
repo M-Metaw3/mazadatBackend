@@ -1244,17 +1244,20 @@ const createAuctionNamespace = (io) => {
           { $group: { _id: null, totalAmount: { $sum: '$amount' } } }
         ]);
     
-        const totalBidAmount = totalBids.length ? totalBids[0].totalAmount : 0;
-        item.startPrice += totalBidAmount;
+        // const totalBidAmount = totalBids.length ? totalBids[0].totalAmount : 0;
+        item.startPrice += amount;
         ///////////////////////////////////////////////////////////
+
+   
         // item.startPrice += amount;
 
         const timeRemaining = item.subcategoryId.endDate - now;
         const tenMinutes = 10 * 60 * 1000;
         const twentyMinutes = 2 * 60 * 1000;
-
+  
         if (timeRemaining <= tenMinutes) {
-          item.subcategoryId.endDate = new Date(item.subcategoryId.endDate+ twentyMinutes);
+          item.subcategoryId.endDate = new Date(new Date(item.subcategoryId.endDate).getTime() + twentyMinutes).toISOString();
+          console.log('New end date:', item.subcategoryId.endDate);
 
           if (!socket.firstExtensionDone) {
             socket.firstExtensionDone = true;

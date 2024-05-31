@@ -511,9 +511,6 @@ console.log("object")
           status: 'winner',
         });
         await winnerEntry.save();
-// console.log(winnerEntry)
-// console.log("winnerEntry")
-
         // Mark the item as notified for the winner
         item.notifiedWinner = true;
         item.status = 'completed'; // Ensure this is a valid status
@@ -532,11 +529,11 @@ console.log("object")
       await Promise.all(endNotifications);
 
       for (const deposit of deposits) {
-        if (!winnerBid || !winnerBid.userId.equals(deposit.userId)||!subcategory.notifiedEnd) {
-          // Process refund for users who didn't win
           const user = await User.findById(deposit.userId);
+        if (!winnerBid || !winnerBid.userId.equals(deposit.userId)||!subcategory.notifiedEnd) {
+
           
-          
+
    
             user.walletBalance += parseInt(deposit.amount);
             user.walletTransactions.push({
