@@ -150,10 +150,11 @@ exports.getItemBidDetails = async (req, res) => {
 exports.getUserBidHistory = async (req, res) => {
     const userId = req.params.userId;
     console.log(userId);
-  
+    const statusFilter = req.query.status; 
+    console.log(statusFilter)// Get status filter from query parameters
     try {
       // Aggregate user bids
-      const bidHistory = await Bid.aggregate([
+      let bidHistory = await Bid.aggregate([
         { $match: { userId: new mongoose.Types.ObjectId(userId) } },
         {
           $group: {
@@ -213,8 +214,10 @@ exports.getUserBidHistory = async (req, res) => {
           },
         },
       ]);
-  
-      res.status(200).json({ bidHistory });
+      if (statusFilter) {
+        bidHistory = bidHistory.filter(bid => bid.status === statusFilter);
+      }
+      res.status(200).json({ count:bidHistory?.length,bidHistory });
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Internal server error' });
