@@ -147,79 +147,169 @@ exports.getItemBidDetails = async (req, res) => {
 
 
 
+// exports.getUserBidHistory = async (req, res) => {
+//     const userId = req.params.userId;
+//     console.log(userId);
+//     const statusFilter = req.query.status; 
+//     console.log(statusFilter)// Get status filter from query parameters
+//     try {
+//       // Aggregate user bids
+//       let bidHistory = await Bid.aggregate([
+//         { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+//         {
+//           $group: {
+//             _id: "$item",
+//             bids: { $push: "$$ROOT" },
+//             totalAmount: { $sum: "$amount" },
+//           },
+//         },
+//         {
+//           $lookup: {
+//             from: 'items',
+//             localField: '_id',
+//             foreignField: '_id',
+//             as: 'item',
+//           },
+//         },
+//         { $unwind: "$item" },
+//         {
+//           $lookup: {
+//             from: 'winners',
+//             let: { itemId: "$_id", userId: new mongoose.Types.ObjectId(userId) },
+//             pipeline: [
+//               { $match: { $expr: { $and: [{ $eq: ["$itemId", "$$itemId"] }, { $eq: ["$userId", "$$userId"] }] } } },
+//               { $project: { status: 1, adminApproval: 1 } },
+//             ],
+//             as: 'winner',
+//           },
+//         },
+//         { $unwind: { path: "$winner", preserveNullAndEmptyArrays: true } },
+//         {
+//           $addFields: {
+//             status: {
+//               $switch: {
+//                 branches: [
+//                   // If item is cancelled
+//                   { case: { $eq: ["$item.status", "cancelled"] }, then: "cancelled" },
+//                   // If item is completed and user is a winner and admin approval is true
+//                   { case: { $and: [{ $eq: ["$item.status", "completed"] }, { $eq: ["$winner.status", "winner"] }, { $eq: ["$winner.adminApproval", true] }] }, then: "winner" },
+//                   // If item is completed and user is a winner but admin approval is false
+//                   { case: { $and: [{ $eq: ["$item.status", "completed"] }, { $eq: ["$winner.status", "winner"] }, { $eq: ["$winner.adminApproval", false] }] }, then: "winner pending for admin approval" },
+//                   // If item is completed and user is a loser
+//                   { case: { $and: [{ $eq: ["$item.status", "completed"] }, { $eq: ["$winner.status", "loser"] }] }, then: "loser" },
+//                   // If item is in progress
+//                   { case: { $eq: ["$item.status", "inprogress"] }, then: "inprogress" },
+//                 ],
+//                 default: "inprogress",
+//               },
+//             },
+//           },
+//         },
+//         {
+//           $project: {
+//             _id: 0,
+//             item: 1,
+//             totalAmount: 1,
+//             status: 1,
+//           },
+//         },
+//       ]);
+//       if (statusFilter) {
+//         bidHistory = bidHistory.filter(bid => bid.status === statusFilter);
+//       }
+//       res.status(200).json({ count:bidHistory?.length,bidHistory });
+//     } catch (error) {
+//       console.error(error);
+//       res.status(500).json({ message: 'Internal server error' });
+//     }
+//   };
+
 exports.getUserBidHistory = async (req, res) => {
-    const userId = req.params.userId;
-    console.log(userId);
-    const statusFilter = req.query.status; 
-    console.log(statusFilter)// Get status filter from query parameters
-    try {
-      // Aggregate user bids
-      let bidHistory = await Bid.aggregate([
-        { $match: { userId: new mongoose.Types.ObjectId(userId) } },
-        {
-          $group: {
-            _id: "$item",
-            bids: { $push: "$$ROOT" },
-            totalAmount: { $sum: "$amount" },
-          },
+  const userId = req.params.userId;
+  const statusFilter = req.query.status; // Get status filter from query parameters
+
+  console.log(userId);
+
+  try {
+    // Aggregate user bids
+    let bidHistory = await Bid.aggregate([
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      {
+        $group: {
+          _id: "$item",
+          bids: { $push: "$$ROOT" },
+          totalAmount: { $sum: "$amount" },
         },
-        {
-          $lookup: {
-            from: 'items',
-            localField: '_id',
-            foreignField: '_id',
-            as: 'item',
-          },
+      },
+      {
+        $lookup: {
+          from: 'items',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'item',
         },
-        { $unwind: "$item" },
-        {
-          $lookup: {
-            from: 'winners',
-            let: { itemId: "$_id", userId: new mongoose.Types.ObjectId(userId) },
-            pipeline: [
-              { $match: { $expr: { $and: [{ $eq: ["$itemId", "$$itemId"] }, { $eq: ["$userId", "$$userId"] }] } } },
-              { $project: { status: 1, adminApproval: 1 } },
-            ],
-            as: 'winner',
-          },
+      },
+      { $unwind: "$item" },
+      {
+        $lookup: {
+          from: 'winners',
+          let: { itemId: "$_id", userId: new mongoose.Types.ObjectId(userId) },
+          pipeline: [
+            { $match: { $expr: { $and: [{ $eq: ["$itemId", "$$itemId"] }, { $eq: ["$userId", "$$userId"] }] } } },
+            { $project: { status: 1, adminApproval: 1 } },
+          ],
+          as: 'winner',
         },
-        { $unwind: { path: "$winner", preserveNullAndEmptyArrays: true } },
-        {
-          $addFields: {
-            status: {
-              $switch: {
-                branches: [
-                  // If item is cancelled
-                  { case: { $eq: ["$item.status", "cancelled"] }, then: "cancelled" },
-                  // If item is completed and user is a winner and admin approval is true
-                  { case: { $and: [{ $eq: ["$item.status", "completed"] }, { $eq: ["$winner.status", "winner"] }, { $eq: ["$winner.adminApproval", true] }] }, then: "winner" },
-                  // If item is completed and user is a winner but admin approval is false
-                  { case: { $and: [{ $eq: ["$item.status", "completed"] }, { $eq: ["$winner.status", "winner"] }, { $eq: ["$winner.adminApproval", false] }] }, then: "winner pending for admin approval" },
-                  // If item is completed and user is a loser
-                  { case: { $and: [{ $eq: ["$item.status", "completed"] }, { $eq: ["$winner.status", "loser"] }] }, then: "loser" },
-                  // If item is in progress
-                  { case: { $eq: ["$item.status", "inprogress"] }, then: "inprogress" },
-                ],
-                default: "inprogress",
-              },
+      },
+      { $unwind: { path: "$winner", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: 'subcategories',
+          localField: 'item.subcategoryId',
+          foreignField: '_id',
+          as: 'item.subcategory',
+        },
+      },
+      { $unwind: { path: '$item.subcategory', preserveNullAndEmptyArrays: true } },
+      {
+        $addFields: {
+          status: {
+            $switch: {
+              branches: [
+                // If item is cancelled
+                { case: { $eq: ["$item.status", "cancelled"] }, then: "cancelled" },
+                // If item is completed and user is a winner and admin approval is true
+                { case: { $and: [{ $eq: ["$item.status", "completed"] }, { $eq: ["$winner.status", "winner"] }, { $eq: ["$winner.adminApproval", true] }] }, then: "winner" },
+                // If item is completed and user is a winner but admin approval is false
+                { case: { $and: [{ $eq: ["$item.status", "completed"] }, { $eq: ["$winner.status", "winner"] }, { $eq: ["$winner.adminApproval", false] }] }, then: "winner pending for admin approval" },
+                // If item is completed and user is a loser
+                { case: { $and: [{ $eq: ["$item.status", "completed"] }, { $eq: ["$winner.status", "loser"] }] }, then: "loser" },
+                // If item is in progress
+                { case: { $eq: ["$item.status", "inprogress"] }, then: "inprogress" },
+              ],
+              default: "inprogress",
             },
           },
         },
-        {
-          $project: {
-            _id: 0,
-            item: 1,
-            totalAmount: 1,
-            status: 1,
-          },
+      },
+      {
+        $project: {
+          _id: 0,
+          item: 1,
+          totalAmount: 1,
+          status: 1,
         },
-      ]);
-      if (statusFilter) {
-        bidHistory = bidHistory.filter(bid => bid.status === statusFilter);
-      }
-      res.status(200).json({ count:bidHistory?.length,bidHistory });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Internal server error' });
+      },
+    ]);
+
+    // Filter the bid history based on the status if the status filter is provided
+    if (statusFilter) {
+      bidHistory = bidHistory.filter(bid => bid.status === statusFilter);
     }
-  };
+
+    res.status(200).json({ bidHistory });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};

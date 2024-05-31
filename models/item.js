@@ -152,7 +152,6 @@ const itemSchema = new mongoose.Schema({
 //   return ;
 // })
 
-
 itemSchema.pre('findOneAndDelete', async function (next) {
   try {
     const itemId = this.getQuery()._id;
