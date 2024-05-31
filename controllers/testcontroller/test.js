@@ -307,7 +307,7 @@ exports.getUserBidHistory = async (req, res) => {
       bidHistory = bidHistory.filter(bid => bid.status === statusFilter);
     }
 
-    res.status(200).json({ bidHistory });
+    res.status(200).json({ status:"success",count:bidHistory?.length,bidHistory });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
