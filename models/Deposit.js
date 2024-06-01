@@ -92,7 +92,7 @@ const depositSchema = new mongoose.Schema({
       required: [true, 'Please upload an image for the Category!'],
       unique: true
   },
-  status: { type: String, enum: ['pending', 'approved', 'rejected', 'refunded'], default: 'pending' },
+  status: { type: String, enum: ['pending', 'approved', 'rejected', 'refunded','winner'], default: 'pending' },
   billingmethod: { type: String, enum: ['fawry', 'cash', 'instapay'], required: true },
   seenByadmin: { type: Boolean, default: false },
   seenByuser: { type: Boolean, default: false, select: false },

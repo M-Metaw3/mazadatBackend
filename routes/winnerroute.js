@@ -8,6 +8,8 @@ const authMiddleware = require('../middleware/authMiddleware');
 // router.post('/',DepositController.createDeposit);
 // router.get('/', DepositController.getAllDeposit);
 router.get('/:userId',authMiddleware, winnercontroller.getUserBidHistory);
+router.get('/:userId/:itemId', winnercontroller.getItemBidDetails);
+
 
 
 

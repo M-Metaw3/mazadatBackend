@@ -26,11 +26,6 @@ exports.getCategory = async (req, res) => {
       subcategory = await CategorySchema.findById(id).populate('items');
     }
 
-    // return res.status(200).json({
-    //   depositStatus: deposit ? deposit.status : 'false',
-    //   subcategory: deposit ? deposit.item : subcategory
-    // });
-
     return    res.status(200).json({
       status: 'success',
       data: {

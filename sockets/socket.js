@@ -1225,7 +1225,10 @@ const createAuctionNamespace = (io) => {
           socket.emit('bidError', 'The auction for this item has ended.');
           return;
         }
-
+        if (now < item.subcategoryId.startDate) {
+          socket.emit('bidError', 'The auction for this item not started.');
+          return;
+        }
         if (amount < item.minBidIncrement) {
           socket.emit('bidError', `Bid amount must be greater than or equal to the minimum bid amount (${item.minBidIncrement}).`);
           return;

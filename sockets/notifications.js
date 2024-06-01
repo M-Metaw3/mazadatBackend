@@ -421,6 +421,361 @@ const createNotificationNamespace = (io) => {
 
 
 
+// const notifyAuctionEvents = async (notificationNamespace) => {
+//   const now = new Date();
+
+//   // Step 1: Check for auctions that are starting
+//   const startingSubcategories = await Subcategory.find({ startDate: { $lte: now }, notifiedStart: { $ne: true } });
+
+//   for (const subcategory of startingSubcategories) {
+//     const deposits = await Deposit.find({ item: subcategory._id, status: 'approved' });
+
+//     // Send notification to each user with an approved deposit
+//     const startNotifications = deposits.map(deposit => {
+//       const notification = new Notification({
+//         userId: deposit.userId,
+//         message: `The auction for subcategory ${subcategory.name} has started.`,
+//         itemId: subcategory._id,
+//       });
+//       return notification.save();
+//     });
+//     await Promise.all(startNotifications);
+
+//     // Mark the subcategory as notified for the start
+//     subcategory.notifiedStart = true;
+//     await subcategory.save();
+
+//     // Emit real-time notification to each user
+//     deposits.forEach(deposit => {
+//       notificationNamespace.to(`user_${deposit.userId._id}`).emit('notification', {
+//         message: `The auction for subcategory ${subcategory.name} has started and will end at ${subcategory.endDate.toLocaleTimeString()}.`,
+//         subcategory: subcategory,
+//       });
+//     });
+//   }
+
+//   // Step 2: Check for auctions that are ending
+//   const endingSubcategories = await Subcategory.find({ endDate: { $lte: now }, notifiedEnd: { $ne: true } });
+//   for (const subcategory of endingSubcategories) {
+//     const items = await Item.find({ subcategoryId: subcategory._id });
+//     const deposits = await Deposit.find({ item: subcategory._id, status: 'approved' });
+
+//     for (const item of items) {
+//       // Find the highest bid for the item to determine the winner
+//       const bids = await Bid.find({ item: item._id }).sort({ amount: -1 });
+//       const winnerBid = bids[0];
+
+//       // Calculate total bids for each user
+//       const userBids = {};
+//       bids.forEach(bid => {
+//         if (!userBids[bid.userId]) userBids[bid.userId] = 0;
+//         userBids[bid.userId] += bid.amount;
+//       });
+
+//       // Check if the start price equals the sum of all bids for each user
+//       let winnerUserId = null;
+//       for (const [userId, totalBid] of Object.entries(userBids)) {
+//         // Calculate commission (assuming commission1, commission2, commission3 are defined)
+//         const commission1 = item.startPrice * (item.commission1 / 100);
+//         const commission2 = item.startPrice * (item.commission2 / 100);
+//         const commission3 = item.startPrice * (item.commission3 / 100);
+//         const totalAfterCommission = parseInt(item.startPrice) + commission1 + commission2 + commission3;
+//         console.log(totalAfterCommission)
+//         const depositAmount = deposits.find(deposit => deposit.userId.equals(userId))?.amount || 0;
+
+//         // Ensure the start price is the same as the total calculated bids minus deposit
+//         if (item.startPrice) {
+//           winnerUserId = userId;
+//           break;
+//         }
+//       }
+
+//       if (winnerBid && winnerUserId && winnerBid.userId.equals(winnerUserId)&&!item.notifiedWinner) {
+//         // Notify the winner
+//         const winnerNotification = new Notification({
+//           userId: winnerBid.userId,
+//           message: `Congratulations! You have won the auction for item ${item.name} in subcategory ${subcategory.name} with a bid of ${winnerBid.amount}.`,
+//           itemId: item._id,
+//         });
+//         await winnerNotification.save();
+
+//         // Emit real-time notification to the winner
+//         notificationNamespace.to(`user_${winnerBid.userId}`).emit('notification', {
+//           message: `Congratulations! You have won the auction for item ${item.name} in subcategory ${subcategory.name} with a bid of ${winnerBid.amount}.`,
+//         });
+// console.log("object")
+//         // Save the winner details
+//         const winnerEntry = new Winner({
+//           userId: winnerBid.userId,
+//           itemId: item._id,
+//           amount: winnerBid.amount,
+//           status: 'winner',
+//         });
+//         await winnerEntry.save();
+//         // Mark the item as notified for the winner
+//         item.notifiedWinner = true;
+//         item.status = 'completed'; // Ensure this is a valid status
+//         await item.save();
+//       }
+
+//       // Notify all users about the auction end
+//       const endNotifications = deposits.map(deposit => {
+//         const notification = new Notification({
+//           userId: deposit.userId,
+//           message: `The auction for item ${item.name} in subcategory ${subcategory.name} has ended.`,
+//           itemId: item._id,
+//         });
+//         return notification.save();
+//       });
+//       await Promise.all(endNotifications);
+
+//       for (const deposit of deposits) {
+//           const user = await User.findById(deposit.userId);
+//         if (!winnerBid || !winnerBid.userId.equals(deposit.userId)||!subcategory.notifiedEnd) {
+
+          
+
+   
+//             user.walletBalance += parseInt(deposit.amount);
+//             user.walletTransactions.push({
+//               amount: deposit.amount,
+//               type: 'refund',
+//               description: `Refund for item ${item.name} in subcategory ${subcategory.name}`,
+//             });
+
+//             console.log(`User ${user._id} wallet balance updated. New balance: ${user.walletBalance}`);
+            
+//             await user.save();
+//             console.log(user)
+//             console.log("user")
+
+      
+
+//           // Update deposit status to 'refunded'
+//        /////////////////////////////////////////////////////////////////////////////////////////////
+//           // deposit.status = 'refunded';
+//           // await deposit.save({validateBeforeSave: false});
+//           // console.log(deposit.userId._id)
+//           // await user.save({ validateBeforeSave: false });
+//      ///////////////////////////////////////////////////////////////
+//           // Emit real-time notification about the refund
+
+          
+//           notificationNamespace.to(`user_${deposit.userId._id}`).emit('notification', {
+//             message: `The auction for item ${item.name} in subcategory ${subcategory.name} has ended. Your deposit has been refunded.`,
+//           });
+//           const loserEntry = new Winner({
+//             userId: deposit.userId,
+//             itemId: item._id,
+//             amount: deposit.amount,
+//             status: 'loser',
+//           });
+//           await loserEntry.save();
+//           item.notifiedLosers = true;
+//           await item.save();
+//         }
+//       }
+
+//     }
+
+//     // Mark the subcategory as notified for the end
+//     subcategory.notifiedEnd = true;
+//     await subcategory.save();
+
+//     // Emit real-time notification to all users about the auction end
+//     deposits.forEach(deposit => {
+//       notificationNamespace.to(`user_${deposit.userId._id}`).emit('notification', {
+//         message: `The auction for subcategory ${subcategory.name} has ended.`,
+//       });
+
+//     });
+
+//   }
+// };
+
+
+// const setupNotificationInterval = (notificationNamespace) => {
+//   setInterval(() => notifyAuctionEvents(notificationNamespace), 10 * 1000);
+// };
+
+// module.exports = {
+//   createNotificationNamespace,
+//   setupNotificationInterval,
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// const notifyAuctionEvents = async (notificationNamespace) => {
+//   const now = new Date();
+
+//   // Step 1: Check for auctions that are starting
+//   const startingSubcategories = await Subcategory.find({ startDate: { $lte: now }, notifiedStart: { $ne: true } });
+// console.log(startingSubcategories)
+//   for (const subcategory of startingSubcategories) {
+//     const deposits = await Deposit.find({ item: subcategory._id, status: 'approved' });
+
+//     // Send notification to each user with an approved deposit
+//     const startNotifications = deposits.map(deposit => {
+//       const notification = new Notification({
+//         userId: deposit.userId,
+//         message: `The auction for subcategory ${subcategory.name} has started.`,
+//         itemId: subcategory._id,
+//       });
+//       return notification.save();
+//     });
+//     await Promise.all(startNotifications);
+
+//     // Mark the subcategory as notified for the start
+//     subcategory.notifiedStart = true;
+//     await subcategory.save();
+
+//     // Emit real-time notification to each user
+//     deposits.forEach(deposit => {
+//       notificationNamespace.to(`user_${deposit.userId._id}`).emit('notification', {
+//         message: `The auction for subcategory ${subcategory.name} has started and will end at ${subcategory.endDate.toLocaleTimeString()}.`,
+//         subcategory: subcategory,
+//       });
+//     });
+//   }
+
+//   // Step 2: Check for auctions that are ending
+//   const endingSubcategories = await Subcategory.find({ endDate: { $lte: now }, notifiedEnd: { $ne: true } });
+//   for (const subcategory of endingSubcategories) {
+//     const items = await Item.find({ subcategoryId: subcategory._id });
+//     const deposits = await Deposit.find({ item: subcategory._id, status: 'approved' });
+
+//     for (const item of items) {
+//       // Find the highest bid for the item to determine the winner
+//       const bids = await Bid.find({ item: item._id }).sort({ amount: -1 });
+//       const winnerBid = bids[0];
+
+//       if (winnerBid) {
+//         const userId = winnerBid.userId;
+//         const depositAmount = deposits.find(deposit => deposit.userId.equals(userId))?.amount || 0;
+
+//         // Calculate commission based on start price
+//         const commission1 = item.startPrice * (item.commission1 / 100);
+//         const commission2 = item.startPrice * (item.commission2 / 100);
+//         const commission3 = item.startPrice * (item.commission3 / 100);
+//         const totalAfterCommission = parseInt(item.startPrice) + commission1 + commission2 + commission3;
+//         const winnerAmount = totalAfterCommission - depositAmount;
+
+//         if (!item.notifiedWinner) {
+//           // Notify the winner
+//           const winnerNotification = new Notification({
+//             userId: winnerBid.userId,
+//             message: `Congratulations! You have won the auction for item ${item.name} in subcategory ${subcategory.name} with a bid of ${winnerBid.amount}.`,
+//             itemId: item._id,
+//           });
+//           await winnerNotification.save();
+
+//           // Emit real-time notification to the winner
+//           notificationNamespace.to(`user_${winnerBid.userId}`).emit('notification', {
+//             message: `Congratulations! You have won the auction for item ${item.name} in subcategory ${subcategory.name} with a bid of ${winnerBid.amount}.`,
+//           });
+
+//           // Save the winner details
+//           const winnerEntry = new Winner({
+//             userId: winnerBid.userId,
+//             itemId: item._id,
+//             amount: winnerAmount,
+//             status: 'winner',
+//           });
+//           await winnerEntry.save();
+
+//           // Mark the item as notified for the winner
+//           item.notifiedWinner = true;
+//           item.status = 'completed'; // Ensure this is a valid status
+//           await item.save();
+//         }
+//       }
+
+//       // Notify all users about the auction end
+//       const endNotifications = deposits.map(deposit => {
+//         const notification = new Notification({
+//           userId: deposit.userId,
+//           message: `The auction for item ${item.name} in subcategory ${subcategory.name} has ended.`,
+//           itemId: item._id,
+//         });
+//         return notification.save();
+//       });
+//       await Promise.all(endNotifications);
+
+//       for (const deposit of deposits) {
+//         const user = await User.findById(deposit.userId);
+//         if (!winnerBid || !winnerBid.userId.equals(deposit.userId) || !subcategory.notifiedEnd) {
+//           user.walletBalance += parseInt(deposit.amount);
+//           user.walletTransactions.push({
+//             amount: deposit.amount,
+//             type: 'refund',
+//             description: `Refund for item ${item.name} in subcategory ${subcategory.name}`,
+//           });
+
+//           console.log(`User ${user._id} wallet balance updated. New balance: ${user.walletBalance}`);
+//           await user.save();
+
+//           // Update deposit status to 'refunded'
+//           // deposit.status = 'refunded';
+//           // await deposit.save({ validateBeforeSave: false });
+
+//           // Emit real-time notification about the refund
+//           notificationNamespace.to(`user_${deposit.userId._id}`).emit('notification', {
+//             message: `The auction for item ${item.name} in subcategory ${subcategory.name} has ended. Your deposit has been refunded.`,
+//           });
+
+//           const loserEntry = new Winner({
+//             userId: deposit.userId,
+//             itemId: item._id,
+//             amount: deposit.amount,
+//             status: 'loser',
+//           });
+//           await loserEntry.save();
+//           item.notifiedLosers = true;
+//           await item.save();
+//         }
+//       }
+//     }
+
+//     // Mark the subcategory as notified for the end
+//     subcategory.notifiedEnd = true;
+//     await subcategory.save();
+
+//     // Emit real-time notification to all users about the auction end
+//     deposits.forEach(deposit => {
+//       notificationNamespace.to(`user_${deposit.userId._id}`).emit('notification', {
+//         message: `The auction for subcategory ${subcategory.name} has ended.`,
+//       });
+//     });
+//   }
+// };
+
+// const setupNotificationInterval = (notificationNamespace) => {
+//   setInterval(() => notifyAuctionEvents(notificationNamespace), 10 * 1000);
+// };
+
+// module.exports = {
+//   createNotificationNamespace,
+//   setupNotificationInterval,
+// };
+
+
+
+
+
 const notifyAuctionEvents = async (notificationNamespace) => {
   const now = new Date();
 
@@ -428,7 +783,7 @@ const notifyAuctionEvents = async (notificationNamespace) => {
   const startingSubcategories = await Subcategory.find({ startDate: { $lte: now }, notifiedStart: { $ne: true } });
 
   for (const subcategory of startingSubcategories) {
-    const deposits = await Deposit.find({ item: subcategory._id, status: 'approved' });
+    const deposits = await Deposit.find({ item: subcategory._id });
 
     // Send notification to each user with an approved deposit
     const startNotifications = deposits.map(deposit => {
@@ -465,104 +820,78 @@ const notifyAuctionEvents = async (notificationNamespace) => {
       const bids = await Bid.find({ item: item._id }).sort({ amount: -1 });
       const winnerBid = bids[0];
 
-      // Calculate total bids for each user
-      const userBids = {};
-      bids.forEach(bid => {
-        if (!userBids[bid.userId]) userBids[bid.userId] = 0;
-        userBids[bid.userId] += bid.amount;
-      });
-
-      // Check if the start price equals the sum of all bids for each user
-      let winnerUserId = null;
-      for (const [userId, totalBid] of Object.entries(userBids)) {
-        // Calculate commission (assuming commission1, commission2, commission3 are defined)
-        const commission1 = totalBid * 0.01;
-        const commission2 = totalBid * 0.02;
-        const commission3 = totalBid * 0.03;
-        const totalAfterCommission = totalBid - (commission1 + commission2 + commission3);
+      if (winnerBid) {
+        const userId = winnerBid.userId;
         const depositAmount = deposits.find(deposit => deposit.userId.equals(userId))?.amount || 0;
 
-        // Ensure the start price is the same as the total calculated bids minus deposit
-        if (item.startPrice) {
-          winnerUserId = userId;
-          break;
+        // Calculate commission based on start price
+        const commission1 = item.startPrice * (item.commission1 / 100);
+        const commission2 = item.startPrice * (item.commission2 / 100);
+        const commission3 = item.startPrice * (item.commission3 / 100);
+        const totalAfterCommission = parseInt(item.startPrice) + commission1 + commission2 + commission3;
+        const winnerAmount = totalAfterCommission - depositAmount;
+
+        if (!item.notifiedWinner) {
+          // Notify the winner
+          const winnerNotification = new Notification({
+            userId: winnerBid.userId,
+            message: `Congratulations! You have won the auction for item ${item.name} in subcategory ${subcategory.name} with a bid of ${winnerBid.amount}.`,
+            itemId: item._id,
+          });
+          await winnerNotification.save();
+
+          // Emit real-time notification to the winner
+          notificationNamespace.to(`user_${winnerBid.userId}`).emit('notification', {
+            message: `Congratulations! You have won the auction for item ${item.name} in subcategory ${subcategory.name} with a bid of ${winnerBid.amount}.`,
+          });
+
+          // Save the winner details
+          const winnerEntry = new Winner({
+            userId: winnerBid.userId,
+            itemId: item._id,
+            amount: winnerAmount,
+            status: 'winner',
+          });
+          await winnerEntry.save();
+
+          // Update the winner's deposit status to 'winner'
+          const winnerDeposit = deposits.find(deposit => deposit.userId.equals(winnerBid.userId));
+          console.log(winnerDeposit)
+          if (winnerDeposit) {
+            winnerDeposit.status = 'winner';
+            await winnerDeposit.save({ validateBeforeSave: false });
+          }
+
+          // Mark the item as notified for the winner
+          item.notifiedWinner = true;
+          item.status = 'completed'; // Ensure this is a valid status
+          await item.save();
         }
       }
 
-      if (winnerBid && winnerUserId && winnerBid.userId.equals(winnerUserId)&&!item.notifiedWinner) {
-        // Notify the winner
-        const winnerNotification = new Notification({
-          userId: winnerBid.userId,
-          message: `Congratulations! You have won the auction for item ${item.name} in subcategory ${subcategory.name} with a bid of ${winnerBid.amount}.`,
-          itemId: item._id,
-        });
-        await winnerNotification.save();
-
-        // Emit real-time notification to the winner
-        notificationNamespace.to(`user_${winnerBid.userId}`).emit('notification', {
-          message: `Congratulations! You have won the auction for item ${item.name} in subcategory ${subcategory.name} with a bid of ${winnerBid.amount}.`,
-        });
-console.log("object")
-        // Save the winner details
-        const winnerEntry = new Winner({
-          userId: winnerBid.userId,
-          itemId: item._id,
-          amount: winnerBid.amount,
-          status: 'winner',
-        });
-        await winnerEntry.save();
-        // Mark the item as notified for the winner
-        item.notifiedWinner = true;
-        item.status = 'completed'; // Ensure this is a valid status
-        await item.save();
-      }
-
-      // Notify all users about the auction end
-      const endNotifications = deposits.map(deposit => {
-        const notification = new Notification({
-          userId: deposit.userId,
-          message: `The auction for item ${item.name} in subcategory ${subcategory.name} has ended.`,
-          itemId: item._id,
-        });
-        return notification.save();
-      });
-      await Promise.all(endNotifications);
-
+      // Refund all users except the winner
       for (const deposit of deposits) {
-          const user = await User.findById(deposit.userId);
-        if (!winnerBid || !winnerBid.userId.equals(deposit.userId)||!subcategory.notifiedEnd) {
+        const user = await User.findById(deposit.userId);
+        if (!winnerBid || !winnerBid.userId.equals(deposit.userId)) {
+          user.walletBalance += parseInt(deposit.amount);
+          user.walletTransactions.push({
+            amount: deposit.amount,
+            type: 'refund',
+            description: `Refund for item ${item.name} in subcategory ${subcategory.name}`,
+          });
 
-          
-
-   
-            user.walletBalance += parseInt(deposit.amount);
-            user.walletTransactions.push({
-              amount: deposit.amount,
-              type: 'refund',
-              description: `Refund for item ${item.name} in subcategory ${subcategory.name}`,
-            });
-
-            console.log(`User ${user._id} wallet balance updated. New balance: ${user.walletBalance}`);
-            
-            await user.save();
-            console.log(user)
-            console.log("user")
-
-      
+          console.log(`User ${user._id} wallet balance updated. New balance: ${user.walletBalance}`);
+          await user.save();
 
           // Update deposit status to 'refunded'
-       /////////////////////////////////////////////////////////////////////////////////////////////
           // deposit.status = 'refunded';
-          // await deposit.save({validateBeforeSave: false});
-          // console.log(deposit.userId._id)
-          // await user.save({ validateBeforeSave: false });
-     ///////////////////////////////////////////////////////////////
-          // Emit real-time notification about the refund
+          // await deposit.save({ validateBeforeSave: false });
 
-          
+          // Emit real-time notification about the refund
           notificationNamespace.to(`user_${deposit.userId._id}`).emit('notification', {
             message: `The auction for item ${item.name} in subcategory ${subcategory.name} has ended. Your deposit has been refunded.`,
           });
+
           const loserEntry = new Winner({
             userId: deposit.userId,
             itemId: item._id,
@@ -574,7 +903,6 @@ console.log("object")
           await item.save();
         }
       }
-
     }
 
     // Mark the subcategory as notified for the end
@@ -586,12 +914,9 @@ console.log("object")
       notificationNamespace.to(`user_${deposit.userId._id}`).emit('notification', {
         message: `The auction for subcategory ${subcategory.name} has ended.`,
       });
-
     });
-
   }
 };
-
 
 const setupNotificationInterval = (notificationNamespace) => {
   setInterval(() => notifyAuctionEvents(notificationNamespace), 10 * 1000);
@@ -601,18 +926,4 @@ module.exports = {
   createNotificationNamespace,
   setupNotificationInterval,
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
