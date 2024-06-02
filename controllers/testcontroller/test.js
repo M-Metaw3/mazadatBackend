@@ -570,6 +570,14 @@ exports.getItemBidDetails = async (req, res) => {
       { $unwind: "$item" },
       {
         $lookup: {
+          from: 'subcategories',
+          localField: 'item.subcategoryId',
+          foreignField: '_id',
+          as: 'item.subcategory',
+        },
+      },
+      {
+        $lookup: {
           from: 'deposits',
           let: { itemId: "$_id", userId: userId },
           pipeline: [

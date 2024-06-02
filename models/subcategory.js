@@ -77,6 +77,7 @@ subcategorySchema.pre('find', async function(next) {
 });
 
 subcategorySchema.pre('find', async function(next) {
+  this.select('-files')
   this.populate({
     path: 'items',
     select: 'name startDate endDate coverphoto'})

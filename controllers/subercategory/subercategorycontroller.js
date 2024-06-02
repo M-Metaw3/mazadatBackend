@@ -3,6 +3,7 @@ const CategorySchema = require('../../models/subcategory');
 const Subcategory = require('../../models/subcategory');
 const Deposit = require('../../models/Deposit');
 const Item = require('../../models/item');
+const Booking = require('../../models/bookenigfile'); // Adjust the path as needed
 
 const APIFeatures = require('../../utils/apiFeatures');
 const catchAsync = require('../../utils/catchAsync');
@@ -10,34 +11,84 @@ const factory = require('../../utils/apiFactory');
 
 
 exports.getAllCategory = factory.getAll(CategorySchema);
+// exports.getCategory = async (req, res) => {
+//   const { id } = req.params;
+//   const userId = req.user ? req.user._id : null;
+//   try {
+//     let deposit = null;
+//     let subcategory = null;
+
+//     if (userId) {
+//       deposit = await Deposit.findOne({ userId:userId, item: id }).populate('item');
+//       console.log(deposit)
+//     }
+
+//     if (!deposit) {
+//       subcategory = await CategorySchema.findById(id).populate('items');
+//     }
+
+//     return    res.status(200).json({
+//       status: 'success',
+//       data: {
+//         depositStatus: deposit ? deposit.status : 'false',
+//         subcategory: deposit ? deposit.item : subcategory
+//       }
+//     });
+//   } catch (error) {
+//     console.log(error)
+//     return res.status(500).json({ error: 'An error occurred' });
+//   }
+// };
+
+
+
+
+
+
+
 exports.getCategory = async (req, res) => {
   const { id } = req.params;
   const userId = req.user ? req.user._id : null;
+
   try {
-    let deposit = null;
     let subcategory = null;
+    let depositStatus = 'false';
+    let bookingStatus = 'false';
 
     if (userId) {
-      deposit = await Deposit.findOne({ userId:userId, item: id }).populate('item');
-      console.log(deposit)
+      const booking = await Booking.findOne({ userId: userId, item: id }).populate('item');
+      
+      if (booking && booking.status === 'approved') {
+        bookingStatus = 'true';
+        subcategory = await Subcategory.findById(id).populate('items');
+
+        const deposit = await Deposit.findOne({ userId: userId, item: id });
+        if (deposit) {
+          depositStatus = deposit.status;
+        }
+      } else {
+        // User has no approved booking or no booking at all
+        subcategory = await Subcategory.findById(id).select('-files').populate('items');
+      }
+    } else {
+      // User is not logged in, return subcategory without files and set statuses to false
+      subcategory = await Subcategory.findById(id).select('-files').populate('items');
     }
 
-    if (!deposit) {
-      subcategory = await CategorySchema.findById(id).populate('items');
-    }
-
-    return    res.status(200).json({
+    return res.status(200).json({
       status: 'success',
       data: {
-        depositStatus: deposit ? deposit.status : 'false',
-        subcategory: deposit ? deposit.item : subcategory
+        depositStatus,
+        bookingStatus,
+        subcategory
       }
     });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.status(500).json({ error: 'An error occurred' });
   }
 };
+
 exports.createCategory = factory.createOne(CategorySchema);
 exports.updateCategory = factory.updateOne(CategorySchema);
 exports.deleteCategory = factory.deleteOne(CategorySchema);

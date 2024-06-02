@@ -830,7 +830,10 @@ const notifyAuctionEvents = async (notificationNamespace) => {
         const commission3 = item.startPrice * (item.commission3 / 100);
         const totalAfterCommission = parseInt(item.startPrice) + commission1 + commission2 + commission3;
         const winnerAmount = totalAfterCommission - depositAmount;
-
+        if (isNaN(winnerAmount)) {
+          console.error(`winnerAmount is NaN for item ${item._id}, user ${userId}`);
+          continue; // Skip this item if winnerAmount is NaN
+        }
         if (!item.notifiedWinner) {
           // Notify the winner
           const winnerNotification = new Notification({
