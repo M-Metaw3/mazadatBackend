@@ -151,6 +151,8 @@ const itemSchema = new mongoose.Schema({
 //   console.log("object",Subcategory)
 //   return ;
 // })
+itemSchema.index({ subcategoryId: 1 });
+itemSchema.index({ startPrice: 1 });
 
 itemSchema.pre('findOneAndDelete', async function (next) {
   try {

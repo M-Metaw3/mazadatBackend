@@ -160,7 +160,7 @@ const getallusers = factory.getAll(User);
 
 const registerUser = async (req, res ,next) => {
   try {
-    const { name, email, birthdate, phoneNumber, password ,idImage,idNumber,companyname,adress,specialist} = req.body;
+    const { name, email, birthdate, phoneNumber, password ,idImage,idNumber,companyname,adress,specialist,idbackImage} = req.body;
 console.log(idNumber)
 
     const existingUser = await User.findOne({ $or: [{ email }, { phoneNumber }] });
@@ -172,7 +172,7 @@ console.log('existingUser',existingUser)
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
-    const newUser = new User({ name, email, birthdate, phoneNumber, passwordHash,idImage,idNumber,companyname,adress,specialist });
+    const newUser = new User({ name, email, birthdate, phoneNumber, passwordHash,idImage,idNumber,companyname,adress,specialist,idbackImage });
     await newUser.save();
     console.log(newUser)
 
@@ -209,10 +209,14 @@ console.log(userId,otpCode)
 
 const loginUser = async (req, res,next) => {
   try {
-    const { email, password ,phoneNumber } = req.body;
+    const { phoneNumber, password ,idNumber } = req.body;
     let query;
-    if (email) {
-        query = { email: email };
+    if (idNumber) {
+      if(idNumber.length>14){
+        return next(new AppError('Invalid id number', 400));
+      }
+        query = { idNumber: idNumber };
+
     } else if (phoneNumber) {
         query = { phoneNumber: phoneNumber };
     } else {

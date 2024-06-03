@@ -10,12 +10,17 @@ const bidSchema = new mongoose.Schema({
     type: Date,
     default: Date.now(),
   },
+},{
+  timestamps: true,
 });
 bidSchema.pre('find', function (next) {
 
 // this.populate('userId');
 next()
 })
+bidSchema.index({ item: 1 });
+bidSchema.index({ userId: 1 });
+bidSchema.index({ createdAt: -1 });
 const Bid = mongoose.model('Bid', bidSchema);
 
 module.exports = Bid;

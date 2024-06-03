@@ -1,3 +1,4 @@
+const { required } = require('joi');
 const mongoose = require('mongoose');
 
 const  Schema  = mongoose.Schema;
@@ -27,7 +28,13 @@ const user = new Schema({
   verified: { type: Boolean, default: false },
   blocked: { type: Boolean, default: false },
 
-  
+  idbackImage: {    type: {
+    name: String,
+    path: String,
+    pathname: String
+  },
+  required: [true, 'Please upload an image for the id back image!'],
+  },
 
   profileImage: {    type: {
     name: String,
