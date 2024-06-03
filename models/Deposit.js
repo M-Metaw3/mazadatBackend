@@ -93,7 +93,7 @@ const depositSchema = new mongoose.Schema({
       unique: true
   },
   status: { type: String, enum: ['pending', 'approved', 'rejected', 'refunded','winner'], default: 'pending' },
-  billingmethod: { type: String, enum: ['mobile', 'bank', 'instapay'], required: true },
+  billingmethod: { type: String, enum: ['mobile', 'bank', 'instapay','wallet'], required: true },
   seenByadmin: { type: Boolean, default: false },
   seenByuser: { type: Boolean, default: false, select: false },
 }, {

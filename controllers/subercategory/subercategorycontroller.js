@@ -57,8 +57,8 @@ exports.getCategory = async (req, res) => {
 
     if (userId) {
       const booking = await Booking.findOne({ userId: userId, item: id }).populate('item');
-      // booking && booking.status === 'approved'
-      if (userId) {
+      
+      if (booking && booking.status === 'approved') {
         bookingStatus = 'true';
         subcategory = await Subcategory.findById(id).populate('items');
 

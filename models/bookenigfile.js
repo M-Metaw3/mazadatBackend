@@ -4,18 +4,23 @@ const Item = require('./subcategory'); // Adjust the path as needed
 const bookingfile = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   item: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory' },
-  amount: Number,
+  amount:{
+type: Number,
+required: true,
+  },
   billImage: {
     type: {
         name: String,
         path: String,
         pathname: String
       },
-      required: [true, 'Please upload an image for the bookfile!'],
+      required: function () {
+        return this.billingmethod !== 'wallet';
+      },
       unique: true
   },
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
-  billingmethod: { type: String, enum: ['fawry', 'cash', 'instapay','immediatly'], required: true },
+  billingmethod: { type: String, enum: ['mobile', 'bank', 'instapay','wallet'], required: true },
   seenByadmin: { type: Boolean, default: false },
   seenByuser: { type: Boolean, default: false, select: false },
 }, {
