@@ -60,7 +60,7 @@ exports.createDeposit = async (req, res,next) => {
 
     const notification = new Notification({
       userId,
-      message: billingmethod === 'wallet' ? `Your deposit was successful ${amount} for  ${req.item.name} .` : `Your deposit files ${req.item.name} is pending admin approval.`,
+      message: billingmethod === 'wallet' ? `Your deposit was successful ${amount} for and approved  ${req.item.name} .` : `Your deposit  ${req.item.name} is pending admin approval.`,
       itemId: item
     });
     await notification.save({ session });
