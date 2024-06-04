@@ -92,7 +92,6 @@ const depositSchema = new mongoose.Schema({
       required: function () {
         return this.billingmethod !== 'wallet';
       },
-      unique: true
   },
   status: { type: String, enum: ['pending', 'approved', 'rejected', 'refunded','winner'], default: 'pending' },
   billingmethod: { type: String, enum: ['mobile', 'bank', 'instapay','wallet'], required: true },
