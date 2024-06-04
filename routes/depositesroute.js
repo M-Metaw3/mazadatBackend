@@ -17,7 +17,10 @@ function generateValidFilePath(filename) {
     return validPath;
   }
 router.post('/',upload.single('billImage'),(req,res,next)=>{
-
+  console.log(req.body)
+  if (req.body.billingmethod == 'wallet') {
+    return next();
+  }
     if (!req.file) {
       // return ne.status(400).send('No file uploaded.');
       return  next(new AppError('No file uploaded.', 400));

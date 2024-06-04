@@ -4,6 +4,7 @@ const Booking = require('../../models/bookenigfile');
 const User = require('../../models/User');
 const Notification = require('../../models/notification');
 const mongoose = require('mongoose');
+const factory = require('../../utils/apiFactory');
 
 exports.bookFile = async (req, res) => {
   const session = await mongoose.startSession();
@@ -20,6 +21,8 @@ exports.bookFile = async (req, res) => {
       amount,
       billingmethod,
       billImage: billImage,
+      seenByadmin: billingmethod === 'wallet' ? true : false,
+
       status: billingmethod === 'wallet' ? 'approved' : 'pending'
     });
 
@@ -58,19 +61,11 @@ exports.bookFile = async (req, res) => {
   }
 };
 
-exports.getAllBookings = async (req, res) => {
-  try {
-    const bookings = await Booking.find();
-    res.status(200).json({ bookings });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
+exports.getAllBookings = factory.getAll(Booking);
 exports.approveBooking = async (req, res) => {
   try {
     const bookingId = req.params.id;
-    const booking = await Booking.findByIdAndUpdate(bookingId, { status: 'approved' }, { new: true });
+    const booking = await Booking.findByIdAndUpdate(bookingId, { status: 'approved' ,seenByadmin:true }, { new: true });
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' });
     }
@@ -91,7 +86,7 @@ exports.approveBooking = async (req, res) => {
 exports.rejectBooking = async (req, res) => {
   try {
     const bookingId = req.params.id;
-    const booking = await Booking.findByIdAndUpdate(bookingId, { status: 'rejected' }, { new: true });
+    const booking = await Booking.findByIdAndUpdate(bookingId, { status: 'rejected',seenByadmin:true }, { new: true });
     if (!booking) {
       return res.status(404).json({ message: 'Booking not found' });
     }

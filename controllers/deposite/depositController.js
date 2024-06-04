@@ -8,6 +8,9 @@ const factory = require('../../utils/apiFactory');
 // exports.createDeposit = factory.createOne(DepositeSchema);
 // exports.deleteDeposit = factory.deleteOne(DepositeSchema);
 
+const User = require('../../models/User');
+const Notification = require('../../models/notification');
+const AppError = require('../../utils/appError');
 
 
 const Deposit = require('../../models/Deposit');
@@ -16,22 +19,53 @@ const ItemsSchema = require('../../models/item');
 exports.getAllDeposit = factory.getAll(Deposit);
 exports.getDeposit = factory.getOne(Deposit);
 
+const mongoose = require('mongoose');
 
 // Create a new deposit
-exports.createDeposit = async (req, res) => {
+exports.createDeposit = async (req, res,next) => {
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
+
+
     const { userId,  billingmethod, billImage } = req.body;
     const item = req.item;
-
+   const amount= item.deposit
     const deposit = new Deposit({
       userId,
       item: item,
-      amount: item.deposit,
+      amount,
       billImage,
       billingmethod,
-    });
+      status: billingmethod === 'wallet' ? 'approved' : 'pending',
+      seenByadmin: billingmethod === 'wallet' ? true : false,
 
-    await deposit.save();
+    });
+    if (billingmethod === 'wallet') {
+      const user = await User.findById(userId).session(session);
+      if (user.walletBalance < amount) {
+
+     return next(new AppError('Insufficient balance', 400));
+      }
+
+      user.walletBalance -= amount;
+      user.walletTransactions.push({ amount, type: 'deposit', description: `deposit for item ${item.name}` });
+      await user.save({validateBeforeSave:false, session });
+
+    }
+
+    await deposit.save({ session });
+
+
+    const notification = new Notification({
+      userId,
+      message: billingmethod === 'wallet' ? `Your deposit was successful ${amount} for  ${req.item.name} .` : `Your deposit files ${req.item.name} is pending admin approval.`,
+      itemId: item
+    });
+    await notification.save({ session });
+    await session.commitTransaction();
+    session.endSession();
     res.status(201).json(deposit);
   } catch (error) {
     res.status(500).json({ error: error.message });

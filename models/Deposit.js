@@ -89,7 +89,9 @@ const depositSchema = new mongoose.Schema({
         path: String,
         pathname: String
       },
-      required: [true, 'Please upload an image for the Category!'],
+      required: function () {
+        return this.billingmethod !== 'wallet';
+      },
       unique: true
   },
   status: { type: String, enum: ['pending', 'approved', 'rejected', 'refunded','winner'], default: 'pending' },
