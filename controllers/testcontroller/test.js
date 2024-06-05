@@ -661,6 +661,8 @@ exports.getItemBidDetails = async (req, res) => {
           totalCommissions: 1,
           userDeposit: "$userDeposit.amount",
           finalAmount: { $ifNull: ["$winner.amount", "$finalAmount"] },
+          winnerid: "$winner._id",
+
           numUsersBidding: 1,
           status: 1
         }
