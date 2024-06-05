@@ -14,4 +14,17 @@ const winnerSchema = new mongoose.Schema({
   adminApproval: { type: Boolean, default: false }, 
 });
 
+winnerSchema.pre('find', function(next) {
+  this.populate({
+    path: 'userId',
+    select: 'name email photo'
+  }).populate({
+    path: 'itemId',
+    select: 'imagecover name endDate startDate subcategoryId'
+  });
+
+  next();
+});
+
+
 module.exports = mongoose.model('Winner', winnerSchema);

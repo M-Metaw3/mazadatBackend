@@ -68,6 +68,9 @@ exports.createDeposit = async (req, res,next) => {
     session.endSession();
     res.status(201).json(deposit);
   } catch (error) {
+    if (error.code === 11000) {
+      return next(new AppError('Booking already exists', 400));
+     }
     res.status(500).json({ error: error.message });
   }
 };

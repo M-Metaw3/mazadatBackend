@@ -5,8 +5,9 @@ const User = require('../../models/User');
 const Notification = require('../../models/notification');
 const mongoose = require('mongoose');
 const factory = require('../../utils/apiFactory');
+const AppError = require('../../utils/appError');
 
-exports.bookFile = async (req, res) => {
+exports.bookFile = async (req, res,next) => {
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -56,8 +57,13 @@ exports.bookFile = async (req, res) => {
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
-    console.log(error)
-    res.status(400).json({ error: error.message });
+    console.log(error.code)
+    if (error.code === 11000) {
+     return next(new AppError('Booking already exists', 400));
+    }
+  return next(new AppError(error, 400));
+
+    
   }
 };
 

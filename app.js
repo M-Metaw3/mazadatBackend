@@ -25,7 +25,7 @@ const getwinners = require('./routes/winnerroute');
 const notificationsroute = require('./routes/notificationsroute');
 const testrout = require('./routes/testrouting');
 const bookingfiles = require('./routes/bookingfilesRoutes');
-
+const paymentRoutes = require('./routes/paymentRoutes');
 
 
 
@@ -73,7 +73,7 @@ app.use('/api/v1/bid', bidingroute);
 app.use('/api/v1/splash', splashroute);
 
 app.use('/api/v1/appfeatures', appfeatures);
-
+app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/subcategory', subcategory);
 app.use('/api/v1/deposite', DepositRoute);
 app.use('/api/v1/items', ItemsRoute);
