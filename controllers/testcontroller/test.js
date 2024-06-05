@@ -687,6 +687,229 @@ exports.getUserBidHistory = async (req, res) => {
 
 
 
+// exports.getItemBidDetails = async (req, res) => {
+//   const userId = new mongoose.Types.ObjectId(req.params.userId);
+//   const itemId = new mongoose.Types.ObjectId(req.params.itemId);
+
+//   try {
+//     const itemDetails = await Bid.aggregate([
+//       { $match: { item: itemId, userId } },
+//       {
+//         $group: {
+//           _id: "$item",
+//           userBids: { $push: "$$ROOT" },
+//           totalAmount: { $sum: "$amount" },
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: 'items',
+//           localField: '_id',
+//           foreignField: '_id',
+//           as: 'item',
+//         },
+//       },
+//       { $unwind: "$item" },
+//       {
+//         $lookup: {
+//           from: 'subcategories',
+//           localField: 'item.subcategoryId',
+//           foreignField: '_id',
+//           as: 'item.subcategory',
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: 'deposits',
+//           let: { itemId: "$_id", userId: userId },
+//           pipeline: [
+//             { $match: { $expr: { $and: [{ $eq: ["$item", "$$itemId"] }, { $eq: ["$userId", "$$userId"] }, { $eq: ["$status", "approved"] }] } } },
+//             { $project: { amount: 1 } },
+//           ],
+//           as: 'userDeposit',
+//         },
+//       },
+//       { $unwind: { path: "$userDeposit", preserveNullAndEmptyArrays: true } },
+//       {
+//         $lookup: {
+//           from: 'winners',
+//           let: { itemId: "$_id", userId: userId },
+//           pipeline: [
+//             { $match: { $expr: { $and: [{ $eq: ["$itemId", "$$itemId"] }, { $eq: ["$userId", "$$userId"] }] } } },
+//             { $project: { amount: 1, status: 1, adminApproval: 1 } },
+//           ],
+//           as: 'winner',
+//         },
+//       },
+//       { $unwind: { path: "$winner", preserveNullAndEmptyArrays: true } },
+//       {
+//         $lookup: {
+//           from: 'bids',
+//           localField: '_id',
+//           foreignField: 'item',
+//           as: 'allBids',
+//         },
+//       },
+//       {
+//         $addFields: {
+//           numUsersBidding: { $size: { $setUnion: ["$allBids.userId", []] } },
+//           commission1: { $multiply: ["$item.startPrice", { $divide: ["$item.commission1", 100] }] },
+//           commission2: { $multiply: ["$item.startPrice", { $divide: ["$item.commission2", 100] }] },
+//           commission3: { $multiply: ["$item.startPrice", { $divide: ["$item.commission3", 100] }] },
+//         },
+//       },
+//       {
+//         $addFields: {
+//           totalCommissions: {
+//             $sum: [
+//               { $ifNull: ["$commission1", 0] },
+//               { $ifNull: ["$commission2", 0] },
+//               { $ifNull: ["$commission3", 0] }
+//             ]
+//           },
+//           finalAmount: {
+//             $subtract: [
+//               { $add: ["$item.startPrice", "$totalCommissions"] },
+//               { $ifNull: ["$userDeposit.amount", 0] }
+//             ]
+//           }
+//         },
+//       },
+//       {
+//         $addFields: {
+//           status: {
+//             $switch: {
+//               branches: [
+//                 { case: { $eq: ["$item.status", "cancelled"] }, then: "cancelled" },
+//                 { case: { $and: [{ $eq: ["$item.status", "completed"] }, { $eq: ["$winner.status", "winner"] }, { $eq: ["$winner.adminApproval", true] }] }, then: "winner" },
+//                 { case: { $and: [{ $eq: ["$item.status", "completed"] }, { $eq: ["$winner.status", "winner"] }, { $eq: ["$winner.adminApproval", false] }] }, then: "winner pending for admin approval" },
+//                 { case: { $and: [{ $eq: ["$item.status", "completed"] }, { $eq: ["$winner.status", "loser"] }] }, then: "loser" },
+//                 { case: { $eq: ["$item.status", "inprogress"] }, then: "inprogress" },
+//               ],
+//               default: "inprogress",
+//             },
+//           }
+//         }
+//       },
+//       {
+//         $project: {
+//           _id: 0,
+//           item: 1,
+//           userBids: 1,
+//           totalAmount: {
+//             $cond: {
+//               if: {
+//                 $or: [
+//                   { $eq: ["$status", "winner"] },
+//                   { $eq: ["$status", "winner pending for admin approval"] }
+//                 ]
+//               },
+//               then: "$totalAmount",
+//               else: "$$REMOVE"
+//             }
+//           },
+//           commission1: {
+//             $cond: {
+//               if: {
+//                 $or: [
+//                   { $eq: ["$status", "winner"] },
+//                   { $eq: ["$status", "winner pending for admin approval"] }
+//                 ]
+//               },
+//               then: "$commission1",
+//               else: "$$REMOVE"
+//             }
+//           },
+//           commission2: {
+//             $cond: {
+//               if: {
+//                 $or: [
+//                   { $eq: ["$status", "winner"] },
+//                   { $eq: ["$status", "winner pending for admin approval"] }
+//                 ]
+//               },
+//               then: "$commission2",
+//               else: "$$REMOVE"
+//             }
+//           },
+//           commission3: {
+//             $cond: {
+//               if: {
+//                 $or: [
+//                   { $eq: ["$status", "winner"] },
+//                   { $eq: ["$status", "winner pending for admin approval"] }
+//                 ]
+//               },
+//               then: "$commission3",
+//               else: "$$REMOVE"
+//             }
+//           },
+//           totalCommissions: {
+//             $cond: {
+//               if: {
+//                 $or: [
+//                   { $eq: ["$status", "winner"] },
+//                   { $eq: ["$status", "winner pending for admin approval"] }
+//                 ]
+//               },
+//               then: "$totalCommissions",
+//               else: "$$REMOVE"
+//             }
+//           },
+//           userDeposit: "$userDeposit.amount",
+//           finalAmount: {
+//             $cond: {
+//               if: {
+//                 $or: [
+//                   { $eq: ["$status", "winner"] },
+//                   { $eq: ["$status", "winner pending for admin approval"] }
+//                 ]
+//               },
+//               then: { $ifNull: ["$winner.amount", "$finalAmount"] },
+//               else: "$$REMOVE"
+//             }
+//           },
+//           winnerid: {
+//             $cond: {
+//               if: {
+//                 $or: [
+//                   { $eq: ["$status", "winner"] },
+//                   { $eq: ["$status", "winner pending for admin approval"] }
+//                 ]
+//               },
+//               then: "$winner._id",
+//               else: "$$REMOVE"
+//             }
+//           },
+//           numUsersBidding: 1,
+//           status: 1
+//         }
+//       }
+//     ]);
+
+//     if (!itemDetails.length) {
+//       return res.status(404).json({ message: 'Item not found or no bids by the user.' });
+//     }
+
+//     res.status(200).json(itemDetails[0]);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Internal server error' });
+//   }
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
 exports.getItemBidDetails = async (req, res) => {
   const userId = new mongoose.Types.ObjectId(req.params.userId);
   const itemId = new mongoose.Types.ObjectId(req.params.itemId);
@@ -751,6 +974,15 @@ exports.getItemBidDetails = async (req, res) => {
         },
       },
       {
+        $lookup: {
+          from: 'payments',
+          localField: 'winner._id',
+          foreignField: 'winnerid',
+          as: 'payment',
+        },
+      },
+      { $unwind: { path: "$payment", preserveNullAndEmptyArrays: true } },
+      {
         $addFields: {
           numUsersBidding: { $size: { $setUnion: ["$allBids.userId", []] } },
           commission1: { $multiply: ["$item.startPrice", { $divide: ["$item.commission1", 100] }] },
@@ -788,7 +1020,19 @@ exports.getItemBidDetails = async (req, res) => {
               ],
               default: "inprogress",
             },
-          }
+          },
+          // payedStatus: {
+          //   $cond: {
+          //     if: { $eq: ["$status", "winner"] },
+          //     then: "$payment.status",
+          //     else: "$$REMOVE"
+          //   }
+          // }
+
+          payedStatus: "$payment.status",
+
+            
+          
         }
       },
       {
@@ -882,7 +1126,8 @@ exports.getItemBidDetails = async (req, res) => {
             }
           },
           numUsersBidding: 1,
-          status: 1
+          status: 1,
+          payedStatus: 1
         }
       }
     ]);
@@ -890,10 +1135,241 @@ exports.getItemBidDetails = async (req, res) => {
     if (!itemDetails.length) {
       return res.status(404).json({ message: 'Item not found or no bids by the user.' });
     }
-
+console.log(itemDetails[0].payedStatus)
     res.status(200).json(itemDetails[0]);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+
+
+
+// exports.getItemBidDetails = async (req, res) => {
+//   const userId = new mongoose.Types.ObjectId(req.params.userId);
+//   const itemId = new mongoose.Types.ObjectId(req.params.itemId);
+
+//   try {
+//     const itemDetails = await Bid.aggregate([
+//       { $match: { item: itemId, userId } },
+//       {
+//         $group: {
+//           _id: "$item",
+//           userBids: { $push: "$$ROOT" },
+//           totalAmount: { $sum: "$amount" },
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: 'items',
+//           localField: '_id',
+//           foreignField: '_id',
+//           as: 'item',
+//         },
+//       },
+//       { $unwind: "$item" },
+//       {
+//         $lookup: {
+//           from: 'subcategories',
+//           localField: 'item.subcategoryId',
+//           foreignField: '_id',
+//           as: 'item.subcategory',
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: 'deposits',
+//           let: { itemId: "$_id", userId: userId },
+//           pipeline: [
+//             { $match: { $expr: { $and: [{ $eq: ["$item", "$$itemId"] }, { $eq: ["$userId", "$$userId"] }, { $eq: ["$status", "approved"] }] } } },
+//             { $project: { amount: 1 } },
+//           ],
+//           as: 'userDeposit',
+//         },
+//       },
+//       { $unwind: { path: "$userDeposit", preserveNullAndEmptyArrays: true } },
+//       {
+//         $lookup: {
+//           from: 'winners',
+//           let: { itemId: "$_id", userId: userId },
+//           pipeline: [
+//             { $match: { $expr: { $and: [{ $eq: ["$itemId", "$$itemId"] }, { $eq: ["$userId", "$$userId"] }] } } },
+//             { $project: { amount: 1, status: 1, adminApproval: 1 } },
+//           ],
+//           as: 'winner',
+//         },
+//       },
+//       { $unwind: { path: "$winner", preserveNullAndEmptyArrays: true } },
+//       {
+//         $lookup: {
+//           from: 'bids',
+//           localField: '_id',
+//           foreignField: 'item',
+//           as: 'allBids',
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: 'payments',
+//           localField: 'winner._id',
+//           foreignField: 'winnerid',
+//           as: 'payment',
+//         },
+//       },
+//       { $unwind: { path: "$payment", preserveNullAndEmptyArrays: true } },
+//       {
+//         $addFields: {
+//           numUsersBidding: { $size: { $setUnion: ["$allBids.userId", []] } },
+//           commission1: { $multiply: ["$item.startPrice", { $divide: ["$item.commission1", 100] }] },
+//           commission2: { $multiply: ["$item.startPrice", { $divide: ["$item.commission2", 100] }] },
+//           commission3: { $multiply: ["$item.startPrice", { $divide: ["$item.commission3", 100] }] },
+//         },
+//       },
+//       {
+//         $addFields: {
+//           totalCommissions: {
+//             $sum: [
+//               { $ifNull: ["$commission1", 0] },
+//               { $ifNull: ["$commission2", 0] },
+//               { $ifNull: ["$commission3", 0] }
+//             ]
+//           },
+//           finalAmount: {
+//             $subtract: [
+//               { $add: ["$item.startPrice", "$totalCommissions"] },
+//               { $ifNull: ["$userDeposit.amount", 0] }
+//             ]
+//           }
+//         },
+//       },
+//       {
+//         $addFields: {
+//           status: {
+//             $switch: {
+//               branches: [
+//                 { case: { $eq: ["$item.status", "cancelled"] }, then: "cancelled" },
+//                 { case: { $and: [{ $eq: ["$item.status", "completed"] }, { $eq: ["$winner.status", "winner"] }, { $eq: ["$winner.adminApproval", true] }] }, then: "winner" },
+//                 { case: { $and: [{ $eq: ["$item.status", "completed"] }, { $eq: ["$winner.status", "winner"] }, { $eq: ["$winner.adminApproval", false] }] }, then: "winner pending for admin approval" },
+//                 { case: { $and: [{ $eq: ["$item.status", "completed"] }, { $eq: ["$winner.status", "loser"] }] }, then: "loser" },
+//                 { case: { $eq: ["$item.status", "inprogress"] }, then: "inprogress" },
+//               ],
+//               default: "inprogress",
+//             },
+//           },
+//           payedStatus: {
+//             $cond: {
+//               if: { $eq: ["$status", "winner"] },
+//               then: "$payment.status",
+//               else: null
+//             }
+//           }
+//         }
+//       },
+//       {
+//         $project: {
+//           _id: 0,
+//           item: 1,
+//           userBids: 1,
+//           totalAmount: {
+//             $cond: {
+//               if: {
+//                 $or: [
+//                   { $eq: ["$status", "winner"] },
+//                   { $eq: ["$status", "winner pending for admin approval"] }
+//                 ]
+//               },
+//               then: "$totalAmount",
+//               else: "$$REMOVE"
+//             }
+//           },
+//           commission1: {
+//             $cond: {
+//               if: {
+//                 $or: [
+//                   { $eq: ["$status", "winner"] },
+//                   { $eq: ["$status", "winner pending for admin approval"] }
+//                 ]
+//               },
+//               then: "$commission1",
+//               else: "$$REMOVE"
+//             }
+//           },
+//           commission2: {
+//             $cond: {
+//               if: {
+//                 $or: [
+//                   { $eq: ["$status", "winner"] },
+//                   { $eq: ["$status", "winner pending for admin approval"] }
+//                 ]
+//               },
+//               then: "$commission2",
+//               else: "$$REMOVE"
+//             }
+//           },
+//           commission3: {
+//             $cond: {
+//               if: {
+//                 $or: [
+//                   { $eq: ["$status", "winner"] },
+//                   { $eq: ["$status", "winner pending for admin approval"] }
+//                 ]
+//               },
+//               then: "$commission3",
+//               else: "$$REMOVE"
+//             }
+//           },
+//           totalCommissions: {
+//             $cond: {
+//               if: {
+//                 $or: [
+//                   { $eq: ["$status", "winner"] },
+//                   { $eq: ["$status", "winner pending for admin approval"] }
+//                 ]
+//               },
+//               then: "$totalCommissions",
+//               else: "$$REMOVE"
+//             }
+//           },
+//           userDeposit: "$userDeposit.amount",
+//           finalAmount: {
+//             $cond: {
+//               if: {
+//                 $or: [
+//                   { $eq: ["$status", "winner"] },
+//                   { $eq: ["$status", "winner pending for admin approval"] }
+//                 ]
+//               },
+//               then: { $ifNull: ["$winner.amount", "$finalAmount"] },
+//               else: "$$REMOVE"
+//             }
+//           },
+//           winnerid: {
+//             $cond: {
+//               if: {
+//                 $or: [
+//                   { $eq: ["$status", "winner"] },
+//                   { $eq: ["$status", "winner pending for admin approval"] }
+//                 ]
+//               },
+//               then: "$winner._id",
+//               else: "$$REMOVE"
+//             }
+//           },
+//           numUsersBidding: 1,
+//           status: 1,
+//           payedStatus: 1
+//         }
+//       }
+//     ]);
+
+//     if (!itemDetails.length) {
+//       return res.status(404).json({ message: 'Item not found or no bids by the user.' });
+//     }
+
+//     res.status(200).json(itemDetails[0]);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Internal server error' });
+//   }
+// };
