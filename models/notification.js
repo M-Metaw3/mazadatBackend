@@ -10,8 +10,10 @@ const notificationSchema = new mongoose.Schema({
 notificationSchema.pre('find', function(next) {
   this.populate({
     path: 'userId',
-    select: 'name '
-  })
+    select: '-_id name '
+  }).populate({
+    path: 'itemId',
+  });
 
   next();
 });

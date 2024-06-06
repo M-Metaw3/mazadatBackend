@@ -1381,30 +1381,31 @@ latsbid:bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId))
     
         const timeRemaining = item.subcategoryId.endDate - now;
         const tenMinutes = 10 * 60 * 1000;
-        const twentyMinutes = 20 * 60 * 1000;
+        const twentyMinutes = 10 * 60 * 1000;
     
         // Extend the auction end time if less than ten minutes remain
         if (timeRemaining <= tenMinutes) {
           item.subcategoryId.endDate = new Date(new Date(item.subcategoryId.endDate).getTime() + twentyMinutes).toISOString();
           console.log('New end date:', item.subcategoryId.endDate);
     
-          if (!socket.firstExtensionDone) {
-            socket.firstExtensionDone = true;
-          } else {
-            item.minBidIncrement *= 2;
-          }
+          // if (!socket.firstExtensionDone) {
+          //   socket.firstExtensionDone = true;
+          // } else {
+          //   item.minBidIncrement *= 2;
+         // }
+        item.minBidIncrement *= 2;
     
-          auctionNamespace.to(itemId).emit('auctionExtended', {
-            item: item,
-            itemId: item._id,
-            newEndTime: item.subcategoryId.endDate,
-            newMinBidIncrement: item.minBidIncrement,
-          });
-        }
-    
-        // Save the updated subcategory and item
-        await item.subcategoryId.save({ session });
-        await item.save({ session });
+              // Save the updated subcategory and item
+              await item.subcategoryId.save({ session });
+              await item.save({ session });
+              auctionNamespace.to(itemId).emit('auctionExtended', {
+                item: item,
+                itemId: item._id,
+                newEndTime: item.subcategoryId.endDate,
+                newMinBidIncrement: item.minBidIncrement,
+              });
+            }
+        
     
         // Notify all users about the new bid
         const bidCount = await Bid.countDocuments({ item: itemId }).session(session);
@@ -1441,7 +1442,7 @@ latsbid:bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId))
           itemId: item._id,
           item: item,
           usercount:userCount,
-latsbid:bidusers?.userId,
+          latsbid:bidusers?.userId,
           amount,
           newprice: item.startPrice,
           bidcount: bidCount
