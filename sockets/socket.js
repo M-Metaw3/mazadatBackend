@@ -1209,6 +1209,7 @@ const createAuctionNamespace = (io) => {
     const userCount = room ? room.size : 0;
     const bidCount = await Bid.countDocuments({ item: socket.item._id });
     const bidusers = await Bid.findOne().sort({createdAt:-1}).limit(1);
+    console.log("bidusers",bidusers)
     console.log(bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId)));
     socket.emit('itemDetails', {
       item: socket.item,
@@ -1371,6 +1372,7 @@ latsbid:bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId))
         const bid = new Bid({
           userId: socket.userId,
           item: itemId,
+          subcategory:item.subcategoryId,
           amount,
           createdAt: now,
         });
@@ -1397,7 +1399,6 @@ latsbid:bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId))
     
               // Save the updated subcategory and item
               await item.subcategoryId.save({ session });
-              await item.save({ session });
               auctionNamespace.to(itemId).emit('auctionExtended', {
                 item: item,
                 itemId: item._id,
@@ -1406,10 +1407,12 @@ latsbid:bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId))
               });
             }
         
+                await item.save({ session });
     
         // Notify all users about the new bid
         const bidCount = await Bid.countDocuments({ item: itemId }).session(session);
         const bidusers = await Bid.findOne().sort({createdAt:-1}).limit(1).session(session);
+
         console.log(bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId)));
 
         const deposits = await Deposit.find({ subcategory: item.subcategoryId._id, status: 'approved' }).session(session);
@@ -1436,6 +1439,7 @@ latsbid:bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId))
         //   bidCount: bidCount,
         // });
     
+        await session.commitTransaction(); // Commit the transaction
 
                 auctionNamespace.to(itemId).emit('newBid', {
           userId: socket.userId,
@@ -1447,9 +1451,8 @@ latsbid:bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId))
           newprice: item.startPrice,
           bidcount: bidCount
         });
-        await session.commitTransaction(); // Commit the transaction
         session.endSession(); // End the session
-    
+    console.log( item.startPrice)
       } catch (error) {
         await session.abortTransaction(); // Abort the transaction on error
         session.endSession(); // End the session

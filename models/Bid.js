@@ -4,6 +4,11 @@ const mongoose = require('mongoose');
 const bidSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' ,required: true},
   item: { type: mongoose.Schema.Types.ObjectId, ref: 'Item',required: true },
+  subcategory: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Subcategory',
+    required: true
+  },
   amount: Number,
   bidTime: Date,
   createdAt: {

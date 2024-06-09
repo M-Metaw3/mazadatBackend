@@ -12,7 +12,7 @@ dotenv.config({ path: './.env' });
 const app = require('./app');
 const io = socketIo(app,    {cors: {
   // origin: 'http://109.106.244.229',
-  origin: 'http://localhost:3000',  // Allow only this origin
+  // origin: 'http://localhost:3000',  // Allow only this origin
     // Allow only this origin
   
 }});
