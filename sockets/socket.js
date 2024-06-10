@@ -1209,7 +1209,7 @@ const createAuctionNamespace = (io) => {
     const userCount = room ? room.size : 0;
     const bidCount = await Bid.countDocuments({ item: socket.item._id });
     const bidusers = await Bid.findOne().sort({createdAt:-1}).limit(1);
-    console.log("bidusers",bidusers)
+  
     console.log(bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId)));
     socket.emit('itemDetails', {
       item: socket.item,

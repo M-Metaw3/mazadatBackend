@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const paymentSchema = new mongoose.Schema({
-    winnerid: { type: mongoose.Schema.Types.ObjectId, ref: 'Winner', required: true,unique: true },
+    winnerid: { type: mongoose.Schema.Types.ObjectId, ref: 'SubcategoryResult', required: true,unique: true },
   billingMethod: { type: String, enum:['mobile', 'bank', 'instapay','wallet'], required: true },
   status: { type: String, enum: ['pending', 'completed', 'rejected'], default: 'pending' },
   billImage: {

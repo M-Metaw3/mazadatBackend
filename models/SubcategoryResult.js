@@ -22,5 +22,6 @@ const SubcategoryResultSchema = new mongoose.Schema({
   status: { type: String, enum: ['winner', 'loser'], required: true },
   results: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Winner' }]
 }, { timestamps: true });
+SubcategoryResultSchema.index({ userId: 1, subcategory: 1,status:1 }, { unique: true });
 
 module.exports = mongoose.model('SubcategoryResult', SubcategoryResultSchema);

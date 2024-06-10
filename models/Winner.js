@@ -14,6 +14,7 @@ const winnerSchema = new mongoose.Schema({
     type: String,
     enum: ['winner', 'loser', 'cancelled','inprogress'],
   },
+  processed: { type: Boolean, default: false },
   timestamp: { type: Date, default: Date.now },
   adminApproval: { type: Boolean, default: false }, 
 });
