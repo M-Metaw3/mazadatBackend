@@ -15,8 +15,8 @@ const processPayment = async (req, res, next) => {
     const winner = req.winner;
     const item = req.item;
 
-    const totalAmount = item.startPrice + item.commission1 + item.commission2 + item.commission3;
-    const dueAmount = req.winner.amount 
+   
+    const dueAmount = req.winner.totalAmount 
 
     if (dueAmount <= 0) {
       await session.abortTransaction();
