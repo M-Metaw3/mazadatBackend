@@ -20,9 +20,6 @@ exports.checkWalletBalance = async (req, res, next) => {
       return res.status(404).json({ message: 'Subcategory not found' });
     }
 
-    if (user.walletBalance < subcategory.fileprice) {
-      return res.status(400).json({ message: 'Insufficient wallet balance' });
-    }
 
     req.item = subcategory; // Attach subcategory to request for later use
     next();
