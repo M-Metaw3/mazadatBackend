@@ -4,6 +4,8 @@ const Item = require('../../models/item');
 const Winner = require('../../models/Winner');
 const Subcategory = require('../../models/subcategory');
 const SubcategoryResult =require('../../models/SubcategoryResult');
+const Payment = require('../../models/Payment');
+
 exports.getUserBidHistory = async (req, res) => {
   const userId = req.params.userId;
   const statusFilter = req.query.status; // Get status filter from query parameters
@@ -1229,6 +1231,8 @@ try {
 
 
 
+
+
 exports.getItemBidDetails2 = async (req, res) => {
   const userId = new mongoose.Types.ObjectId(req.params.userId);
   const subcategoryResultId = new mongoose.Types.ObjectId(req.params.subcategoryResultId);
@@ -1355,42 +1359,58 @@ exports.getItemBidDetails2 = async (req, res) => {
                     $filter: {
                       input: '$paymentDetails',
                       as: 'payment',
-                      cond: { $eq: ['$$payment.status', 'completed'] }
+                      cond: {
+                        $or: [
+                          { $eq: ['$$payment.status', 'pending'] },
+                          { $eq: ['$$payment.status', 'rejected'] },
+                          { $eq: ['$$payment.status', 'completed'] }
+                        ]
+                      }
                     }
                   }
                 }, 0]
               },
-              then: {
-                $arrayElemAt: ['$paymentDetails.status', 0]
+              then: { 
+                $cond: {
+                  if: {
+                    $or: [
+                      { $eq: [{ $arrayElemAt: ['$paymentDetails.status', 0] }, 'completed'] },
+                      { $eq: [{ $arrayElemAt: ['$paymentDetails.status', 0] }, 'pending'] },
+                      { $eq: [{ $arrayElemAt: ['$paymentDetails.status', 0] }, 'rejected'] }
+                    ]
+                  },
+                  then: { $arrayElemAt: ['$paymentDetails.status', 0] },
+                  else: false
+                }
               },
               else: false
             }
           }
         }
       },
-      {
-        $addFields: {
-          'winnerDetails.finalStatus': {
-            $map: {
-              input: '$winnerDetails',
-              as: 'winner',
-              in: {
-                $cond: {
-                  if: { $eq: ['$$winner.status', 'winner'] },
-                  then: {
-                    $cond: {
-                      if: { $eq: ['$$winner.adminApproval', true] },
-                      then: 'winner and admin approved',
-                      else: 'winner pending for admin approval'
-                    }
-                  },
-                  else: '$$winner.status'
-                }
-              }
-            }
-          }
-        }
-      },
+      // {
+      //   $addFields: {
+      //     'winnerDetails.finalStatus': {
+      //       $map: {
+      //         input: '$winnerDetails',
+      //         as: 'winner',
+      //         in: {
+      //           $cond: {
+      //             if: { $eq: ['$$winner.status', 'winner'] },
+      //             then: {
+      //               $cond: {
+      //                 if: { $eq: ['$$winner.adminApproval', true] },
+      //                 then: 'winner and admin approved',
+      //                 else: 'winner pending for admin approval'
+      //               }
+      //             },
+      //             else: '$$winner.status'
+      //           }
+      //         }
+      //       }
+      //     }
+      //   }
+      // },
       {
         $project: {
           _id: 0,
@@ -1430,7 +1450,7 @@ exports.getItemBidDetails2 = async (req, res) => {
       return res.status(404).json({ message: 'No items found for the specified subcategory result and status.' });
     }
 
-    res.status(200).json({ status: "success", itemDetails });
+    res.status(200).json({ status: "success", itemDetails:itemDetails[0] });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
