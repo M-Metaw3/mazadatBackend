@@ -1,8 +1,13 @@
-// const admin = require('firebase-admin');
-// const serviceAccount = require('../pushnotificationsmazadat-firebase-adminsdk-4blhv-1f3defbd0f.json'); // Ensure the path matches your directory structure
-// admin.initializeApp({
-//   credential: admin.credential.applicationDefault()
-// //   databaseURL: 'https://<your-database-name>.firebaseio.com' 
-// });
+// server.js or your main entry file
+const path = require('path');
 
-// module.exports = admin;
+
+// Initialize Firebase Admin SDK
+const admin = require('firebase-admin');
+const serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS);
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+
+module.exports = admin;

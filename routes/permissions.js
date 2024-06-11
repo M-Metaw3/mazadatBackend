@@ -20,17 +20,38 @@ router.get('/', async (req, res) => {
 
 
   try {
-    // const user = await User.findById(userId);
   
-      const payload = {
+    const message = {
+      notification: {
+        title: "mazadat",
+        body: 'تم ترسية المزاد بنجاح  ',
+      
+      },
+      token: 'eEQj-fiHDJHXSxeWxkV4X6:APA91bFKWyToFnXNtVuqGnmCLCzhaGQXuW4V7tM2yIqwaF-StpUMo3cHB2Z7nb_TPlLKdOnRZlwqgCKsxzf5dekLRog5rZY-6-c2n50_L8RKWaccqscNCEKR9G7GjTP8IP4t9AaaMar0',
+      android: {
         notification: {
-          title: 'Auction Notification',
-          // body: message,
-        }}
+          image: 'https://foo.bar.pizza-monster.png'
+        },
+ 
+      },
+      webpush: {
+        headers: {
+          image: 'https://foo.bar.pizza-monster.png'
+        }
+      },
+      apns: {
+        payload: {
+          aps: {
+            'mutable-content': 1
+          }
+        },
+        fcm_options: {
+          image: 'https://foo.bar.pizza-monster.png'
+        }
+      },
+    };
 
-
-      const response = await admin.messaging().sendToDevice('eEQj-fiHDJHXSxeWxkV4X6:APA91bFKWyToFnXNtVuqGnmCLCzhaGQXuW4V7tM2yIqwaF-StpUMo3cHB2Z7nb_TPlLKdOnRZlwqgCKsxzf5dekLRog5rZY-6-c2n50_L8RKWaccqscNCEKR9G7GjTP8IP4t9AaaMar0', payload);
-      console.log('Notification sent successfully:', response);
+      const response = await admin.messaging().send(message)
     
       res.status(200).json({ message: 'Notification sent successfully' });
   } catch (error) {

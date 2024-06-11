@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "pushnotificationsmazadat",
+  "private_key_id": "02cb5c537c44c43a5767c91606dde5679c60960d",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQD2VZil2ZzozKOG\nnBgM6cMJJYBciw5a5vNpwAi80fIPA7neL0uSJmyOIeYNmhr+55O7ZOReq2sekwXn\nJqfyiCY4zT1+FHvm9PG8zw9AMbCCzfdA9XbqRccnocjCczGKPSZxNys9pSh5bSHv\nzU8KIhg152I3qgKg8z1nM7aiSmfXTvCBeBgrZoiW2dSVRIrJ3xpSoi/vYxHzeh+e\njmY2ByN33RlSLd9KIh4MmLJkpx7iMhqptzecrOEkTNp1LgCggrSWGPHPWhyQnPgg\na7ZQkdaW1RwAOpOT7N8xtijfgzApQ8VS272nnYBLot7QqNRadiHMc90B7M1Q4015\nBYddlIihAgMBAAECggEAeaE/G5kNHHe6wKL/TxT3a+M787XnkyPZCZy707vYSOie\nlGIG7vWRAUckqA+xB68Bp3REPKhoXnLa5c0U/TCTqtVQaRolKZ9FY2Rb0+cVECkx\nzj3FhxyIHv4HuleVnPvfqOREMg6EIxyrNpRJ1CeMi8UhnnmQDbe82GHU6mJRzqGg\nJ8zXP4or8roztU6lNNp5iZeVeO0oVsv8aH+H7PNosnazCiKWUZLe4DWVuj14tz1G\nX9MR76wbWr1BE8G66WKBQKdAioer3KNclyjvHWeM01yL6vF81wDUg6ioa3jxa/th\nx8+oG4KJPNF8xqpyoWa2mbwce1SFiwfP/FdN0GYTlwKBgQD9meh7xbmjQWhF9s5d\nd7H20GOGGNzzu1zaVyhGbZpcV2Wzky7/HAh8eK5aeCwgJPbSMbNg2SPAZ6OEoS/o\nfGNhE8j0GDExtT6DRdXR/uHk2Elf5bO/vCF0dnw4w/MpahLyVR6cSjgI4Azb2zhK\n5lrDPbf+TGBKncYNUTEEC/N7QwKBgQD4qhdxzPi3VNVPGLejNGS6Ic+pdUqMlGkt\nHU/uGuth4JfCA8svTk0ErQSIokjOqFyy4m6R3SnUjNN0njvqGPLVPQPTQBJvUoA1\nHBv0nwl3/ioFtHA2GWNpxzTTo3H0/q/b4r0WZApiPksDa5s1CgIT1mAVWQpFThMU\nqruy0M4kSwKBgF2p03irTWXjiWyVvCA/TgZXbvqfAjQu1ht6J1DjuCg0y0YorSnh\no6y9McAONFXm8RYu7w5tBExSus0Ib1ZRYq7/DLBCoyC1zRHU4CUAG1RXIbp+bwX4\nqO6HuFeK36tDFx5Tm8ujidCVV4p4C/F15L3JdMRCVyoX3YcbnpvdAh9bAoGBAKk7\nST1f3B0ZFRsBnWjrLWonvKZ9dsD5+CKGAnHvzCYOrfmSj2OgjHYUMjOzDo3msz/j\nLpECzYckWHzTe780P3+0SLgqsOEmaq66dKQk4FLTnVHInV2UJb5FnsQyRkoQUyr4\nwutMJmz6LB8lyrlsGEHb8gRVVtIX8pBsKdXmmYTFAoGAKtgMRU1ZLYq69Kw1NLRs\nBtoDTJNdLWQEx5I6X9SS10ruyxi+HV1Iqa6bXfq9GwWQ3pQDzVry84BrF6g23RJZ\nuv5JNXqe8XiSfTlUhgUqOylfZGt2grPtE2sQCg2lxnHlVQeYXWYDaPZZW3EFo6ru\nYmHa9cFVze85Yw2lWqd7qC4=\n-----END PRIVATE KEY-----\n",
+  "client_email": "mazadat-masr@pushnotificationsmazadat.iam.gserviceaccount.com",
+  "client_id": "106824254721054570836",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/mazadat-masr%40pushnotificationsmazadat.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
