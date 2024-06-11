@@ -1,6 +1,25 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const { createNotificationNamespace, setupNotificationInterval } = require('./sockets/notifications');
+const {initializeApp, applicationDefault } = require('firebase-admin/app');
+const{ getMessaging } = require('firebase-admin/messaging');
+
+process.env.GOOGLE_APPLICATION_CREDENTIALS;
+
+
+
+
+
+
+initializeApp({
+  credential: applicationDefault(),
+  projectId: 'potion-for-creators',
+});
+
+
+
+
+
 process.on('uncaughtException', err => {
   console.log('UNCAUGHT EXCEPTION! 💥 Shutting down...');
   console.log(err.name, err.message);
@@ -10,6 +29,38 @@ const socketIo = require('socket.io');
 
 dotenv.config({ path: './.env' });
 const app = require('./app');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const io = socketIo(app,    {cors: {
   // origin: 'http://109.106.244.229',
   // origin: 'http://localhost:3000',  // Allow only this origin

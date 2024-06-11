@@ -804,6 +804,239 @@ try {
 
 
 
+// exports.getItemBidDetails2 = async (req, res) => {
+//   const userId = new mongoose.Types.ObjectId(req.params.userId);
+//   const subcategoryResultId = new mongoose.Types.ObjectId(req.params.subcategoryResultId);
+//   const statusFilter = req.query.status; // Get status filter from query parameters
+
+//   try {
+//     let itemDetails = await SubcategoryResult.aggregate([
+//       { $match: { _id: subcategoryResultId, userId } },
+//       {
+//         $lookup: {
+//           from: 'subcategories',
+//           localField: 'subcategory',
+//           foreignField: '_id',
+//           as: 'subcategoryDetails',
+//         },
+//       },
+//       { $unwind: '$subcategoryDetails' },
+//       {
+//         $lookup: {
+//           from: 'winners',
+//           localField: 'results',
+//           foreignField: '_id',
+//           as: 'winnerDetails',
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: 'payments',
+//           localField: '_id',
+//           foreignField: 'winnerid',
+//           as: 'paymentDetails',
+//         },
+//       },
+//       {
+//         $lookup: {
+//           from: 'items',
+//           localField: 'winnerDetails.itemId',
+//           foreignField: '_id',
+//           as: 'itemDetails',
+//         },
+//       },
+//       {
+//         $addFields: {
+//           approvedWinnerCount: {
+//             $size: {
+//               $filter: {
+//                 input: '$winnerDetails',
+//                 as: 'winner',
+//                 cond: {
+//                   $and: [
+//                     { $eq: ['$$winner.status', 'winner'] },
+//                     { $eq: ['$$winner.adminApproval', true] }
+//                   ]
+//                 }
+//               }
+//             }
+//           },
+//           pendingWinnerCount: {
+//             $size: {
+//               $filter: {
+//                 input: '$winnerDetails',
+//                 as: 'winner',
+//                 cond: {
+//                   $and: [
+//                     { $eq: ['$$winner.status', 'winner'] },
+//                     { $eq: ['$$winner.adminApproval', false] }
+//                   ]
+//                 }
+//               }
+//             }
+//           },
+//           loserCount: {
+//             $size: {
+//               $filter: {
+//                 input: '$winnerDetails',
+//                 as: 'winner',
+//                 cond: { $eq: ['$$winner.status', 'loser'] }
+//               }
+//             }
+//           },
+//           cancelledCount: {
+//             $size: {
+//               $filter: {
+//                 input: '$winnerDetails',
+//                 as: 'winner',
+//                 cond: { $eq: ['$$winner.status', 'cancelled'] }
+//               }
+//             }
+//           },
+//           inProgressCount: {
+//             $size: {
+//               $filter: {
+//                 input: '$winnerDetails',
+//                 as: 'winner',
+//                 cond: { $eq: ['$$winner.status', 'inprogress'] }
+//               }
+//             }
+//           },
+//           totalAmount: {
+//             $sum: {
+//               $map: {
+//                 input: '$winnerDetails',
+//                 as: 'winner',
+//                 in: {
+//                   $cond: {
+//                     if: {
+//                       $or: [
+//                         { $eq: ['$$winner.status', 'winner'] },
+//                         { $eq: ['$$winner.status', 'winner pending for admin approval'] }
+//                       ]
+//                     },
+//                     then: '$$winner.amount',
+//                     else: 0
+//                   }
+//                 }
+//               }
+//             }
+//           },
+//           payed: {
+//             $cond: {
+//               if: {
+//                 $gt: [{
+//                   $size: {
+//                     $filter: {
+//                       input: '$paymentDetails',
+//                       as: 'payment',
+//                       cond: {
+//                         $or: [
+//                           { $eq: ['$$payment.status', 'pending'] },
+//                           { $eq: ['$$payment.status', 'rejected'] },
+//                           { $eq: ['$$payment.status', 'completed'] }
+//                         ]
+//                       }
+//                     }
+//                   }
+//                 }, 0]
+//               },
+//               then: { 
+//                 $cond: {
+//                   if: {
+//                     $or: [
+//                       { $eq: [{ $arrayElemAt: ['$paymentDetails.status', 0] }, 'completed'] },
+//                       { $eq: [{ $arrayElemAt: ['$paymentDetails.status', 0] }, 'pending'] },
+//                       { $eq: [{ $arrayElemAt: ['$paymentDetails.status', 0] }, 'rejected'] }
+//                     ]
+//                   },
+//                   then: { $arrayElemAt: ['$paymentDetails.status', 0] },
+//                   else: false
+//                 }
+//               },
+//               else: false
+//             }
+//           }
+//         }
+//       },
+//       // {
+//       //   $addFields: {
+//       //     'winnerDetails.finalStatus': {
+//       //       $map: {
+//       //         input: '$winnerDetails',
+//       //         as: 'winner',
+//       //         in: {
+//       //           $cond: {
+//       //             if: { $eq: ['$$winner.status', 'winner'] },
+//       //             then: {
+//       //               $cond: {
+//       //                 if: { $eq: ['$$winner.adminApproval', true] },
+//       //                 then: 'winner and admin approved',
+//       //                 else: 'winner pending for admin approval'
+//       //               }
+//       //             },
+//       //             else: '$$winner.status'
+//       //           }
+//       //         }
+//       //       }
+//       //     }
+//       //   }
+//       // },
+//       {
+//         $project: {
+//           _id: 0,
+//           subcategoryId: '$subcategoryDetails._id',
+//           subcategoryName: '$subcategoryDetails.name',
+//           totalItems: { $sum: 1 },
+//           approvedWinnerCount: 1,
+//           pendingWinnerCount: 1,
+//           loserCount: 1,
+//           cancelledCount: 1,
+//           inProgressCount: 1,
+//           totalAmount: 1,
+//           payed: 1,
+//           items: {
+//             _id: 1,
+//             itemId: { $arrayElemAt: ['$winnerDetails.itemId', 0] },
+//             item: {
+//               $arrayElemAt: ['$itemDetails', 0]
+//             },
+//             amount: '$amount',
+//             winnerDetails: '$winnerDetails',
+//             paymentDetails: '$paymentDetails' // Include payment details in the output
+//           }
+//         }
+//       }
+//     ]);
+
+//     // Apply status filter if provided
+//     if (statusFilter) {
+//       itemDetails = itemDetails.map(group => {
+//         group.items = group.items.filter(item => item.status === statusFilter);
+//         return group;
+//       }).filter(group => group.items.length > 0);
+//     }
+
+//     if (!itemDetails.length) {
+//       return res.status(404).json({ message: 'No items found for the specified subcategory result and status.' });
+//     }
+
+//     res.status(200).json({ status: "success", itemDetails:itemDetails[0] });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Internal server error' });
+//   }
+// };
+
+
+
+
+
+
+
+
+
+
 exports.getItemBidDetails2 = async (req, res) => {
   const userId = new mongoose.Types.ObjectId(req.params.userId);
   const subcategoryResultId = new mongoose.Types.ObjectId(req.params.subcategoryResultId);
@@ -956,38 +1189,26 @@ exports.getItemBidDetails2 = async (req, res) => {
               },
               else: false
             }
+          },
+          totalItems: { $size: '$winnerDetails' },
+          itemIds: {
+            $map: {
+              input: '$winnerDetails',
+              as: 'winner',
+              in: '$$winner.itemId'
+            }
           }
         }
       },
-      // {
-      //   $addFields: {
-      //     'winnerDetails.finalStatus': {
-      //       $map: {
-      //         input: '$winnerDetails',
-      //         as: 'winner',
-      //         in: {
-      //           $cond: {
-      //             if: { $eq: ['$$winner.status', 'winner'] },
-      //             then: {
-      //               $cond: {
-      //                 if: { $eq: ['$$winner.adminApproval', true] },
-      //                 then: 'winner and admin approved',
-      //                 else: 'winner pending for admin approval'
-      //               }
-      //             },
-      //             else: '$$winner.status'
-      //           }
-      //         }
-      //       }
-      //     }
-      //   }
-      // },
       {
         $project: {
           _id: 0,
           subcategoryId: '$subcategoryDetails._id',
           subcategoryName: '$subcategoryDetails.name',
-          totalItems: { $sum: 1 },
+         
+      
+          
+          totalItems: 1, // Use calculated totalItems from $addFields
           approvedWinnerCount: 1,
           pendingWinnerCount: 1,
           loserCount: 1,
@@ -996,14 +1217,36 @@ exports.getItemBidDetails2 = async (req, res) => {
           totalAmount: 1,
           payed: 1,
           items: {
-            _id: 1,
-            itemId: { $arrayElemAt: ['$winnerDetails.itemId', 0] },
-            item: {
-              $arrayElemAt: ['$itemDetails', 0]
-            },
-            amount: '$amount',
-            winnerDetails: '$winnerDetails',
-            paymentDetails: '$paymentDetails' // Include payment details in the output
+            $map: {
+              input: '$winnerDetails',
+              as: 'winner',
+              in: {
+                _id: '$$winner._id',
+                itemId: '$$winner.itemId',
+                item: {
+                  $arrayElemAt: [
+                    {
+                      $filter: {
+                        input: '$itemDetails',
+                        as: 'item',
+                        cond: { $eq: ['$$item._id', '$$winner.itemId'] }
+                      }
+                    },
+                    0
+                  ]
+                },
+                amount: '$$winner.amount',
+                status: '$$winner.status',
+                adminApproval: '$$winner.adminApproval',
+                paymentDetails: {
+                  $filter: {
+                    input: '$paymentDetails',
+                    as: 'payment',
+                    cond: { $eq: ['$$payment.winnerid', '$$winner._id'] }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -1021,9 +1264,10 @@ exports.getItemBidDetails2 = async (req, res) => {
       return res.status(404).json({ message: 'No items found for the specified subcategory result and status.' });
     }
 
-    res.status(200).json({ status: "success", itemDetails:itemDetails[0] });
+    res.status(200).json({ status: "success", itemDetails: itemDetails[0] });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+

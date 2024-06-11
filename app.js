@@ -26,15 +26,47 @@ const notificationsroute = require('./routes/notificationsroute');
 const testrout = require('./routes/testrouting');
 const bookingfiles = require('./routes/bookingfilesRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const adminRoutes = require('./routes/adminRoutes'); 
+const permissionRoutes = require('./routes/permissions');
+const {initializeApp, applicationDefault } = require('firebase-admin/app');
+const{ getMessaging } = require('firebase-admin/messaging');
+const admin = require('firebase-admin');
 
-
-
+process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
 
 
 const path = require('path');
 
 
+app.post("/api/v1/send", function (req, res) {
+  const receivedToken = 'eEQj-fiHDJHXSxeWxkV4X6:APA91bFKWyToFnXNtVuqGnmCLCzhaGQXuW4V7tM2yIqwaF-StpUMo3cHB2Z7nb_TPlLKdOnRZlwqgCKsxzf5dekLRog5rZY-6-c2n50_L8RKWaccqscNCEKR9G7GjTP8IP4t9AaaMar0';
+  
+  const message = {
+    notification: {
+      title: "Notif",
+      body: 'This is a Test Notification'
+    },
+
+  };
+  
+  getMessaging()
+    .sendToDevice(receivedToken,message)
+    .then((response) => {
+      res.status(200).json({
+        message: "Successfully sent message",
+        token: receivedToken,
+      });
+      console.log("Successfully sent message:", response);
+    })
+    .catch((error) => {
+      res.status(400);
+      res.send(error);
+      console.log("Error sending message:", error);
+    });
+  
+  
+});
 
 
 // 1) MIDDLEWARES
@@ -57,8 +89,8 @@ app.use((req, res, next) => {
 app.get('/', (req, res) => {
   res.send('Welcome to the Online Auction System API MAZADAT');
 });
-
-
+app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/permissions', permissionRoutes);
 app.use('/api/v1/categories', CategoryRoute);
 app.use('/api/v1/notifications', notificationsroute);
 app.use('/api/v1/test', testrout);

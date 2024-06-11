@@ -25,3 +25,19 @@ const SubcategoryResultSchema = new mongoose.Schema({
 SubcategoryResultSchema.index({ userId: 1, subcategory: 1,status:1 }, { unique: true });
 
 module.exports = mongoose.model('SubcategoryResult', SubcategoryResultSchema);
+
+
+SubcategoryResultSchema.pre('find', function(next) {
+  this.populate({
+    path: 'subcategory',
+  }).populate({
+    path: 'results',
+  });
+
+  next();
+});
+
+
+
+
+
