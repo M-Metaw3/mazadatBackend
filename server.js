@@ -1,20 +1,20 @@
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const { createNotificationNamespace, setupNotificationInterval } = require('./sockets/notifications');
-const {initializeApp, applicationDefault } = require('firebase-admin/app');
-const{ getMessaging } = require('firebase-admin/messaging');
+// const {initializeApp, applicationDefault } = require('firebase-admin/app');
+// const{ getMessaging } = require('firebase-admin/messaging');
 
-process.env.GOOGLE_APPLICATION_CREDENTIALS;
-
-
+// process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
 
 
 
-initializeApp({
-  credential: applicationDefault(),
-  projectId: 'potion-for-creators',
-});
+
+
+// initializeApp({
+//   credential: applicationDefault(),
+//   projectId: 'potion-for-creators',
+// });
 
 
 
