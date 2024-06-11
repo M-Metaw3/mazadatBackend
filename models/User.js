@@ -5,6 +5,8 @@ const  Schema  = mongoose.Schema;
 
 const user = new Schema({
   name: { type: String, required: true },
+  fcmToken: { type: String, unique: true },  // Path to ID image
+  islogin: { type: Boolean, default: false },
   email: { type: String, required: true, unique: true },
   specialist: { type: String },
   companyname: { type: String },
@@ -56,7 +58,7 @@ select:false
     pathname: String
   },
   required: [true, 'Please upload an image for the id image!'],
-  unique: true },  // Path to ID image
+  unique: true }, 
 }, {
   toJSON: { virtuals: true },
   toObject: { virtuals: true },
