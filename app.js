@@ -28,6 +28,11 @@ const bookingfiles = require('./routes/bookingfilesRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const adminRoutes = require('./routes/adminRoutes'); 
 const permissionRoutes = require('./routes/permissions');
+const privacyPolicyRoutes = require('./routes/privacyPolicy');
+const socialMediaLinkRoutes = require('./routes/socialMediaLink');
+const phoneNumberRoutes = require('./routes/phoneNumber');
+const appShareLinkRoutes = require('./routes/appShareLink');
+
 // const {initializeApp, applicationDefault } = require('firebase-admin/app');
 // const{ getMessaging } = require('firebase-admin/messaging');
 // const admin = require('firebase-admin');
@@ -89,6 +94,21 @@ app.use((req, res, next) => {
 app.get('/', (req, res) => {
   res.send('Welcome to the Online Auction System API MAZADAT');
 });
+
+
+
+app.use('/api/v1/privacyPolicy', privacyPolicyRoutes);
+app.use('/api/v1/socialMediaLink', socialMediaLinkRoutes);
+app.use('/api/v1/phoneNumber', phoneNumberRoutes);
+app.use('/api/v1/appShareLink', appShareLinkRoutes);
+
+
+
+
+
+
+
+
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/permissions', permissionRoutes);
 app.use('/api/v1/categories', CategoryRoute);

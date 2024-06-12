@@ -27,6 +27,7 @@ const {
   forgotPassword,
   resetPassword,
   changePassword,
+  logoutUser,
   updateProfile,getuser,blockUser,getme
 } = require('../controllers/authcontroller/authcontroller');
 const authMiddleware = require('../middleware/authMiddleware');
@@ -114,4 +115,6 @@ router.put('/update-profile/:userId', upload.fields([
 router.patch('/:userId/block', blockUser);
 
 
+
+router.post('/logout', authMiddleware, logoutUser);
 module.exports = router;

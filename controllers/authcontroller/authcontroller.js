@@ -242,6 +242,8 @@ const loginUser = async (req, res,next) => {
       return next(new AppError('you are blocked', 400));
     }
 user.passwordHash=undefined;
+await User.findByIdAndUpdate(user._id, { isLogin: false });
+
 return createSendToken(user, 200, res);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });
@@ -350,8 +352,26 @@ const blockUser = async (req, res) => {
     const user = await User.findById(id).select('walletBalance walletTransactions');
   
     res.json({status:"success",data:user})};
+
+
+    const logoutUser = async (req, res) => {
+      try {
+        const userId = req.user.id;
+    
+        // Update isLogin status to false
+        await User.findByIdAndUpdate(userId, { isLogin: false });
+    
+        // Optionally, you can also invalidate the token if you're using token-based authentication
+        // For example, add the token to a blacklist (implementation depends on your token strategy)
+    
+        res.status(200).json({ message: 'Logged out successfully.' });
+      } catch (error) {
+        res.status(500).json({ message: 'An error occurred during logout.', error: error.message });
+      }
+    };
 module.exports = {
   getallusers,
+  logoutUser,
   registerUser,
   verifyOTP,
   loginUser,

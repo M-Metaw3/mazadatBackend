@@ -1,5 +1,6 @@
 const express = require('express');
 const subcategoryController = require('../controllers/selectedthinginapp/subcategoryControllerselected');
+const privacyPolicyController = require('../controllers/privacyPolicyController/aggergation/aggregateController');
 
 const Bid = require('../models/Bid');
 const Subcategory = require('../models/subcategory');
@@ -10,6 +11,23 @@ const Item = require('../models/item');
 const mongoose = require('mongoose');
 const catchAsync = require('../utils/catchAsync');
 const router = express.Router();
+
+
+const localization = require('../middleware/localization');
+
+router.get('/privacy',localization, privacyPolicyController.getAggregateData );
+
+
+
+
+
+
+
+
+
+
+
+
 
 router.get('/selected', subcategoryController.getSelectedSubcategories);
 router.get('/search',catchAsync(async (req, res, next) => {
