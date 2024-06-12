@@ -27,7 +27,7 @@ router.get('/', async (req, res) => {
         body: 'تم ترسية المزاد بنجاح  ',
       
       },
-      token: 'eEQj-fiHDJHXSxeWxkV4X6:APA91bFKWyToFnXNtVuqGnmCLCzhaGQXuW4V7tM2yIqwaF-StpUMo3cHB2Z7nb_TPlLKdOnRZlwqgCKsxzf5dekLRog5rZY-6-c2n50_L8RKWaccqscNCEKR9G7GjTP8IP4t9AaaMar0',
+      token: 'eEQj-fiHDJHXSxeWxkV4X6:APA91bG8_uV_EkU4IVBKkqB3XrfcsBWnwXSvS-JH-RVlYk5WGKEs1ZVMvbXZhSvYyXrc-jE5vHUt9v5BXMFdNKFQzFbMubS3WLg1MW0PWdGWECzFPky4Q4Mf-uBAZyO27H_5xEs1XjHz',
       android: {
         notification: {
           image: 'https://foo.bar.pizza-monster.png'

@@ -209,7 +209,7 @@ console.log(userId,otpCode)
 
 const loginUser = async (req, res,next) => {
   try {
-    const { phoneNumber, password ,idNumber } = req.body;
+    const { phoneNumber, password ,idNumber,fcmToken } = req.body;
     let query;
     if (idNumber) {
       if(idNumber.length>14){
@@ -242,7 +242,7 @@ const loginUser = async (req, res,next) => {
       return next(new AppError('you are blocked', 400));
     }
 user.passwordHash=undefined;
-await User.findByIdAndUpdate(user._id, { isLogin: false });
+await User.findByIdAndUpdate(user._id, { isLogin: true,fcmToken });
 
 return createSendToken(user, 200, res);
   } catch (error) {

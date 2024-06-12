@@ -32,6 +32,8 @@ const privacyPolicyRoutes = require('./routes/privacyPolicy');
 const socialMediaLinkRoutes = require('./routes/socialMediaLink');
 const phoneNumberRoutes = require('./routes/phoneNumber');
 const appShareLinkRoutes = require('./routes/appShareLink');
+const chargewallet = require('./routes/walletCharger');
+
 
 // const {initializeApp, applicationDefault } = require('firebase-admin/app');
 // const{ getMessaging } = require('firebase-admin/messaging');
@@ -98,6 +100,8 @@ app.get('/', (req, res) => {
 
 
 app.use('/api/v1/privacyPolicy', privacyPolicyRoutes);
+app.use('/api/v1/walletcharge', chargewallet);
+
 app.use('/api/v1/socialMediaLink', socialMediaLinkRoutes);
 app.use('/api/v1/phoneNumber', phoneNumberRoutes);
 app.use('/api/v1/appShareLink', appShareLinkRoutes);
