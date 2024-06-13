@@ -64,7 +64,7 @@ exports.reviewWalletCharger = catchAsync(async (req, res, next) => {
     await user.save();
 
     // Send notification to user
-    if (user && user.fcmToken) {
+    if (user && user.fcmToken&&user.islogin) {
       const message = {
         notification: {
           title: 'Payment Approved',

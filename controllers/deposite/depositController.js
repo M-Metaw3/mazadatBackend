@@ -43,8 +43,8 @@ exports.createDeposit = async (req, res,next) => {
       seenByadmin: billingmethod === 'wallet' ? true : false,
 
     });
+    const user = await User.findById(userId).session(session);
     if (billingmethod === 'wallet') {
-      const user = await User.findById(userId).session(session);
       if (user.walletBalance < amount) {
 
      return next(new AppError('Insufficient balance', 400));
@@ -65,7 +65,7 @@ exports.createDeposit = async (req, res,next) => {
       itemId: item
     });
 
-    if (user && user.fcmToken &&islogin ) {
+    if (user && user.fcmToken &&user.islogin ) {
       const message = {
         notification: {
           title: ' booking was successful ',

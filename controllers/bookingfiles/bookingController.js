@@ -29,8 +29,8 @@ exports.bookFile = async (req, res,next) => {
     });
 
     // Handle wallet payment
+    const user = await User.findById(userId).session(session);
     if (billingmethod === 'wallet') {
-      const user = await User.findById(userId).session(session);
       if (user.walletBalance < amount) {
         throw new Error('Insufficient wallet balance');
       }
@@ -49,9 +49,10 @@ exports.bookFile = async (req, res,next) => {
       message: billingmethod === 'wallet' ? `Your booking was successful ${req.item.name}.` : `Your booking files ${req.item.name} is pending admin approval.`,
       itemId
     });
+    console.log(user)
 
-    const user = await User.findById(userId).select('fcmToken islogin');
-    if (user && user.fcmToken &&islogin ) {
+ 
+    if (user && user.fcmToken &&user.islogin ) {
       const message = {
         notification: {
           title: ' booking was successful ',
