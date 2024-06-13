@@ -17,7 +17,7 @@
 
 // module.exports = admin;
 
-
+require('dotenv').config();
 const admin = require('firebase-admin');
 const path = require('path');
 const fs = require('fs');

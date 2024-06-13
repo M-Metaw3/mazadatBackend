@@ -6,6 +6,7 @@ const Notification = require('../../models/notification');
 const mongoose = require('mongoose');
 const factory = require('../../utils/apiFactory');
 const AppError = require('../../utils/appError');
+const admin = require('../../firebase/firebaseAdmin'); // Firebase Admin SDK
 
 exports.bookFile = async (req, res,next) => {
   const session = await mongoose.startSession();
@@ -48,6 +49,30 @@ exports.bookFile = async (req, res,next) => {
       message: billingmethod === 'wallet' ? `Your booking was successful ${req.item.name}.` : `Your booking files ${req.item.name} is pending admin approval.`,
       itemId
     });
+
+    const user = await User.findById(userId).select('fcmToken islogin');
+    if (user && user.fcmToken &&islogin ) {
+      const message = {
+        notification: {
+          title: ' booking was successful ',
+          body: billingmethod === 'wallet' ? `Your booking was successful ${req.item.name}.` : `Your booking files ${req.item.name} is pending admin approval.` 
+        },
+        token: user.fcmToken,
+      };
+      try {
+        await admin.messaging().send(message);
+        console.log('Notification sent successfully');
+      } catch (error) {
+        console.error('Error sending notification:', error);
+        // Handle the error, such as removing the invalid token from the database
+        // or implementing retry logic
+      }
+    } else {
+      console.error('User FCM token not found or invalid');
+      // Handle the case where the user's FCM token is missing or invalid
+    }
+
+
     await notification.save({ session });
 
     await session.commitTransaction();

@@ -1715,7 +1715,7 @@ const SubcategoryResult = require('../models/SubcategoryResult');
 
 
 const { startSession } = require('mongoose');
-const admin = require('../firebase/firebaseAdmin');  // Firebase Admin SDK
+const admin = require('../firebase/firebaseAdmin'); 
  // Assuming you have a User model
 
 const notifyAuctionEvents = async (notificationNamespace) => {

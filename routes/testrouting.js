@@ -7,7 +7,6 @@ const mult = require('../utils/multer');
 const AppError = require('../utils/appError');
 const router = express.Router();
 
-
   router.get('/:userId',test.getUserBidHistory);
   router.get('/:userId/item/:itemId',test.getUserBidHistory);
 

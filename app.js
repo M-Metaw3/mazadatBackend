@@ -42,7 +42,7 @@ const chargewallet = require('./routes/walletCharger');
 // process.env.GOOGLE_APPLICATION_CREDENTIALS;
 
 
-
+console.log("aaaaaa",process.env.GOOGLE_APPLICATION_CREDENTIALS);
 const path = require('path');
 
 

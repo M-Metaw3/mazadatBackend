@@ -1678,3 +1678,124 @@ exports.getItemBidDetails2 = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+exports.getEndedSubcategories = async (req, res) => {
+  try {
+    const endedSubcategories = await Subcategory.aggregate([
+      {
+        $match: {
+          endDate: { $lt: new Date() },
+        },
+      },
+      {
+        $lookup: {
+          from: 'bids',
+          localField: '_id',
+          foreignField: 'subcategory',
+          as: 'bids',
+        },
+      },
+      {
+        $lookup: {
+          from: 'items',
+          localField: '_id',
+          foreignField: 'subcategoryId',
+          as: 'items',
+        },
+      },
+      {
+        $lookup: {
+          from: 'winners',
+          localField: '_id',
+          foreignField: 'subcategory',
+          as: 'winners',
+        },
+      },
+      {
+        $addFields: {
+          totalBids: { $size: '$bids' },
+          totalBidAmount: { $sum: '$bids.amount' },
+          totalWinners: {
+            $size: {
+              $filter: {
+                input: '$winners',
+                as: 'winner',
+                cond: { $eq: ['$$winner.status', 'winner'] },
+              },
+            },
+          },
+          totalLosers: {
+            $size: {
+              $filter: {
+                input: '$winners',
+                as: 'winner',
+                cond: { $eq: ['$$winner.status', 'loser'] },
+              },
+            },
+          },
+          itemCount: { $size: '$items' },
+        },
+      },
+      {
+        $sort: { endDate: -1 },
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          description: 1,
+          deposit: 1,
+          fileprice: 1,
+          notifiedStart: 1,
+          notifiedEnd: 1,
+          files: 1,
+          categoryId: 1,
+          seletedtoslider: 1,
+          imagecover: 1,
+          startDate: 1,
+          endDate: 1,
+          totalBids: 1,
+          totalBidAmount: 1,
+          totalWinners: 1,
+          totalLosers: 1,
+          itemCount: 1,
+          items: 1,
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      status: 'success',
+      data: endedSubcategories,
+    });
+  } catch (error) {
+    console.error('Error fetching ended subcategories:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Internal server error',
+    });
+  }
+};

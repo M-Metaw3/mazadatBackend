@@ -18,7 +18,7 @@ const user = new Schema({
 
   walletTransactions: [{
     amount: Number,
-    type: { type: String, enum: ['deposit', 'refund',"winner",'withdrawal',"payment"] },
+    type: { type: String, enum: ['deposit', 'refund',"winner",'withdrawal',"payment","charge"] },
     description: String,
     timestamp: { type: Date, default: Date.now },
   }],
