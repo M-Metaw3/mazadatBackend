@@ -643,137 +643,137 @@ exports.getItemBidDetails = async (req, res) => {
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
-// exports.aggregateSubcategoryResults = async (req,res) => {
+exports.aggregateSubcategoryResults = async (req,res) => {
 
-// const userId = req.params.id;
-// const statusFilter = req.query.status; // Get status filter from query parameters
-// try {
-//   // Aggregate user bid history from SubcategoryResult
-//   let bidHistory = await SubcategoryResult.aggregate([
-//     { $match: { userId: new mongoose.Types.ObjectId(userId) } },
-//     {
-//       $lookup: {
-//         from: 'subcategories',
-//         localField: 'subcategory',
-//         foreignField: '_id',
-//         as: 'subcategory',
-//       },
-//     },
-//     { $unwind: '$subcategory' },
-//     {
-//       $lookup: {
-//         from: 'winners',
-//         localField: 'results',
-//         foreignField: '_id',
-//         as: 'winnerDetails',
-//       },
-//     },
-//     {
-//       $addFields: {
-//         approvedWinnerCount: {
-//           $size: {
-//             $filter: {
-//               input: '$winnerDetails',
-//               as: 'winner',
-//               cond: {
-//                 $and: [
-//                   { $eq: ['$$winner.status', 'winner'] },
-//                   { $eq: ['$$winner.adminApproval', true] }
-//                 ]
-//               }
-//             }
-//           }
-//         },
-//         pendingWinnerCount: {
-//           $size: {
-//             $filter: {
-//               input: '$winnerDetails',
-//               as: 'winner',
-//               cond: {
-//                 $and: [
-//                   { $eq: ['$$winner.status', 'winner'] },
-//                   { $eq: ['$$winner.adminApproval', false] }
-//                 ]
-//               }
-//             }
-//           }
-//         },
-//         loserCount: {
-//           $size: {
-//             $filter: {
-//               input: '$winnerDetails',
-//               as: 'winner',
-//               cond: { $eq: ['$$winner.status', 'loser'] }
-//             }
-//           }
-//         },
-//         cancelledCount: {
-//           $size: {
-//             $filter: {
-//               input: '$winnerDetails',
-//               as: 'winner',
-//               cond: { $eq: ['$$winner.status', 'cancelled'] }
-//             }
-//           }
-//         },
-//         inProgressCount: {
-//           $size: {
-//             $filter: {
-//               input: '$winnerDetails',
-//               as: 'winner',
-//               cond: { $eq: ['$$winner.status', 'inprogress'] }
-//             }
-//           }
-//         }
-//       }
-//     },
-//     {
-//       $group: {
-//         _id: {
-//           subcategoryId: '$subcategory._id',
-//           subcategoryName: '$subcategory.name'
-//         },
-//         totalItems: { $sum: 1 },
-//         approvedWinnerCount: { $sum: '$approvedWinnerCount' },
-//         pendingWinnerCount: { $sum: '$pendingWinnerCount' },
-//         loserCount: { $sum: '$loserCount' },
-//         cancelledCount: { $sum: '$cancelledCount' },
-//         inProgressCount: { $sum: '$inProgressCount' },
-//         items: { $push: '$$ROOT' }
-//       }
-//     },
-//     {
-//       $project: {
-//         _id: 0,
-//         subcategoryId: '$_id.subcategoryId',
-//         subcategoryName: '$_id.subcategoryName',
-//         totalItems: 1,
-//         approvedWinnerCount: 1,
-//         pendingWinnerCount: 1,
-//         loserCount: 1,
-//         cancelledCount: 1,
-//         inProgressCount: 1,
-//         items: 1,
-//         itemCount: { $size: "$items" } // Add item count for each subcategory
-//       }
-//     }
-//   ]);
+const userId = req.params.id;
+const statusFilter = req.query.status; // Get status filter from query parameters
+try {
+  // Aggregate user bid history from SubcategoryResult
+  let bidHistory = await SubcategoryResult.aggregate([
+    { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+    {
+      $lookup: {
+        from: 'subcategories',
+        localField: 'subcategory',
+        foreignField: '_id',
+        as: 'subcategory',
+      },
+    },
+    { $unwind: '$subcategory' },
+    {
+      $lookup: {
+        from: 'winners',
+        localField: 'results',
+        foreignField: '_id',
+        as: 'winnerDetails',
+      },
+    },
+    {
+      $addFields: {
+        approvedWinnerCount: {
+          $size: {
+            $filter: {
+              input: '$winnerDetails',
+              as: 'winner',
+              cond: {
+                $and: [
+                  { $eq: ['$$winner.status', 'winner'] },
+                  { $eq: ['$$winner.adminApproval', true] }
+                ]
+              }
+            }
+          }
+        },
+        pendingWinnerCount: {
+          $size: {
+            $filter: {
+              input: '$winnerDetails',
+              as: 'winner',
+              cond: {
+                $and: [
+                  { $eq: ['$$winner.status', 'winner'] },
+                  { $eq: ['$$winner.adminApproval', false] }
+                ]
+              }
+            }
+          }
+        },
+        loserCount: {
+          $size: {
+            $filter: {
+              input: '$winnerDetails',
+              as: 'winner',
+              cond: { $eq: ['$$winner.status', 'loser'] }
+            }
+          }
+        },
+        cancelledCount: {
+          $size: {
+            $filter: {
+              input: '$winnerDetails',
+              as: 'winner',
+              cond: { $eq: ['$$winner.status', 'cancelled'] }
+            }
+          }
+        },
+        inProgressCount: {
+          $size: {
+            $filter: {
+              input: '$winnerDetails',
+              as: 'winner',
+              cond: { $eq: ['$$winner.status', 'inprogress'] }
+            }
+          }
+        }
+      }
+    },
+    {
+      $group: {
+        _id: {
+          subcategoryId: '$subcategory._id',
+          subcategoryName: '$subcategory.name'
+        },
+        totalItems: { $sum: 1 },
+        approvedWinnerCount: { $sum: '$approvedWinnerCount' },
+        pendingWinnerCount: { $sum: '$pendingWinnerCount' },
+        loserCount: { $sum: '$loserCount' },
+        cancelledCount: { $sum: '$cancelledCount' },
+        inProgressCount: { $sum: '$inProgressCount' },
+        items: { $push: '$$ROOT' }
+      }
+    },
+    {
+      $project: {
+        _id: 0,
+        subcategoryId: '$_id.subcategoryId',
+        subcategoryName: '$_id.subcategoryName',
+        totalItems: 1,
+        approvedWinnerCount: 1,
+        pendingWinnerCount: 1,
+        loserCount: 1,
+        cancelledCount: 1,
+        inProgressCount: 1,
+        items: 1,
+        itemCount: { $size: "$items" } // Add item count for each subcategory
+      }
+    }
+  ]);
 
-//   // Apply status filter if provided
-//   if (statusFilter) {
-//     bidHistory = bidHistory.map(group => {
-//       group.items = group.items.filter(item => item.status === statusFilter);
-//       return group;
-//     }).filter(group => group.items.length > 0);
-//   }
+  // Apply status filter if provided
+  if (statusFilter) {
+    bidHistory = bidHistory.map(group => {
+      group.items = group.items.filter(item => item.status === statusFilter);
+      return group;
+    }).filter(group => group.items.length > 0);
+  }
 
-//   res.status(200).json({ status: "success", count: bidHistory.length, bidHistory:bidHistory[0] });
-// } catch (error) {
-//   console.error(error);
-//   res.status(500).json({ message: 'Internal server error' });
-// }
+  res.status(200).json({ status: "success", count: bidHistory.length, bidHistory:bidHistory[0] });
+} catch (error) {
+  console.error(error);
+  res.status(500).json({ message: 'Internal server error' });
+}
 
-// };
+};
 
 
 
@@ -793,150 +793,461 @@ exports.getItemBidDetails = async (req, res) => {
 
 
 
-exports.aggregateSubcategoryResults = async (req, res) => {
-  const userId = req.params.id;
-  const statusFilter = req.query.status; // Get status filter from query parameters
+// exports.aggregateSubcategoryResults = async (req, res) => {
+//   const userId = req.params.id;
+//   const statusFilter = req.query.status; // Get status filter from query parameters
 
-  try {
-    // Aggregate user bid history from SubcategoryResult
-    let bidHistory = await SubcategoryResult.aggregate([
-      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
-      {
-        $lookup: {
-          from: 'subcategories',
-          localField: 'subcategory',
-          foreignField: '_id',
-          as: 'subcategory',
-        },
-      },
-      { $unwind: '$subcategory' },
-      {
-        $lookup: {
-          from: 'categories',
-          localField: 'subcategory.categoryId',
-          foreignField: '_id',
-          as: 'category',
-        },
-      },
-      { $unwind: '$category' },
-      {
-        $lookup: {
-          from: 'winners',
-          localField: 'results',
-          foreignField: '_id',
-          as: 'winnerDetails',
-        },
-      },
-      {
-        $addFields: {
-          approvedWinnerCount: {
-            $size: {
-              $filter: {
-                input: '$winnerDetails',
-                as: 'winner',
-                cond: {
-                  $and: [
-                    { $eq: ['$$winner.status', 'winner'] },
-                    { $eq: ['$$winner.adminApproval', true] }
-                  ]
-                }
-              }
-            }
-          },
-          pendingWinnerCount: {
-            $size: {
-              $filter: {
-                input: '$winnerDetails',
-                as: 'winner',
-                cond: {
-                  $and: [
-                    { $eq: ['$$winner.status', 'winner'] },
-                    { $eq: ['$$winner.adminApproval', false] }
-                  ]
-                }
-              }
-            }
-          },
-          loserCount: {
-            $size: {
-              $filter: {
-                input: '$winnerDetails',
-                as: 'winner',
-                cond: { $eq: ['$$winner.status', 'loser'] }
-              }
-            }
-          },
-          cancelledCount: {
-            $size: {
-              $filter: {
-                input: '$winnerDetails',
-                as: 'winner',
-                cond: { $eq: ['$$winner.status', 'cancelled'] }
-              }
-            }
-          },
-          inProgressCount: {
-            $size: {
-              $filter: {
-                input: '$winnerDetails',
-                as: 'winner',
-                cond: { $eq: ['$$winner.status', 'inprogress'] }
-              }
-            }
-          },
-          subcategoryName: '$subcategory.name',
-          categoryName: '$category.name',
-        }
-      },
-      {
-        $group: {
-          _id: {
-            subcategoryId: '$subcategory._id',
-            subcategoryName: '$subcategoryName',
-            categoryName: '$categoryName'
-          },
-          totalItems: { $sum: 1 },
-          approvedWinnerCount: { $sum: '$approvedWinnerCount' },
-          pendingWinnerCount: { $sum: '$pendingWinnerCount' },
-          loserCount: { $sum: '$loserCount' },
-          cancelledCount: { $sum: '$cancelledCount' },
-          inProgressCount: { $sum: '$inProgressCount' },
-          items: { $push: '$$ROOT' }
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          subcategoryId: '$_id.subcategoryId',
-          subcategoryName: '$_id.subcategoryName',
-          categoryName: '$_id.categoryName',
-          totalItems: 1,
-          approvedWinnerCount: 1,
-          pendingWinnerCount: 1,
-          loserCount: 1,
-          cancelledCount: 1,
-          inProgressCount: 1,
-          items: 1,
-          itemCount: { $size: "$items" } // Add item count for each subcategory
-        }
-      }
-    ]);
+//   try {
+//     // Aggregate user bid history from SubcategoryResult
+//     let bidHistory = await SubcategoryResult.aggregate([
+//       { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+//       {
+//         $lookup: {
+//           from: 'subcategories',
+//           localField: 'subcategory',
+//           foreignField: '_id',
+//           as: 'subcategory',
+//         },
+//       },
+//       { $unwind: '$subcategory' },
+//       {
+//         $lookup: {
+//           from: 'categories',
+//           localField: 'subcategory.categoryId',
+//           foreignField: '_id',
+//           as: 'category',
+//         },
+//       },
+//       { $unwind: '$category' },
+//       {
+//         $lookup: {
+//           from: 'winners',
+//           localField: 'results',
+//           foreignField: '_id',
+//           as: 'winnerDetails',
+//         },
+//       },
+//       {
+//         $addFields: {
+//           approvedWinnerCount: {
+//             $size: {
+//               $filter: {
+//                 input: '$winnerDetails',
+//                 as: 'winner',
+//                 cond: {
+//                   $and: [
+//                     { $eq: ['$$winner.status', 'winner'] },
+//                     { $eq: ['$$winner.adminApproval', true] }
+//                   ]
+//                 }
+//               }
+//             }
+//           },
+//           pendingWinnerCount: {
+//             $size: {
+//               $filter: {
+//                 input: '$winnerDetails',
+//                 as: 'winner',
+//                 cond: {
+//                   $and: [
+//                     { $eq: ['$$winner.status', 'winner'] },
+//                     { $eq: ['$$winner.adminApproval', false] }
+//                   ]
+//                 }
+//               }
+//             }
+//           },
+//           loserCount: {
+//             $size: {
+//               $filter: {
+//                 input: '$winnerDetails',
+//                 as: 'winner',
+//                 cond: { $eq: ['$$winner.status', 'loser'] }
+//               }
+//             }
+//           },
+//           cancelledCount: {
+//             $size: {
+//               $filter: {
+//                 input: '$winnerDetails',
+//                 as: 'winner',
+//                 cond: { $eq: ['$$winner.status', 'cancelled'] }
+//               }
+//             }
+//           },
+//           inProgressCount: {
+//             $size: {
+//               $filter: {
+//                 input: '$winnerDetails',
+//                 as: 'winner',
+//                 cond: { $eq: ['$$winner.status', 'inprogress'] }
+//               }
+//             }
+//           },
+//           subcategoryName: '$subcategory.name',
+//           categoryName: '$category.name',
+//         }
+//       },
+//       {
+//         $group: {
+//           _id: {
+//             subcategoryId: '$subcategory._id',
+//             subcategoryName: '$subcategoryName',
+//             categoryName: '$categoryName'
+//           },
+//           totalItems: { $sum: 1 },
+//           approvedWinnerCount: { $sum: '$approvedWinnerCount' },
+//           pendingWinnerCount: { $sum: '$pendingWinnerCount' },
+//           loserCount: { $sum: '$loserCount' },
+//           cancelledCount: { $sum: '$cancelledCount' },
+//           inProgressCount: { $sum: '$inProgressCount' },
+//           items: { $push: '$$ROOT' }
+//         }
+//       },
+//       {
+//         $project: {
+//           _id: 0,
+//           subcategoryId: '$_id.subcategoryId',
+//           subcategoryName: '$_id.subcategoryName',
+//           categoryName: '$_id.categoryName',
+//           totalItems: 1,
+//           approvedWinnerCount: 1,
+//           pendingWinnerCount: 1,
+//           loserCount: 1,
+//           cancelledCount: 1,
+//           inProgressCount: 1,
+//           items: 1,
+//           itemCount: { $size: "$items" } // Add item count for each subcategory
+//         }
+//       }
+//     ]);
 
-    // Apply status filter if provided
-    if (statusFilter) {
-      bidHistory = bidHistory.map(group => {
-        group.items = group.items.filter(item => item.status === statusFilter);
-        return group;
-      }).filter(group => group.items.length > 0);
-    }
+//     // Apply status filter if provided
+//     if (statusFilter) {
+//       bidHistory = bidHistory.map(group => {
+//         group.items = group.items.filter(item => item.status === statusFilter);
+//         return group;
+//       }).filter(group => group.items.length > 0);
+//     }
 
-    res.status(200).json({ status: "success", count: bidHistory.length, bidHistory: bidHistory });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-};
+//     res.status(200).json({ status: "success", count: bidHistory.length, bidHistory: bidHistory });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Internal server error' });
+//   }
+// };
 
+
+
+
+///////////////////////////////////
+
+////////////////////////////this is bet practice//////////////////////
+
+// exports.aggregateSubcategoryResults = async (req, res) => {
+//   const userId = req.params.id;
+//   const statusFilter = req.query.status; // Get status filter from query parameters
+
+//   try {
+//     // Aggregate user bid history from Winner collection
+//     let bidHistory = await Winner.aggregate([
+//       { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+//       {
+//         $lookup: {
+//           from: 'subcategories',
+//           localField: 'subcategory',
+//           foreignField: '_id',
+//           as: 'subcategory',
+//         },
+//       },
+//       { $unwind: '$subcategory' },
+//       {
+//         $lookup: {
+//           from: 'categories',
+//           localField: 'subcategory.categoryId',
+//           foreignField: '_id',
+//           as: 'category',
+//         },
+//       },
+//       { $unwind: '$category' },
+//       {
+//         $group: {
+//           _id: {
+//             subcategoryId: '$subcategory._id',
+//             subcategoryName: '$subcategory.name',
+//             categoryName: '$category.name'
+//           },
+//           totalItems: { $sum: 1 },
+//           approvedWinnerCount: {
+//             $sum: {
+//               $cond: [
+//                 { $and: [{ $eq: ['$status', 'winner'] }, { $eq: ['$adminApproval', true] }] },
+//                 1,
+//                 0
+//               ]
+//             }
+//           },
+//           pendingWinnerCount: {
+//             $sum: {
+//               $cond: [
+//                 { $and: [{ $eq: ['$status', 'winner'] }, { $eq: ['$adminApproval', false] }] },
+//                 1,
+//                 0
+//               ]
+//             }
+//           },
+//           loserCount: {
+//             $sum: {
+//               $cond: [{ $eq: ['$status', 'loser'] }, 1, 0]
+//             }
+//           },
+//           cancelledCount: {
+//             $sum: {
+//               $cond: [{ $eq: ['$status', 'cancelled'] }, 1, 0]
+//             }
+//           },
+//           inProgressCount: {
+//             $sum: {
+//               $cond: [{ $eq: ['$status', 'inprogress'] }, 1, 0]
+//             }
+//           },
+//           rejectedCount: {
+//             $sum: {
+//               $cond: [{ $eq: ['$status', 'regected'] }, 1, 0]
+//             }
+//           },
+//           items: { $push: '$$ROOT' }
+//         }
+//       },
+//       {
+//         $project: {
+//           _id: 0,
+//           subcategoryId: '$_id.subcategoryId',
+//           subcategoryName: '$_id.subcategoryName',
+//           categoryName: '$_id.categoryName',
+//           totalItems: 1,
+//           approvedWinnerCount: 1,
+//           pendingWinnerCount: 1,
+//           loserCount: 1,
+//           cancelledCount: 1,
+//           inProgressCount: 1,
+//           rejectedCount: 1,
+//           items: 1,
+//           itemCount: { $size: '$items' } // Add item count for each subcategory
+//         }
+//       }
+//     ]);
+
+//     // Apply status filter if provided
+//     if (statusFilter) {
+//       bidHistory = bidHistory.map(group => {
+//         group.items = group.items.filter(item => item.status === statusFilter);
+//         return group;
+//       }).filter(group => group.items.length > 0);
+//     }
+
+//     res.status(200).json({ status: "success", count: bidHistory.length, bidHistory: bidHistory });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Internal server error' });
+//   }
+// };
+
+// Define the Winner schema
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/////////////////////////////////تقسيم الكاتيجورى
+
+
+// exports.aggregateSubcategoryResults = async (req, res) => {
+//   const userId = req.params.id;
+//   const statusFilter = req.query.status; // Get status filter from query parameters
+
+//   try {
+//     // Aggregate user bid history from SubcategoryResult
+//     let bidHistory = await SubcategoryResult.aggregate([
+//       { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+//       {
+//         $lookup: {
+//           from: 'subcategories',
+//           localField: 'subcategory',
+//           foreignField: '_id',
+//           as: 'subcategory',
+//         },
+//       },
+//       { $unwind: '$subcategory' },
+//       {
+//         $lookup: {
+//           from: 'categories',
+//           localField: 'subcategory.categoryId',
+//           foreignField: '_id',
+//           as: 'category',
+//         },
+//       },
+//       { $unwind: '$category' },
+//       {
+//         $lookup: {
+//           from: 'winners',
+//           localField: 'results',
+//           foreignField: '_id',
+//           as: 'winnerDetails',
+//         },
+//       },
+//       {
+//         $addFields: {
+//           approvedWinnerCount: {
+//             $size: {
+//               $filter: {
+//                 input: '$winnerDetails',
+//                 as: 'winner',
+//                 cond: {
+//                   $and: [
+//                     { $eq: ['$$winner.status', 'winner'] },
+//                     { $eq: ['$$winner.adminApproval', true] }
+//                   ]
+//                 }
+//               }
+//             }
+//           },
+//           pendingWinnerCount: {
+//             $size: {
+//               $filter: {
+//                 input: '$winnerDetails',
+//                 as: 'winner',
+//                 cond: {
+//                   $and: [
+//                     { $eq: ['$$winner.status', 'winner'] },
+//                     { $eq: ['$$winner.adminApproval', false] }
+//                   ]
+//                 }
+//               }
+//             }
+//           },
+//           loserCount: {
+//             $size: {
+//               $filter: {
+//                 input: '$winnerDetails',
+//                 as: 'winner',
+//                 cond: { $eq: ['$$winner.status', 'loser'] }
+//               }
+//             }
+//           },
+//           cancelledCount: {
+//             $size: {
+//               $filter: {
+//                 input: '$winnerDetails',
+//                 as: 'winner',
+//                 cond: { $eq: ['$$winner.status', 'cancelled'] }
+//               }
+//             }
+//           },
+//           inProgressCount: {
+//             $size: {
+//               $filter: {
+//                 input: '$winnerDetails',
+//                 as: 'winner',
+//                 cond: { $eq: ['$$winner.status', 'inprogress'] }
+//               }
+//             }
+//           },
+//           rejectedCount: {
+//             $size: {
+//               $filter: {
+//                 input: '$winnerDetails',
+//                 as: 'winner',
+//                 cond: { $eq: ['$$winner.status', 'rejected'] }
+//               }
+//             }
+//           },
+//           subcategoryName: '$subcategory.name',
+//           categoryName: '$category.name',
+//         }
+//       },
+//       {
+//         $group: {
+//           _id: {
+//             subcategoryId: '$subcategory._id',
+//             subcategoryName: '$subcategoryName',
+//             categoryName: '$categoryName'
+//           },
+//           totalItems: { $sum: 1 },
+//           approvedWinnerCount: { $sum: '$approvedWinnerCount' },
+//           pendingWinnerCount: { $sum: '$pendingWinnerCount' },
+//           loserCount: { $sum: '$loserCount' },
+//           cancelledCount: { $sum: '$cancelledCount' },
+//           inProgressCount: { $sum: '$inProgressCount' },
+//           rejectedCount: { $sum: '$rejectedCount' },
+//           items: { $push: '$$ROOT' }
+//         }
+//       },
+//       {
+//         $project: {
+//           _id: 0,
+//           subcategoryId: '$_id.subcategoryId',
+//           subcategoryName: '$_id.subcategoryName',
+//           categoryName: '$_id.categoryName',
+//           totalItems: 1,
+//           approvedWinnerCount: 1,
+//           pendingWinnerCount: 1,
+//           loserCount: 1,
+//           cancelledCount: 1,
+//           inProgressCount: 1,
+//           rejectedCount: 1,
+//           items: 1,
+//           itemCount: { $size: "$items" } // Add item count for each subcategory
+//         }
+//       }
+//     ]);
+
+//     // Structure the response by status
+//     let response = {
+//       approved: [],
+//       pending: [],
+//       loser: [],
+//       cancelled: [],
+//       inProgress: [],
+//       rejected: []
+//     };
+
+//     bidHistory.forEach(group => {
+//       if (group.approvedWinnerCount > 0) response.approved.push(group);
+//       if (group.pendingWinnerCount > 0) response.pending.push(group);
+//       if (group.loserCount > 0) response.loser.push(group);
+//       if (group.cancelledCount > 0) response.cancelled.push(group);
+//       if (group.inProgressCount > 0) response.inProgress.push(group);
+//       if (group.rejectedCount > 0) response.rejected.push(group);
+//     });
+
+//     // Apply status filter if provided
+//     if (statusFilter) {
+//       response = { [statusFilter]: response[statusFilter] };
+//     }
+
+//     res.status(200).json({ status: "success", response });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ message: 'Internal server error' });
+//   }
+// };
 
 
 

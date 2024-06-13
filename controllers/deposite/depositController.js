@@ -18,6 +18,7 @@ const Deposit = require('../../models/Deposit');
 const ItemsSchema = require('../../models/item');
 exports.getAllDeposit = factory.getAll(Deposit);
 exports.getDeposit = factory.getOne(Deposit);
+const admin = require('../../firebase/firebaseAdmin'); // Firebase Admin SDK
 
 const mongoose = require('mongoose');
 

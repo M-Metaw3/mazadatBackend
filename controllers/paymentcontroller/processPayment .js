@@ -5,6 +5,7 @@ const Item = require('../../models/item');
 const User = require('../../models/User');
 const Notification = require('../../models/notification');
 const AppError = require('../../utils/appError');
+const admin = require('../../firebase/firebaseAdmin'); // Firebase Admin SDK
 
 const processPayment = async (req, res, next) => {
   const session = await mongoose.startSession();
@@ -33,8 +34,8 @@ const processPayment = async (req, res, next) => {
       status: billingMethod === 'wallet' ? 'completed' : 'pending'
     });
 
+    const user = await User.findById(userId).session(session);
     if (billingMethod === 'wallet') {
-      const user = await User.findById(userId).session(session);
 
       if (user.walletBalance < dueAmount) {
         await session.abortTransaction();
@@ -57,6 +58,31 @@ const processPayment = async (req, res, next) => {
       itemId
     });
 
+
+
+
+
+
+    if (user && user.fcmToken &&islogin ) {
+      const message = {
+        notification: {
+          title: ' booking was successful ',
+          body: billingmethod === 'wallet' ? `Your deposit was successful ${req.item.name}.` : `Your booking files ${req.item.name} is pending admin approval.` 
+        },
+        token: user.fcmToken,
+      };
+      try {
+        await admin.messaging().send(message);
+        console.log('Notification sent successfully');
+      } catch (error) {
+        console.error('Error sending notification:', error);
+        // Handle the error, such as removing the invalid token from the database
+        // or implementing retry logic
+      }
+    } else {
+      console.error('User FCM token not found or invalid');
+      // Handle the case where the user's FCM token is missing or invalid
+    }
     await notification.save({ session });
 
     await session.commitTransaction();
