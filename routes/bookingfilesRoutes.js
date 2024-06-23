@@ -31,6 +31,8 @@ router.post('/book',upload.single('billImage'),(req,res,next)=>{
   }, validateBookingData, checkWalletBalance, bookingController.bookFile);
 router.get('/bookings', bookingController.getAllBookings);
 router.patch('/bookings/:id/approve', bookingController.approveBooking);
+router.get('/bookings/:userid', bookingController.getbookinghistory);
+
 router.patch('/bookings/:id/reject', bookingController.rejectBooking);
 
 module.exports = router;

@@ -5,9 +5,9 @@ const  Schema  = mongoose.Schema;
 
 const user = new Schema({
   name: { type: String, required: true },
-  fcmToken: { type: String, unique: true },  // Path to ID image
+  fcmToken: { type: String},  // Path to ID image
   islogin: { type: Boolean, default: false },
-  email: { type: String, required: true, unique: true },
+  email: { type: String, required: true },
   specialist: { type: String },
   companyname: { type: String },
   address: { type: String },

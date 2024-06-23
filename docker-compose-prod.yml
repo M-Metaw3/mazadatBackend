@@ -1,0 +1,10 @@
+# Use root/example as user/password credentials
+version: '3.1'
+
+services:
+  mazadataapp:
+    environment:
+      - NODE_ENV_docker=production
+    env_file:
+      - ./.env  
+

@@ -21,7 +21,7 @@ exports.checkWalletBalance = async (req, res, next) => {
     }
 
 
-    req.item = subcategory; // Attach subcategory to request for later use
+    req.item = subcategory; 
     next();
   } catch (error) {
     res.status(500).json({ error: error.message });

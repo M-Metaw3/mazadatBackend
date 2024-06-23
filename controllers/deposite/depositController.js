@@ -98,6 +98,122 @@ exports.createDeposit = async (req, res,next) => {
   }
 };
 
+
+
+
+
+
+
+
+
+
+
+
+// exports.createDeposit = async (req, res,next) => {
+
+//   // const session = await mongoose.startSession();
+//   // session.startTransaction();
+//   try {
+
+
+//     const { userId,  billingmethod, billImage } = req.body;
+//     const item = req.item;
+//    const amount= item.deposit
+//     const deposit = new Deposit({
+//       userId,
+//       item: item,
+//       amount,
+//       billImage,
+//       billingmethod,
+//       status: billingmethod === 'wallet' ? 'approved' : 'pending',
+//       seenByadmin: billingmethod === 'wallet' ? true : false,
+
+//     });
+//     const user = await User.findById(userId);
+//     if (billingmethod === 'wallet') {
+//       if (user.walletBalance < amount) {
+
+//      return next(new AppError('Insufficient balance', 400));
+//       }
+
+//       user.walletBalance -= amount;
+//       user.walletTransactions.push({ amount, type: 'deposit', description: `deposit for item ${item.name}` });
+//       await user.save({validateBeforeSave:false });
+
+//     }
+
+//     await deposit.save();
+
+
+//     const notification = new Notification({
+//       userId,
+//       message: billingmethod === 'wallet' ? `Your deposit was successful ${amount} for and approved  ${req.item.name} .` : `Your deposit  ${req.item.name} is pending admin approval.`,
+//       itemId: item
+//     });
+
+//     if (user && user.fcmToken &&user.islogin ) {
+//       const message = {
+//         notification: {
+//           title: ' booking was successful ',
+//           body: billingmethod === 'wallet' ? `Your deposit was successful ${req.item.name}.` : `Your booking files ${req.item.name} is pending admin approval.` 
+//         },
+//         token: user.fcmToken,
+//       };
+//       try {
+//         await admin.messaging().send(message);
+//         console.log('Notification sent successfully');
+//       } catch (error) {
+//         console.error('Error sending notification:', error);
+//         // Handle the error, such as removing the invalid token from the database
+//         // or implementing retry logic
+//       }
+//     } else {
+//       console.error('User FCM token not found or invalid');
+//       // Handle the case where the user's FCM token is missing or invalid
+//     }
+
+//     await notification.save();
+//     // await session.commitTransaction();
+//     // session.endSession();
+//     res.status(201).json(deposit);
+//   } catch (error) {
+//     if (error.code === 11000) {
+//       return next(new AppError('Booking already exists', 400));
+//      }
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Fetch notifications for the admin
 exports.getAdminNotifications = async (req, res) => {
   try {

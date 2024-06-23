@@ -643,6 +643,9 @@ exports.getItemBidDetails = async (req, res) => {
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
 exports.aggregateSubcategoryResults = async (req,res) => {
 
 const userId = req.params.id;
@@ -775,6 +778,250 @@ try {
 
 };
 
+
+
+///////////////////////////////////////////////////////////ever subcategory splited////////////////////
+
+// exports.aggregateSubcategoryResults = async (req, res) => {
+//     const userId = req.params.id;
+
+//     try {
+//         // Get approved winners
+//         const approvedWinners = await Winner.aggregate([
+//             { $match: { userId:new mongoose.Types.ObjectId(userId), status: 'winner', adminApproval: true } },
+//             {
+//                 $group: {
+//                     _id: { subcategoryId: '$subcategory', subcategoryName: '$subcategoryName' },
+//                     items: { $push: '$$ROOT' },
+//                     count: { $sum: 1 }
+//                 }
+//             }
+//         ]);
+
+//         // Get pending winners
+//         const pendingWinners = await Winner.aggregate([
+//             { $match: { userId:new mongoose.Types.ObjectId(userId), status: 'winner', adminApproval: false } },
+//             {
+//                 $group: {
+//                     _id: { subcategoryId: '$subcategory', subcategoryName: '$subcategoryName' },
+//                     items: { $push: '$$ROOT' },
+//                     count: { $sum: 1 }
+//                 }
+//             }
+//         ]);
+
+//         // Get losers
+//         const losers = await Winner.aggregate([
+//             { $match: { userId:new mongoose.Types.ObjectId(userId), status: 'loser' } },
+//             {
+//                 $group: {
+//                     _id: { subcategoryId: '$subcategory', subcategoryName: '$subcategoryName' },
+//                     items: { $push: '$$ROOT' },
+//                     count: { $sum: 1 }
+//                 }
+//             }
+//         ]);
+
+//         // Get cancelled
+//         const cancelled = await Winner.aggregate([
+//             { $match: { userId:new mongoose.Types.ObjectId(userId), status: 'cancelled' } },
+//             {
+//                 $group: {
+//                     _id: { subcategoryId: '$subcategory', subcategoryName: '$subcategoryName' },
+//                     items: { $push: '$$ROOT' },
+//                     count: { $sum: 1 }
+//                 }
+//             }
+//         ]);
+
+//         // Get in progress
+//         const inProgress = await Bid.aggregate([
+//             {
+//                 $match: {
+//                     userId: new mongoose.Types.ObjectId(userId),
+//                     status: 'inprogress',
+//                     endDate: { $gt: new Date() }
+//                 }
+//             },
+//             {
+//                 $group: {
+//                     _id: { subcategoryId: '$subcategory', subcategoryName: '$subcategoryName' },
+//                     items: { $push: '$$ROOT' },
+//                     count: { $sum: 1 }
+//                 }
+//             }
+//         ]);
+
+//         // Get rejected
+//         const rejected = await Winner.aggregate([
+//             { $match: { userId:new mongoose.Types.ObjectId(userId), status: 'regected' } },
+//             {
+//                 $group: {
+//                     _id: { subcategoryId: '$subcategory', subcategoryName: '$subcategoryName' },
+//                     items: { $push: '$$ROOT' },
+//                     count: { $sum: 1 }
+//                 }
+//             }
+//         ]);
+
+//         // Combine results into a single object
+//         const bidHistory = {
+//             approvedWinners,
+//             pendingWinners,
+//             losers,
+//             cancelled,
+//             inProgress,
+//             rejected
+//         };
+
+//         res.status(200).json({ status: "success", bidHistory });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ message: 'Internal server error' });
+//     }
+// };
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// exports.aggregateSubcategoryResults = async (req, res) => {
+//     const userId = req.params.id;
+
+//     try {
+//         // Get approved winners
+//         const approvedWinners = await SubcategoryResult.aggregate([
+//             { $match: { userId: new mongoose.Types.ObjectId(userId), status: 'winner' } },
+//             {
+//                 $lookup: {
+//                     from: 'winners',
+//                     localField: 'results',
+//                     foreignField: '_id',
+//                     as: 'winnerDetails',
+//                 },
+//             },
+//             {
+//                 $addFields: {
+//                     approvedWinners: {
+//                         $filter: {
+//                             input: '$winnerDetails',
+//                             as: 'winner',
+//                             cond: { $and: [{ $eq: ['$$winner.adminApproval', true] }, { $eq: ['$$winner.status', 'winner'] }] }
+//                         }
+//                     }
+//                 }
+//             },
+//             { $unwind: '$approvedWinners' },
+//             {
+//                 $group: {
+//                     _id: { subcategoryId: '$subcategory', subcategoryName: '$subcategoryName' },
+//                     items: { $push: '$$ROOT' },
+//                     count: { $sum: 1 }
+//                 }
+//             }
+//         ]);
+
+//         // Get pending winners
+//         const pendingWinners = await SubcategoryResult.aggregate([
+//             { $match: { userId: new mongoose.Types.ObjectId(userId), status: 'winner' } },
+//             {
+//                 $lookup: {
+//                     from: 'winners',
+//                     localField: 'results',
+//                     foreignField: '_id',
+//                     as: 'winnerDetails',
+//                 },
+//             },
+//             {
+//                 $addFields: {
+//                     pendingWinners: {
+//                         $filter: {
+//                             input: '$winnerDetails',
+//                             as: 'winner',
+//                             cond: { $and: [{ $eq: ['$$winner.adminApproval', false] }, { $eq: ['$$winner.status', 'winner'] }] }
+//                         }
+//                     }
+//                 }
+//             },
+//             { $unwind: '$pendingWinners' },
+//             {
+//                 $group: {
+//                     _id: { subcategoryId: '$subcategory', subcategoryName: '$subcategoryName' },
+//                     items: { $push: '$$ROOT' },
+//                     count: { $sum: 1 }
+//                 }
+//             }
+//         ]);
+
+//         // Get losers
+//         const losers = await Winner.aggregate([
+//             { $match: { userId: new mongoose.Types.ObjectId(userId), status: 'loser' } },
+//             {
+//                 $group: {
+//                     _id: { subcategoryId: '$subcategory', subcategoryName: '$subcategoryName' },
+//                     items: { $push: '$$ROOT' },
+//                     count: { $sum: 1 }
+//                 }
+//             }
+//         ]);
+
+//         // Get cancelled
+//         const cancelled = await Winner.aggregate([
+//             { $match: { userId: new mongoose.Types.ObjectId(userId), status: 'cancelled' } },
+//             {
+//                 $group: {
+//                     _id: { subcategoryId: '$subcategory', subcategoryName: '$subcategoryName' },
+//                     items: { $push: '$$ROOT' },
+//                     count: { $sum: 1 }
+//                 }
+//             }
+//         ]);
+
+//         // Get in progress
+//         const inProgress = await Bid.aggregate([
+//             {
+//                 $match: {
+//                     userId: new mongoose.Types.ObjectId(userId),
+//                     status: 'inprogress',
+//                     endDate: { $gt: new Date() }
+//                 }
+//             },
+//             {
+//                 $group: {
+//                     _id: { subcategoryId: '$subcategory', subcategoryName: '$subcategoryName' },
+//                     items: { $push: '$$ROOT' },
+//                     count: { $sum: 1 }
+//                 }
+//             }
+//         ]);
+
+//         // Get rejected
+//         const rejected = await Winner.aggregate([
+//             { $match: { userId: new mongoose.Types.ObjectId(userId), status: 'rejected' } },
+//             {
+//                 $group: {
+//                     _id: { subcategoryId: '$subcategory', subcategoryName: '$subcategoryName' },
+//                     items: { $push: '$$ROOT' },
+//                     count: { $sum: 1 }
+//                 }
+//             }
+//         ]);
+
+//         // Combine results into a single object
+//         const bidHistory = {
+//             approvedWinners,
+//             pendingWinners,
+//             losers,
+//             cancelled,
+//             inProgress,
+//             rejected
+//         };
+
+//         res.status(200).json({ status: "success", bidHistory });
+//     } catch (error) {
+//         console.error(error);
+//         res.status(500).json({ message: 'Internal server error' });
+//     }
+// };
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
