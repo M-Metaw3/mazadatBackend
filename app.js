@@ -33,7 +33,7 @@ const socialMediaLinkRoutes = require('./routes/socialMediaLink');
 const phoneNumberRoutes = require('./routes/phoneNumber');
 const appShareLinkRoutes = require('./routes/appShareLink');
 const chargewallet = require('./routes/walletCharger');
-
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:8888'];
 
 // const {initializeApp, applicationDefault } = require('firebase-admin/app');
 // const{ getMessaging } = require('firebase-admin/messaging');
@@ -44,7 +44,6 @@ const chargewallet = require('./routes/walletCharger');
 
 console.log("aaaaaa",process.env.GOOGLE_APPLICATION_CREDENTIALS);
 const path = require('path');
-
 
 // app.post("/api/v1/send", function (req, res) {
 //   const receivedToken = 'eEQj-fiHDJHXSxeWxkV4X6:APA91bFKWyToFnXNtVuqGnmCLCzhaGQXuW4V7tM2yIqwaF-StpUMo3cHB2Z7nb_TPlLKdOnRZlwqgCKsxzf5dekLRog5rZY-6-c2n50_L8RKWaccqscNCEKR9G7GjTP8IP4t9AaaMar0';
@@ -74,7 +73,19 @@ const path = require('path');
   
   
 // });
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true); // Allow requests with no origin (e.g. mobile apps, curl requests)
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+};
 
+app.use(cors(corsOptions));
 
 // 1) MIDDLEWARES
 if (process.env.NODE_ENV === 'development') {

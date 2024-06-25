@@ -34,7 +34,7 @@ services:
     volumes:
       - mongo-data:/data/db
       - ./mongod.conf:/etc/mongod.conf
-
+    # command: ["mongod", "--replSet", "rs0"]
   mongo-express:
     image: mongo-express
     restart: always
