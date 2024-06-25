@@ -2271,8 +2271,12 @@ const handleWinner = async (item, winnerBid, subcategory, notificationNamespace,
     await item.save();
   }
 };
-
 const handleLosers = async (item, winnerBid, subcategory, notificationNamespace, session) => {
+  if (!winnerBid) {
+    console.error('winnerBid is undefined for item', item._id);
+    return;
+  }
+
   const results = await Bid.aggregate([
     {
       $match: { 
@@ -2297,7 +2301,12 @@ const handleLosers = async (item, winnerBid, subcategory, notificationNamespace,
   ]);
 
   for (const result of results) {
-    const deposit = await Deposit.findOne({ userId: result._id.userId, item: item._id, status: 'approved' })
+    if (!result._id || !result._id.userId) {
+      console.error('Result _id or userId is undefined', result);
+      continue;
+    }
+
+    const deposit = await Deposit.findOne({ userId: result._id.userId, item: item._id, status: 'approved' });
     const loserEntry = new Winner({
       userId: result._id.userId,
       subcategory: item.subcategoryId,
@@ -2308,37 +2317,38 @@ const handleLosers = async (item, winnerBid, subcategory, notificationNamespace,
     await loserEntry.save();
 
     if (deposit) {
-      const user = await User.findById(result._id.userId)
+      const user = await User.findById(result._id.userId);
+      if (user) {
+        user.walletBalance += parseInt(deposit.amount);
+        user.walletTransactions.push({
+          amount: deposit.amount,
+          type: 'refund',
+          description: `Refund for item ${item.name} in subcategory ${subcategory.name}`,
+        });
 
-      user.walletBalance += parseInt(deposit.amount);
-      user.walletTransactions.push({
-        amount: deposit.amount,
-        type: 'refund',
-        description: `Refund for item ${item.name} in subcategory ${subcategory.name}`,
-      });
+        // Update deposit status to 'refunded'
+        deposit.status = 'refunded';
+        await deposit.save({ validateBeforeSave: false });
+        await user.save({ validateBeforeSave: false });
 
-      // Update deposit status to 'refunded'
-      deposit.status = 'refunded';
-      await deposit.save({ validateBeforeSave: false });
-      await user.save({ validateBeforeSave: false });
+        // Send Socket.IO notification
+        notificationNamespace.to(`user_${deposit.userId._id}`).emit('notification', {
+          message: `The auction for item ${item.name} in subcategory ${subcategory.name} has ended. Your deposit has been refunded.`,
+        });
 
-      // Send Socket.IO notification
-      notificationNamespace.to(`user_${deposit.userId._id}`).emit('notification', {
-        message: `The auction for item ${item.name} in subcategory ${subcategory.name} has ended. Your deposit has been refunded.`,
-      });
-
-
-      
-      // Send Firebase notification
-      if (user && user.fcmToken) {
-        const message = {
-          notification: {
-            title: 'Auction Ended',
-            body: `The auction for item ${item.name} in subcategory ${subcategory.name} has ended. Your deposit has been refunded.`,
-          },
-          token: user.fcmToken,
-        };
-        await admin.messaging().send(message);
+        // Send Firebase notification
+        if (user.fcmToken) {
+          const message = {
+            notification: {
+              title: 'Auction Ended',
+              body: `The auction for item ${item.name} in subcategory ${subcategory.name} has ended. Your deposit has been refunded.`,
+            },
+            token: user.fcmToken,
+          };
+          await admin.messaging().send(message);
+        }
+      } else {
+        console.error('User not found for userId', result._id.userId);
       }
     }
   }
@@ -2346,6 +2356,81 @@ const handleLosers = async (item, winnerBid, subcategory, notificationNamespace,
   item.notifiedLosers = true;
   await item.save();
 };
+
+// const handleLosers = async (item, winnerBid, subcategory, notificationNamespace, session) => {
+//   const results = await Bid.aggregate([
+//     {
+//       $match: { 
+//         item: item._id, 
+//         userId: { $ne: winnerBid.userId } // Ensure the winnerBid is excluded in the aggregation
+//       }
+//     },
+//     {
+//       $group: {
+//         _id: { userId: "$userId", item: "$item" },
+//         totalAmount: { $sum: "$amount" },
+//       }
+//     },
+//     {
+//       $sort: { totalAmount: -1 }
+//     },
+//     {
+//       $project: {
+//         totalAmount: 1
+//       }
+//     }
+//   ]);
+
+//   for (const result of results) {
+//     const deposit = await Deposit.findOne({ userId: result._id.userId, item: item._id, status: 'approved' })
+//     const loserEntry = new Winner({
+//       userId: result._id.userId,
+//       subcategory: item.subcategoryId,
+//       itemId: item._id,
+//       amount: result.totalAmount,
+//       status: 'loser',
+//     });
+//     await loserEntry.save();
+
+//     if (deposit) {
+//       const user = await User.findById(result._id.userId)
+
+//       user.walletBalance += parseInt(deposit.amount);
+//       user.walletTransactions.push({
+//         amount: deposit.amount,
+//         type: 'refund',
+//         description: `Refund for item ${item.name} in subcategory ${subcategory.name}`,
+//       });
+
+//       // Update deposit status to 'refunded'
+//       deposit.status = 'refunded';
+//       await deposit.save({ validateBeforeSave: false });
+//       await user.save({ validateBeforeSave: false });
+
+//       // Send Socket.IO notification
+//       notificationNamespace.to(`user_${deposit.userId._id}`).emit('notification', {
+//         message: `The auction for item ${item.name} in subcategory ${subcategory.name} has ended. Your deposit has been refunded.`,
+//       });
+
+
+      
+//       // Send Firebase notification
+//       if (user && user.fcmToken) {
+//         const message = {
+//           notification: {
+//             title: 'Auction Ended',
+//             body: `The auction for item ${item.name} in subcategory ${subcategory.name} has ended. Your deposit has been refunded.`,
+//           },
+//           token: user.fcmToken,
+//         };
+//         await admin.messaging().send(message);
+//       }
+//     }
+//   }
+
+//   item.notifiedLosers = true;
+//   await item.save();
+// };
 
 const aggregateSubcategoryResults = async () => {
   try {
