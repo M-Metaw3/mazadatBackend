@@ -246,11 +246,11 @@ const paymentMethodSchema = new mongoose.Schema({
   name: {
     type: String,
     enum: ['wallet', 'fawry', 'bank'],
-    required: true
+    // required: true
   },
   details: {
     type: String,
-    required: true
+    // required: true
   }
 });
 
