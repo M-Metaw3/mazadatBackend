@@ -14,6 +14,8 @@ const AppError = require('../../utils/appError');
 
 
 const Deposit = require('../../models/Deposit');
+const bookingfile = require('../../models/bookenigfile');
+
 // const Item = require('../../models/item');
 const ItemsSchema = require('../../models/item');
 exports.getAllDeposit = factory.getAll(Deposit);
@@ -357,7 +359,7 @@ const mongoose = require('mongoose');
 
 // Helper function to send Firebase notifications
 const sendFirebaseNotification = async (user, title, body) => {
-  if (user && user.fcmToken && user.islogin) {
+  if (user && user.fcmToken && user.isLogin) {
     const message = {
       notification: {
         title,

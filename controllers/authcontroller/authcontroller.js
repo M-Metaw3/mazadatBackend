@@ -207,49 +207,123 @@ console.log(userId,otpCode)
   }
 };
 
-const loginUser = async (req, res,next) => {
+// const loginUser = async (req, res,next) => {
+//   try {
+//     const { phoneNumber, password ,idNumber,fcmToken } = req.body;
+//     let query;
+//     if (idNumber) {
+//       if(idNumber.length>14){
+//         return next(new AppError('Invalid id number', 400));
+//       }
+//         query = { idNumber: idNumber };
+
+//     } else if (phoneNumber) {
+//         query = { phoneNumber: phoneNumber };
+//     } else {
+//         return res.status(400).json({ error: 'Email or phone number must be provided' });
+//     }
+//     console.log(query)
+//     const user = await User.findOne(query);
+//     if (!user) {
+//       return next(new AppError('Invalid credentials', 400));
+   
+//     }
+
+//     const isMatch = await bcrypt.compare(password, user.passwordHash);
+//     if (!isMatch) {
+//       return next(new AppError('Invalid credentials', 400));
+ 
+//     }
+
+//     if (!user.verified) {
+//       return next(new AppError('Please verify your phone number first', 400));
+//     }
+//     if (user.blocked) {
+//       return next(new AppError('you are blocked', 400));
+//     }
+// user.passwordHash=undefined;
+// await User.findByIdAndUpdate(user._id, { isLogin: true,fcmToken });
+
+// return createSendToken(user, 200, res);
+//   } catch (error) {
+//     res.status(500).json({ message: 'Server error', error });
+//   }
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+const loginUser = async (req, res, next) => {
   try {
-    const { phoneNumber, password ,idNumber,fcmToken } = req.body;
+    const { phoneNumber, password, idNumber, fcmToken } = req.body;
     let query;
     if (idNumber) {
-      if(idNumber.length>14){
-        return next(new AppError('Invalid id number', 400));
+      if (idNumber.length > 14) {
+        return next(new AppError('Invalid ID number', 400));
       }
-        query = { idNumber: idNumber };
-
+      query = { idNumber: idNumber };
     } else if (phoneNumber) {
-        query = { phoneNumber: phoneNumber };
+      query = { phoneNumber: phoneNumber };
     } else {
-        return res.status(400).json({ error: 'Email or phone number must be provided' });
+      return res.status(400).json({ error: 'Phone number or ID number must be provided' });
     }
-    console.log(query)
-    const user = await User.findOne(query);
+
+    const user = await User.findOne(query).select('+passwordHash');
     if (!user) {
       return next(new AppError('Invalid credentials', 400));
-   
     }
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
       return next(new AppError('Invalid credentials', 400));
- 
     }
 
     if (!user.verified) {
       return next(new AppError('Please verify your phone number first', 400));
     }
     if (user.blocked) {
-      return next(new AppError('you are blocked', 400));
+      return next(new AppError('You are blocked', 400));
     }
-user.passwordHash=undefined;
-await User.findByIdAndUpdate(user._id, { isLogin: true,fcmToken });
+    if (!user.approved) {
+      return next(new AppError('Your account has not been approved by the admin yet', 400));
+    }
 
-return createSendToken(user, 200, res);
+    user.passwordHash = undefined;
+    await User.findByIdAndUpdate(user._id, { isLogin: true, fcmToken });
+
+    return createSendToken(user, 200, res);
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error });
+    next(new AppError('Server error during login', 500));
   }
 };
 
+// Admin Approval Controller
+const approveUser = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return next(new AppError('User not found', 404));
+    }
+
+    user.approved = true;
+    await user.save();
+
+    res.status(200).json({ message: 'User approved successfully' });
+  } catch (error) {
+    next(new AppError('Server error during user approval', 500));
+  }
+};
 const forgotPassword = async (req, res,next) => {
   try {
     const { email } = req.body;
@@ -378,5 +452,5 @@ module.exports = {
   forgotPassword,
   resetPassword,
   changePassword,
-  updateProfile,getuser,blockUser,getme
+  updateProfile,getuser,blockUser,getme,approveUser
 };

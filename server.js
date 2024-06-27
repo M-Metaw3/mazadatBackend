@@ -109,8 +109,8 @@ mongoose
 
 
 
-const dbName = process.env.NODE_ENV_docker === 'production' ? 'mazadat-prod' : 'mazadates-dev';
-// .connect(`mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@mongo:27017/${dbName}?authSource=admin`, {
+// const dbName = process.env.NODE_ENV_docker === 'production' ? 'mazadat-prod' : 'mazadates-dev';
+// // .connect(`mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@mongo:27017/${dbName}?authSource=admin`, {
 
 // mongoose
 //   .connect(`mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@localhost:27017/mazadates-dev?authSource=admin`, {

@@ -74,6 +74,8 @@ exports.getEndedSubcategories = async (req, res) => {
           name: 1,
           description: 1,
           endDate: 1,
+                    imagecover: 1,
+          startDate: 1,
           totalBids: 1,
           totalBidAmount: 1,
           totalWinners: 1,
@@ -517,6 +519,7 @@ exports.getItemsBySubcategory = async (req, res) => {
 
 
 // Admin action on winners
+
 exports.adminActionOnWinner = async (req, res) => {
   const { winnerId, action } = req.body;
 

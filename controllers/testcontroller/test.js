@@ -1402,7 +1402,32 @@ exports.getItemBidDetails = async (req, res) => {
 //   }
 // }
 
-exports.aggregateSubcategoryResults =   async (req, res) => {
+///////////////this is the tru
+
+
+
+
+
+
+
+
+
+
+
+
+// exports.aggregateSubcategoryResults =   async (req, res) => {
+//   const userId = new mongoose.Types.ObjectId(req.params.id);
+
+
+
+
+
+
+
+
+
+
+exports.aggregateSubcategoryResults = async (req, res) => {
   const userId = new mongoose.Types.ObjectId(req.params.id);
 
   try {
@@ -1436,9 +1461,7 @@ exports.aggregateSubcategoryResults =   async (req, res) => {
           as: 'subcategoryDetails'
         }
       },
-      {
-        $unwind: '$subcategoryDetails'
-      },
+      { $unwind: '$subcategoryDetails' },
       {
         $lookup: {
           from: 'items',
@@ -1447,7 +1470,10 @@ exports.aggregateSubcategoryResults =   async (req, res) => {
           as: 'itemDetails'
         }
       }
-    ]);
+    ]).catch(error => {
+      console.error('Error fetching pending and approved auctions:', error);
+      throw new Error('Failed to fetch pending and approved auctions');
+    });
 
     // Fetch loser auctions
     const losers = await Winner.aggregate([
@@ -1460,9 +1486,7 @@ exports.aggregateSubcategoryResults =   async (req, res) => {
           as: 'subcategoryDetails'
         }
       },
-      {
-        $unwind: '$subcategoryDetails'
-      },
+      { $unwind: '$subcategoryDetails' },
       {
         $lookup: {
           from: 'items',
@@ -1478,10 +1502,11 @@ exports.aggregateSubcategoryResults =   async (req, res) => {
           documents: { $push: '$$ROOT' }
         }
       },
-      {
-        $addFields: { status: 'loser' }
-      }
-    ]);
+      { $addFields: { status: 'loser' } }
+    ]).catch(error => {
+      console.error('Error fetching loser auctions:', error);
+      throw new Error('Failed to fetch loser auctions');
+    });
 
     // Fetch rejected auctions
     const rejected = await Winner.aggregate([
@@ -1494,9 +1519,7 @@ exports.aggregateSubcategoryResults =   async (req, res) => {
           as: 'subcategoryDetails'
         }
       },
-      {
-        $unwind: '$subcategoryDetails'
-      },
+      { $unwind: '$subcategoryDetails' },
       {
         $lookup: {
           from: 'items',
@@ -1512,10 +1535,11 @@ exports.aggregateSubcategoryResults =   async (req, res) => {
           documents: { $push: '$$ROOT' }
         }
       },
-      {
-        $addFields: { status: 'rejected' }
-      }
-    ]);
+      { $addFields: { status: 'rejected' } }
+    ]).catch(error => {
+      console.error('Error fetching rejected auctions:', error);
+      throw new Error('Failed to fetch rejected auctions');
+    });
 
     // Fetch cancelled auctions
     const cancelled = await Winner.aggregate([
@@ -1528,9 +1552,7 @@ exports.aggregateSubcategoryResults =   async (req, res) => {
           as: 'subcategoryDetails'
         }
       },
-      {
-        $unwind: '$subcategoryDetails'
-      },
+      { $unwind: '$subcategoryDetails' },
       {
         $lookup: {
           from: 'items',
@@ -1546,12 +1568,13 @@ exports.aggregateSubcategoryResults =   async (req, res) => {
           documents: { $push: '$$ROOT' }
         }
       },
-      {
-        $addFields: { status: 'cancelled' }
-      }
-    ]);
+      { $addFields: { status: 'cancelled' } }
+    ]).catch(error => {
+      console.error('Error fetching cancelled auctions:', error);
+      throw new Error('Failed to fetch cancelled auctions');
+    });
 
-    // Fetch inprogress auctions
+    // Fetch in-progress auctions
     const inProgress = await Deposit.aggregate([
       { $match: { userId, status: 'approved' } },
       {
@@ -1562,23 +1585,25 @@ exports.aggregateSubcategoryResults =   async (req, res) => {
           as: 'subcategoryDetails'
         }
       },
+      { $unwind: '$subcategoryDetails' },
       {
-        $unwind: '$subcategoryDetails'
-      },
-      {
-        $match: { 'subcategoryDetails.endDate': { $gt: new Date() } }
+        $match: {
+          'subcategoryDetails.startDate': { $lte: new Date() },
+          'subcategoryDetails.endDate': { $gt: new Date() }
+        }
       },
       {
         $group: {
           _id: '$subcategoryDetails._id',
           count: { $sum: 1 },
-          documents: { $push: '$subcategoryDetails' } // Return only subcategory details
+          documents: { $push: '$subcategoryDetails' }
         }
       },
-      {
-        $addFields: { status: 'inprogress' }
-      }
-    ]);
+      { $addFields: { status: 'inprogress' } }
+    ]).catch(error => {
+      console.error('Error fetching in-progress auctions:', error);
+      throw new Error('Failed to fetch in-progress auctions');
+    });
 
     // Fetch not started yet auctions
     const notStartedYet = await Deposit.aggregate([
@@ -1591,9 +1616,7 @@ exports.aggregateSubcategoryResults =   async (req, res) => {
           as: 'subcategoryDetails'
         }
       },
-      {
-        $unwind: '$subcategoryDetails'
-      },
+      { $unwind: '$subcategoryDetails' },
       {
         $match: { 'subcategoryDetails.startDate': { $gt: new Date() } }
       },
@@ -1601,13 +1624,14 @@ exports.aggregateSubcategoryResults =   async (req, res) => {
         $group: {
           _id: '$subcategoryDetails._id',
           count: { $sum: 1 },
-          documents: { $push: '$subcategoryDetails' } // Return only subcategory details
+          documents: { $push: '$subcategoryDetails' }
         }
       },
-      {
-        $addFields: { status: 'notStartedYet' }
-      }
-    ]);
+      { $addFields: { status: 'notStartedYet' } }
+    ]).catch(error => {
+      console.error('Error fetching not started yet auctions:', error);
+      throw new Error('Failed to fetch not started yet auctions');
+    });
 
     // Combine results
     const combinedResults = [
@@ -1651,7 +1675,297 @@ exports.aggregateSubcategoryResults =   async (req, res) => {
     console.error('Error fetching auction statuses:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
-}
+};
+
+
+
+
+
+
+
+
+// exports.aggregateSubcategoryResults =async (req, res) => {
+//   const userId = new mongoose.Types.ObjectId(req.params.id);
+
+//   try {
+//     // Fetch pending and approved auctions
+//     const pendingAndApproved = await SubcategoryResult.aggregate([
+//       { $match: { userId, status: 'winner' } },
+//       {
+//         $lookup: {
+//           from: 'winners',
+//           localField: 'results',
+//           foreignField: '_id',
+//           as: 'resultsDetails'
+//         }
+//       },
+//       {
+//         $addFields: {
+//           status: {
+//             $cond: {
+//               if: { $anyElementTrue: { $map: { input: '$resultsDetails', as: 'result', in: { $eq: ['$$result.adminApproval', false] } } } },
+//               then: 'pendingWinner',
+//               else: 'approvedWinner'
+//             }
+//           }
+//         }
+//       },
+//       {
+//         $lookup: {
+//           from: 'subcategories',
+//           localField: 'subcategory',
+//           foreignField: '_id',
+//           as: 'subcategoryDetails'
+//         }
+//       },
+//       {
+//         $unwind: '$subcategoryDetails'
+//       },
+//       {
+//         $lookup: {
+//           from: 'items',
+//           localField: 'resultsDetails.itemId',
+//           foreignField: '_id',
+//           as: 'itemDetails'
+//         }
+//       },
+//       {
+//         $addFields: {
+//           'subcategoryDetails.documents': '$resultsDetails',
+//           'subcategoryDetails.status': '$status'
+//         }
+//       }
+//     ]);
+
+//     // Fetch loser auctions
+//     const losers = await Winner.aggregate([
+//       { $match: { userId, status: 'loser' } },
+//       {
+//         $lookup: {
+//           from: 'subcategories',
+//           localField: 'subcategory',
+//           foreignField: '_id',
+//           as: 'subcategoryDetails'
+//         }
+//       },
+//       {
+//         $unwind: '$subcategoryDetails'
+//       },
+//       {
+//         $lookup: {
+//           from: 'items',
+//           localField: 'itemId',
+//           foreignField: '_id',
+//           as: 'itemDetails'
+//         }
+//       },
+//       {
+//         $group: {
+//           _id: '$subcategoryDetails._id',
+//           count: { $sum: 1 },
+//           subcategoryDetails: { $first: '$subcategoryDetails' },
+//           documents: { $push: '$$ROOT' }
+//         }
+//       },
+//       {
+//         $addFields: {
+//           'subcategoryDetails.documents': '$documents',
+//           'subcategoryDetails.status': 'loser'
+//         }
+//       }
+//     ]);
+
+//     // Fetch rejected auctions
+//     const rejected = await Winner.aggregate([
+//       { $match: { userId, status: 'rejected' } },
+//       {
+//         $lookup: {
+//           from: 'subcategories',
+//           localField: 'subcategory',
+//           foreignField: '_id',
+//           as: 'subcategoryDetails'
+//         }
+//       },
+//       {
+//         $unwind: '$subcategoryDetails'
+//       },
+//       {
+//         $lookup: {
+//           from: 'items',
+//           localField: 'itemId',
+//           foreignField: '_id',
+//           as: 'itemDetails'
+//         }
+//       },
+//       {
+//         $group: {
+//           _id: '$subcategoryDetails._id',
+//           count: { $sum: 1 },
+//           subcategoryDetails: { $first: '$subcategoryDetails' },
+//           documents: { $push: '$$ROOT' }
+//         }
+//       },
+//       {
+//         $addFields: {
+//           'subcategoryDetails.documents': '$documents',
+//           'subcategoryDetails.status': 'rejected'
+//         }
+//       }
+//     ]);
+
+//     // Fetch cancelled auctions
+//     const cancelled = await Winner.aggregate([
+//       { $match: { userId, status: 'cancelled' } },
+//       {
+//         $lookup: {
+//           from: 'subcategories',
+//           localField: 'subcategory',
+//           foreignField: '_id',
+//           as: 'subcategoryDetails'
+//         }
+//       },
+//       {
+//         $unwind: '$subcategoryDetails'
+//       },
+//       {
+//         $lookup: {
+//           from: 'items',
+//           localField: 'itemId',
+//           foreignField: '_id',
+//           as: 'itemDetails'
+//         }
+//       },
+//       {
+//         $group: {
+//           _id: '$subcategoryDetails._id',
+//           count: { $sum: 1 },
+//           subcategoryDetails: { $first: '$subcategoryDetails' },
+//           documents: { $push: '$$ROOT' }
+//         }
+//       },
+//       {
+//         $addFields: {
+//           'subcategoryDetails.documents': '$documents',
+//           'subcategoryDetails.status': 'cancelled'
+//         }
+//       }
+//     ]);
+
+//     // Fetch inprogress auctions
+//     const inProgress = await Deposit.aggregate([
+//       { $match: { userId, status: 'approved' } },
+//       {
+//         $lookup: {
+//           from: 'subcategories',
+//           localField: 'item',
+//           foreignField: '_id',
+//           as: 'subcategoryDetails'
+//         }
+//       },
+//       {
+//         $unwind: '$subcategoryDetails'
+//       },
+//       {
+//         $match: {
+//           'subcategoryDetails.startDate': { $lte: new Date() },
+//           'subcategoryDetails.endDate': { $gt: new Date() }
+//         }
+//       },
+//       {
+//         $group: {
+//           _id: '$subcategoryDetails._id',
+//           count: { $sum: 1 },
+//           subcategoryDetails: { $first: '$subcategoryDetails' }
+//         }
+//       },
+//       {
+//         $addFields: {
+//           'subcategoryDetails.status': 'inprogress'
+//         }
+//       }
+//     ]);
+
+//     // Fetch not started yet auctions
+//     const notStartedYet = await Deposit.aggregate([
+//       { $match: { userId, status: 'approved' } },
+//       {
+//         $lookup: {
+//           from: 'subcategories',
+//           localField: 'item',
+//           foreignField: '_id',
+//           as: 'subcategoryDetails'
+//         }
+//       },
+//       {
+//         $unwind: '$subcategoryDetails'
+//       },
+//       {
+//         $match: { 'subcategoryDetails.startDate': { $gt: new Date() } }
+//       },
+//       {
+//         $group: {
+//           _id: '$subcategoryDetails._id',
+//           count: { $sum: 1 },
+//           subcategoryDetails: { $first: '$subcategoryDetails' }
+//         }
+//       },
+//       {
+//         $addFields: {
+//           'subcategoryDetails.status': 'notStartedYet'
+//         }
+//       }
+//     ]);
+
+//     // Combine results
+//     const combinedResults = [
+//       ...pendingAndApproved,
+//       ...losers,
+//       ...rejected,
+//       ...cancelled,
+//       ...inProgress,
+//       ...notStartedYet
+//     ];
+
+//     // Initialize all possible statuses
+//     const allStatuses = {
+//       pendingWinner: { count: 0, subcategories: [] },
+//       approvedWinner: { count: 0, subcategories: [] },
+//       loser: { count: 0, subcategories: [] },
+//       rejected: { count: 0, subcategories: [] },
+//       cancelled: { count: 0, subcategories: [] },
+//       inprogress: { count: 0, subcategories: [] },
+//       notStartedYet: { count: 0, subcategories: [] }
+//     };
+
+//     // Group by status and count
+//     combinedResults.forEach(result => {
+//       const status = result.status;
+//       const subcategoryDetail = {
+//         ...result.subcategoryDetails,
+//         count: result.count,
+//         ...(result.itemDetails ? { itemDetails: result.itemDetails } : {})
+//       };
+//       allStatuses[status].count += 1;
+//       allStatuses[status].subcategories.push(subcategoryDetail);
+//     });
+
+//     // Convert grouped results into a single array
+//     const responseArray = Object.entries(allStatuses).map(([status, data]) => ({
+//       status,
+//       count: data.count,
+//       subcategories: data.subcategories
+//     }));
+
+//     res.json(responseArray);
+//   } catch (error) {
+//     console.error('Error fetching auction statuses:', error);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// }
+
+
+
+
 
 // Define the Winner schema
 

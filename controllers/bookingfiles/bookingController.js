@@ -321,7 +321,8 @@ const APIFeatures = require('../../utils/apiFeatures');
 
 // Helper function to send Firebase notifications
 const sendFirebaseNotification = async (user, title, body) => {
-  if (user && user.fcmToken && user.islogin) {
+  if (user && user.fcmToken && user.isLogin) {
+    console.log(user.fcmToken,user.isLogin)
     const message = {
       notification: {
         title,

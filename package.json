@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  
   "scripts": {
     "test": "jest",
     "start": "nodemon server.js",
@@ -40,6 +39,7 @@
     "passport-google-oauth20": "^2.0.0",
     "socket.io": "^4.7.5",
     "supertest": "^7.0.0",
-    "validator": "^13.11.0"
+    "validator": "^13.11.0",
+    "winston": "^3.13.0"
   }
 }

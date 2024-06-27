@@ -21,6 +21,7 @@
 const express = require('express');
 const {
   registerUser,
+  approveUser,
   verifyOTP,
   getallusers,
   loginUser,
@@ -117,4 +118,6 @@ router.patch('/:userId/block', blockUser);
 
 
 router.post('/logout', authMiddleware, logoutUser);
+router.patch('/:userId/approve', approveUser);
+
 module.exports = router;
