@@ -112,24 +112,24 @@ const paymentSchema = new mongoose.Schema({
 
 paymentSchema.index({ winnerid: 1 }, { unique: true });
 
-paymentSchema.pre('save', async function(next) {
-  try {
-    // Find the related subcategory
-    const subcategoryResult = await this.model('SubcategoryResult').findById(this.winnerid).populate('subcategory');
-    const subcategoryId = subcategoryResult.subcategory._id;
+// paymentSchema.pre('save', async function(next) {
+//   try {
+//     // Find the related subcategory
+//     const subcategoryResult = await this.model('SubcategoryResult').findById(this.winnerid).populate('subcategory');
+//     const subcategoryId = subcategoryResult.subcategory._id;
     
-    const subcategory = await Subcategory.findById(subcategoryId);
+//     const subcategory = await Subcategory.findById(subcategoryId);
 
-    // Check if the payment method is allowed in the subcategory
-    const allowedMethods = subcategory.paymentMethods.map(pm => pm.name);
-    if (!allowedMethods.includes(this.billingMethod)) {
-      return next(new AppError('Invalid payment method for this subcategory', 400));
-    }
-    next();
-  } catch (err) {
-    next(err);
-  }
-});
+//     // Check if the payment method is allowed in the subcategory
+//     const allowedMethods = subcategory.paymentMethods.map(pm => pm.name);
+//     if (!allowedMethods.includes(this.billingMethod)) {
+//       return next(new AppError('Invalid payment method for this subcategory', 400));
+//     }
+//     next();
+//   } catch (err) {
+//     next(err);
+//   }
+// });
 
 paymentSchema.pre('find', function(next) {
   this.populate({
