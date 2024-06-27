@@ -1211,3 +1211,19 @@
     at Timeout.<anonymous> (G:\mazadat\node_modules\mongoose\lib\drivers\node-mongodb-native\collection.js:185:23)
     at listOnTimeout (node:internal/timers:573:17)
     at process.processTimers (node:internal/timers:514:7)
+2024-06-27T11:11:35.223Z error: MongooseError: Operation `subcategories.find()` buffering timed out after 10000ms
+    at Timeout.<anonymous> (G:\mazadat\node_modules\mongoose\lib\drivers\node-mongodb-native\collection.js:185:23)
+    at listOnTimeout (node:internal/timers:573:17)
+    at process.processTimers (node:internal/timers:514:7)
+2024-06-27T11:13:14.637Z info: Subcategory results aggregation completed.
+2024-06-27T11:14:13.519Z info: Subcategory results aggregation completed.
+2024-06-27T11:15:13.986Z info: Subcategory results aggregation completed.
+2024-06-27T11:16:17.080Z info: Subcategory results aggregation completed.
+2024-06-27T11:17:12.954Z info: Subcategory results aggregation completed.
+2024-06-27T11:18:13.018Z info: Subcategory results aggregation completed.
+2024-06-27T11:19:13.108Z info: Subcategory results aggregation completed.
+2024-06-27T11:20:13.025Z info: Subcategory results aggregation completed.
+2024-06-27T11:21:13.100Z info: Subcategory results aggregation completed.
+2024-06-27T11:26:19.985Z info: Subcategory results aggregation completed.
+2024-06-27T11:27:19.980Z info: Subcategory results aggregation completed.
+2024-06-27T11:28:19.997Z info: Subcategory results aggregation completed.

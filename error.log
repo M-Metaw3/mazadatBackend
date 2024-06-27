@@ -471,3 +471,7 @@
     at Timeout.<anonymous> (G:\mazadat\node_modules\mongoose\lib\drivers\node-mongodb-native\collection.js:185:23)
     at listOnTimeout (node:internal/timers:573:17)
     at process.processTimers (node:internal/timers:514:7)
+2024-06-27T11:11:35.223Z error: MongooseError: Operation `subcategories.find()` buffering timed out after 10000ms
+    at Timeout.<anonymous> (G:\mazadat\node_modules\mongoose\lib\drivers\node-mongodb-native\collection.js:185:23)
+    at listOnTimeout (node:internal/timers:573:17)
+    at process.processTimers (node:internal/timers:514:7)

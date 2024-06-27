@@ -298,8 +298,8 @@ const loginUser = async (req, res, next) => {
     }
 
     user.passwordHash = undefined;
-    await User.findByIdAndUpdate(user._id, { isLogin:true, fcmToken });
-
+   const a= await  User.findByIdAndUpdate(user._id, { isLogin:true, fcmToken });
+console.log(a)
     return createSendToken(user, 200, res);
   } catch (error) {
     next(new AppError('Server error during login', 500));
