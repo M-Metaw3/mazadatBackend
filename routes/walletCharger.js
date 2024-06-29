@@ -1,5 +1,5 @@
 const express = require('express');
-const { chargeWallet, reviewWalletCharger, getUserChargingHistory } = require('../controllers/WalletChargerController/WalletChargerController');
+const { chargeWallet, reviewWalletCharger, getUserChargingHistory,getChargingRequests ,getChargingRequestdetails} = require('../controllers/WalletChargerController/WalletChargerController');
 const mult = require('../utils/multer');
 const authMiddleware = require('../middleware/authMiddleware');
 
@@ -25,12 +25,16 @@ router.post('/charge-wallet',upload.single('billImage'),(req,res,next)=>{
   
   next()
   
-  }, authMiddleware,chargeWallet);
+  },chargeWallet);
 
 // Route for admin to review wallet charging request
 router.post('/review-wallet-charger', reviewWalletCharger);
 
+router.get('/charging-history', getChargingRequests);
+router.get('/charging-history/getdetails/:id', getChargingRequestdetails);
 // Route for user to get their charging history
 router.get('/charging-history/:userId', getUserChargingHistory);
+
+
 
 module.exports = router;

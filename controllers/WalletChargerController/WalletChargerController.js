@@ -3,6 +3,11 @@ const Notification = require('../../models/notification');
 const User = require('../../models/User');
 const admin = require('../../firebase/firebaseAdmin'); // Firebase Admin SDK
 const catchAsync = require('../../utils/catchAsync');
+const factory = require('../../utils/apiFactory');
+
+exports.getChargingRequests = factory.getAll(WalletCharger);
+exports.getChargingRequestdetails = factory.getOne(WalletCharger);
+
 exports.chargeWallet = catchAsync(async (req, res, next) => {
     const { userId, billingMethod, billImage } = req.body;
   
@@ -61,10 +66,10 @@ exports.reviewWalletCharger = catchAsync(async (req, res, next) => {
       type: 'deposit',
       description: 'Wallet charged by admin',
     });
-    await user.save();
+    await user.save({ validateBeforeSave: false});
 
     // Send notification to user
-    if (user && user.fcmToken&&user.islogin) {
+    if (user && user.fcmToken&&user.isLogin) {
       const message = {
         notification: {
           title: 'Payment Approved',
@@ -93,7 +98,7 @@ exports.reviewWalletCharger = catchAsync(async (req, res, next) => {
     await admin.messaging().send(message);
   }
 
-  await walletCharger.save();
+  await walletCharger.save({ validateBeforeSave: false});
   res.status(200).json({ status: 'success', data: walletCharger });
 });
 
