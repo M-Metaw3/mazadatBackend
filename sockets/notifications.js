@@ -2810,7 +2810,7 @@ const notifyAuctionEvents = async (notificationNamespace) => {
     
     await aggregateSubcategoryResults();
   } catch (error) {
-    // logger.error('Error during notifyAuctionEvents:', error);
+    logger.error('Error during notifyAuctionEvents:', error);
     throw error;
   }
 };
