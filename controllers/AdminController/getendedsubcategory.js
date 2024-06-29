@@ -520,6 +520,107 @@ exports.getItemsBySubcategory = async (req, res) => {
 
 // Admin action on winners
 
+// exports.adminActionOnWinner = async (req, res) => {
+//   const { winnerId, action } = req.body;
+
+//   if (!winnerId || !action) {
+//     return res.status(400).json({ status: 'error', message: 'Winner ID and action are required' });
+//   }
+
+//   const session = await mongoose.startSession();
+//   session.startTransaction();
+
+//   try {
+//     const winner = await Winner.findById(winnerId).populate('userId').populate('itemId').session(session);
+
+//     if (!winner) {
+//       return res.status(404).json({ status: 'error', message: 'Winner not found' });
+//     }
+// if ( winner.status==action){
+//     return res.status(400).json({ status: 'error', message: 'Winner already has the status you are trying to set' });
+// }
+//     const user = winner.userId;
+//     const item = winner.itemId;
+//     const subcategory = winner.subcategory;
+//     let message;
+// console.log(action)
+//     switch (action) {
+//       case 'approve':
+//         winner.adminApproval = true;
+//         message = 'Your winning bid has been approved.';
+//         break;
+//       case 'rejected':
+//       case 'cancelled':
+//         winner.status = action === 'rejected' ? 'rejected' : 'cancelled';
+//         item.status = 'cancelled';
+//         message = 'Your winning bid has been rejected or cancelled.';
+
+//         // Remove winner from SubcategoryResult
+//         const subcategoryResult = await SubcategoryResult.findOne({ userId: user._id, subcategory: subcategory }).session(session);
+
+//         if (subcategoryResult.results.includes(winnerId)) {
+//           subcategoryResult.results.pull(winnerId);
+//           subcategoryResult.totalAmount -= winner.amount;
+          
+//           if (subcategoryResult.results.length === 0) {
+//             subcategoryResult.status = 'loser';
+//             subcategoryResult.totalAmount = 0;
+
+//             user.walletBalance += subcategory.deposit;
+//             user.walletTransactions.push({
+//               amount: subcategory.deposit,
+//               type: 'refund',
+//               description: `Refund for ${action === 'reject' ? 'rejected' : 'cancelled'} bid on item ${item.name}`,
+//             });
+//           }
+
+//           await subcategoryResult.save({ validateBeforeSave: false });
+//           await item.save({ validateBeforeSave: false });
+//         }
+//         break;
+//       default:
+//         return res.status(400).json({ status: 'error', message: 'Invalid action' });
+//     }
+
+//     await winner.save({ validateBeforeSave: false });
+//     await user.save({ validateBeforeSave: false });
+
+//     // Send notification using Firebase
+//     if (user.fcmToken) {
+//       const firebaseMessage = {
+//         notification: {
+//           title: 'Bid Status Update',
+//           body: message,
+//         },
+//         token: user.fcmToken,
+//       };
+//       await admin.messaging().send(firebaseMessage);
+//     }
+
+//     // Create notification in the database
+//     await Notification.create({
+//       userId: user._id,
+//       message,
+//     });
+
+//     await session.commitTransaction();
+//     session.endSession();
+
+//     res.status(200).json({
+//       status: 'success',
+//       message: `Winner has been ${action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'cancelled'}.`,
+//       data: winner,
+//     });
+//   } catch (error) {
+//     await session.abortTransaction();
+//     session.endSession();
+//     console.error('Error performing admin action on winner:', error);
+//     res.status(500).json({
+//       status: 'error',
+//       message: 'Internal server error',
+//     });
+//   }
+// };
 exports.adminActionOnWinner = async (req, res) => {
   const { winnerId, action } = req.body;
 
@@ -527,41 +628,41 @@ exports.adminActionOnWinner = async (req, res) => {
     return res.status(400).json({ status: 'error', message: 'Winner ID and action are required' });
   }
 
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
-    const winner = await Winner.findById(winnerId).populate('userId').populate('itemId').session(session);
+    const winner = await Winner.findById(winnerId).populate('userId').populate('itemId');
 
     if (!winner) {
       return res.status(404).json({ status: 'error', message: 'Winner not found' });
     }
-if ( winner.status==action){
-    return res.status(400).json({ status: 'error', message: 'Winner already has the status you are trying to set' });
-}
+
+    if (winner.status === action) {
+      return res.status(400).json({ status: 'error', message: 'Winner already has the status you are trying to set' });
+    }
+
     const user = winner.userId;
     const item = winner.itemId;
     const subcategory = winner.subcategory;
     let message;
-
+console.log(action);
+    // Perform admin action on the winner
     switch (action) {
       case 'approve':
         winner.adminApproval = true;
         message = 'Your winning bid has been approved.';
         break;
-      case 'rejected':
+      case 'regected':
       case 'cancelled':
-        winner.status = action === 'rejected' ? 'rejected' : 'cancelled';
+        winner.status = action;
         item.status = 'cancelled';
         message = 'Your winning bid has been rejected or cancelled.';
 
         // Remove winner from SubcategoryResult
-        const subcategoryResult = await SubcategoryResult.findOne({ userId: user._id, subcategory: subcategory }).session(session);
+        const subcategoryResult = await SubcategoryResult.findOne({ userId: user._id, subcategory: subcategory });
 
-        if (subcategoryResult.results.includes(winnerId)) {
+        if (subcategoryResult && subcategoryResult.results.includes(winnerId)) {
           subcategoryResult.results.pull(winnerId);
           subcategoryResult.totalAmount -= winner.amount;
-          
+
           if (subcategoryResult.results.length === 0) {
             subcategoryResult.status = 'loser';
             subcategoryResult.totalAmount = 0;
@@ -570,13 +671,14 @@ if ( winner.status==action){
             user.walletTransactions.push({
               amount: subcategory.deposit,
               type: 'refund',
-              description: `Refund for ${action === 'reject' ? 'rejected' : 'cancelled'} bid on item ${item.name}`,
+              description: `Refund for ${action === 'regected' ? 'regected' : 'cancelled'} bid on item ${item.name}`,
             });
           }
 
           await subcategoryResult.save({ validateBeforeSave: false });
-          await item.save({ validateBeforeSave: false });
         }
+
+        await item.save({ validateBeforeSave: false });
         break;
       default:
         return res.status(400).json({ status: 'error', message: 'Invalid action' });
@@ -603,17 +705,12 @@ if ( winner.status==action){
       message,
     });
 
-    await session.commitTransaction();
-    session.endSession();
-
     res.status(200).json({
       status: 'success',
-      message: `Winner has been ${action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'cancelled'}.`,
+      message: `Winner has been ${action === 'approve' ? 'approved' : action === 'rejected' ? 'rejected' : 'cancelled'}.`,
       data: winner,
     });
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
     console.error('Error performing admin action on winner:', error);
     res.status(500).json({
       status: 'error',

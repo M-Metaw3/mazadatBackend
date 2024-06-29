@@ -245,7 +245,7 @@ const imageSchema = new mongoose.Schema({
 const paymentMethodSchema = new mongoose.Schema({
   name: {
     type: String,
-    enum: ['wallet', 'fawry', 'bank'],
+    enum: ['wallet', 'fawry', 'bank','instapay'],
     // required: true
   },
   details: {
