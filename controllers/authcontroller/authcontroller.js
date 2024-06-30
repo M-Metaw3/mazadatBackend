@@ -298,7 +298,7 @@ const loginUser = async (req, res, next) => {
     }
 
     user.passwordHash = undefined;
-   const a= await  User.findByIdAndUpdate(user._id, { isLogin:true, fcmToken });
+   const a= await  User.findByIdAndUpdate(user._id, {fcmToken});
 console.log(a)
     return createSendToken(user, 200, res);
   } catch (error) {
@@ -401,10 +401,12 @@ const updateProfile = async (req, res) => {
     if (profileImage) updates.profileImage = profileImage;
     if (idImage) updates.idImage = idImage;
 
-    await User.findByIdAndUpdate(userId, updates, { new: true });
-
- return   res.status(200).json({ message: 'Profile updated successfully' });
+  const asd=  await User.findByIdAndUpdate(userId, updates, { new: true });
+  asd.passwordHash=undefined
+    
+ return   res.status(200).json({ message: 'Profile updated successfully',data:asd });
   } catch (error) {
+    console.log(error)
    return res.status(500).json({ message: 'Server error', error });
   }
 };
