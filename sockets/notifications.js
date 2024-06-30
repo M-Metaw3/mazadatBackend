@@ -2836,7 +2836,7 @@ const processStartingSubcategories = async (now, notificationNamespace) => {
       });
 
       const user = await User.findById(deposit.userId);
-      if (user && user.fcmToken &&user.isLogin) {
+      if (user && user.fcmToken) {
         const message = {
           notification: {
             title: 'Auction Started',
@@ -2891,7 +2891,7 @@ const processEndingSubcategories = async (now, notificationNamespace) => {
       });
       await auctionEnded.save();
 console.log("done")
-      if (user && user.fcmToken &&user.isLogin) {
+      if (user && user.fcmToken ) {
         const message = {
           notification: {
             title: 'Auction Ended',
@@ -3037,7 +3037,7 @@ const handleLosers = async (item, winnerBid, subcategory, notificationNamespace)
         message: `The auction for item ${item.name} in subcategory ${subcategory.name} has ended. Your deposit has been refunded.`,
       });
 
-      if (user && user.fcmToken&&user.isLogin) {
+      if (user && user.fcmToken) {
         const message = {
           notification: {
             title: 'Auction Ended',

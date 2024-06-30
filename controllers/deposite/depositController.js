@@ -359,7 +359,7 @@ const mongoose = require('mongoose');
 
 // Helper function to send Firebase notifications
 const sendFirebaseNotification = async (user, title, body) => {
-  if (user && user.fcmToken && user.isLogin) {
+  if (user && user.fcmToken ) {
     const message = {
       notification: {
         title,

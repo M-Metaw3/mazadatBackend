@@ -63,7 +63,7 @@ const processPayment = async (req, res, next) => {
 
 
 
-    if (user && user.fcmToken &&user.islogin ) {
+    if (user && user.fcmToken) {
       const message = {
         notification: {
           title: ' booking was successful ',
