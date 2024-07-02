@@ -5,10 +5,10 @@ exports.createItem = [
   body('name').notEmpty().withMessage('Name is required'),
   body('description').notEmpty().withMessage('Description is required'),
   body('subcategoryId').notEmpty().withMessage('Subcategory ID is required'),
-  body('startPrice').isFloat({ min: 0 }).withMessage('Start price must be a non-negative number'),
-  body('minBidIncrement').isFloat({ min: 0 }).withMessage('Minimum bid increment must be a non-negative number'),
+  body('startPrice').withMessage('Start price must be a non-negative number'),
+  body('minBidIncrement').withMessage('Minimum bid increment must be a non-negative number'),
   body('coverphoto.name').notEmpty().withMessage('Cover photo name is required'),
   body('coverphoto.path').notEmpty().withMessage('Cover photo path is required'),
   body('coverphoto.pathname').notEmpty().withMessage('Cover photo pathname is required'),
-  body('thubnailphoto').isArray().withMessage('Thumbnail photos must be an array')
+  body('thubnailphoto').withMessage('Thumbnail photos must be an array')
 ];
