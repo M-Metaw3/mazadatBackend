@@ -230,7 +230,7 @@ const registerUser = async (req, res, next) => {
     const newOTP = new OTP({
       userId: newUser._id,
       otpCode: '123456',
-      expiresAt: Date.now() + 10000 * 60 * 1000
+      // expiresAt: Date.now() + 10000 * 60 * 1000
     });
     await newOTP.save();
 
@@ -279,7 +279,8 @@ const verifyOTP = async (req, res,next) => {
     const { userId, otpCode } = req.body;
 console.log(userId,otpCode)
     const otpRecord = await OTP.findOne({ userId, otpCode });
-    if (!otpRecord || otpRecord.expiresAt < Date.now()) {
+    console.log(otpRecord)
+    if (!otpRecord) {
       return next(new AppError('Invalid or expired OTP', 400));
     }
 
