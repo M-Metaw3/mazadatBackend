@@ -4,8 +4,11 @@ const express = require('express');
 const router = express.Router();
 const bookingController = require('../controllers/bookingfiles/bookingController');
 const { checkWalletBalance, validateBookingData } = require('../middleware/bookingMiddleware');
+const bookingValidator = require('../validationswithexpress/bookingValidator');
 const mult = require('../utils/multer');
 const AppError = require('../utils/appError');
+const validationMiddleware = require('../middleware/validationMiddleware');
+
 const upload = mult('images/billingimage');
 function generateValidFilePath(filename) {
     const parts = filename.split(/[\\/]/); // Split the filename by both forward slash (/) and backslash (\)
@@ -28,7 +31,7 @@ router.post('/book',upload.single('billImage'),(req,res,next)=>{
   
   next()
   
-  }, validateBookingData, checkWalletBalance, bookingController.bookFile);
+  }, validateBookingData, checkWalletBalance,bookingValidator.createBooking,validationMiddleware, bookingController.bookFile);
 router.get('/bookings', bookingController.getAllBookings);
 router.patch('/bookings/:id/approve', bookingController.approveBooking);
 router.get('/bookings/:userid', bookingController.getbookinghistory);

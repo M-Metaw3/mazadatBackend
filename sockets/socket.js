@@ -1090,7 +1090,7 @@ const jwt = require('jsonwebtoken');
 const Bid = require('../models/Bid');
 const Item = require('../models/item');
 const subcategory = require('../models/subcategory');
-
+const admin = require('firebase-admin');
 const Deposit = require('../models/Deposit');
 const Notification = require('../models/notification');
 const mongoose = require('mongoose');
@@ -1547,7 +1547,7 @@ socket.on('placeBid', async (bidData) => {
 
     console.log(bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId)));
 
-    const deposits = await Deposit.find({ subcategory: item.subcategoryId._id, status: 'approved' });
+    const deposits = await Deposit.find({ item: item.subcategoryId, status: 'approved' }).populate('userId');
 
     const notificationPromises = deposits.map(deposit => {
       const notification = new Notification({
@@ -1583,6 +1583,26 @@ console.log(item.startPrice)
       newprice: item.startPrice,
       bidcount: bidCount
     });
+    const fcmTokens = deposits.map(deposit => deposit.userId.fcmToken).filter(token => token);
+    console.log(fcmTokens)
+    if (fcmTokens.length > 0) {
+
+      const message = {
+        notification: {
+          title: 'New Bid Placed',
+          body: `A new bid of ${amount} has been placed on item ${item.name} in subcategory ${item.subcategoryId.name}`,
+        },
+        tokens: fcmTokens,
+      };
+
+      admin.messaging().sendMulticast(message)
+        .then((response) => {
+          console.log(`${response.successCount} messages were sent successfully`);
+        })
+        .catch((error) => {
+          console.error('Error sending multicast message:', error);
+        });
+    }
     // session.endSession(); // End the session
 // console.log( item.startPrice)
   } catch (error) {

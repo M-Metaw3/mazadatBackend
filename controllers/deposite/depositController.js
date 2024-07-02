@@ -381,60 +381,154 @@ const sendFirebaseNotification = async (user, title, body) => {
 };
 
 // Create Deposit
+// exports.createDeposit = async (req, res, next) => {
+//   try {
+//     const { userId, billingmethod, billImage } = req.body;
+//     const item = req.item;
+//     const amount = item.deposit;
+
+//     const deposit = new Deposit({
+//       userId,
+//       item,
+//       amount,
+//       billImage,
+//       billingmethod,
+//       status: billingmethod === 'wallet' ? 'approved' : 'pending',
+//       seenByadmin: billingmethod === 'wallet' ? true : false,
+//     });
+
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return next(new AppError('User not found', 404));
+//     }
+
+//     if (billingmethod === 'wallet') {
+//       if (user.walletBalance < amount) {
+//         return next(new AppError('Insufficient balance', 400));
+//       }
+
+//       user.walletBalance -= amount;
+//       user.walletTransactions.push({ amount, type: 'deposit', description: `Deposit for item ${item.name}` });
+//       await user.save({ validateBeforeSave: false });
+//     }
+
+//     await deposit.save();
+
+//     const notificationMessage = billingmethod === 'wallet' 
+//       ? `Your deposit was successful ${amount} for and approved ${req.item.name}.`
+//       : `Your deposit ${req.item.name} is pending admin approval.`;
+
+//     const notification = new Notification({
+//       userId,
+//       message: notificationMessage,
+//       itemId: item
+//     });
+
+//     await sendFirebaseNotification(user, 'Booking Notification', notificationMessage);
+//     await notification.save();
+
+//     res.status(201).json(deposit);
+//   } catch (error) {
+//     if (error.code === 11000) {
+//       return next(new AppError('Booking already exists', 400));
+//     }
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
+
+
+
+
+
 exports.createDeposit = async (req, res, next) => {
   try {
-    const { userId, billingmethod, billImage } = req.body;
+    const { userId, billingmethod } = req.body;
     const item = req.item;
     const amount = item.deposit;
 
-    const deposit = new Deposit({
-      userId,
-      item,
-      amount,
-      billImage,
-      billingmethod,
-      status: billingmethod === 'wallet' ? 'approved' : 'pending',
-      seenByadmin: billingmethod === 'wallet' ? true : false,
-    });
+    const user = req.user;
 
-    const user = await User.findById(userId);
-    if (!user) {
-      return next(new AppError('User not found', 404));
-    }
-
+    // Step 1: Check wallet balance if billingmethod is wallet
     if (billingmethod === 'wallet') {
       if (user.walletBalance < amount) {
         return next(new AppError('Insufficient balance', 400));
       }
 
+      // Deduct amount from user wallet and update transactions
       user.walletBalance -= amount;
       user.walletTransactions.push({ amount, type: 'deposit', description: `Deposit for item ${item.name}` });
-      await user.save({ validateBeforeSave: false });
     }
+
+    // Step 2: Create and save the deposit
+    const deposit = new Deposit({
+      userId,
+      item,
+      amount,
+      billImage: req.body.billImage,
+      billingmethod,
+      status: billingmethod === 'wallet' ? 'approved' : 'pending',
+      seenByadmin: billingmethod === 'wallet'
+    });
 
     await deposit.save();
 
-    const notificationMessage = billingmethod === 'wallet' 
-      ? `Your deposit was successful ${amount} for and approved ${req.item.name}.`
-      : `Your deposit ${req.item.name} is pending admin approval.`;
+    // Step 3: Send notification
+    const notificationMessage = billingmethod === 'wallet'
+      ? `Your deposit of ${amount} for item ${item.name} was successful and approved.`
+      : `Your deposit for item ${item.name} is pending admin approval.`;
 
     const notification = new Notification({
       userId,
       message: notificationMessage,
-      itemId: item
+      itemId: item._id
     });
 
-    await sendFirebaseNotification(user, 'Booking Notification', notificationMessage);
+    await sendFirebaseNotification(user, 'Deposit Notification', notificationMessage);
     await notification.save();
 
-    res.status(201).json(deposit);
-  } catch (error) {
-    if (error.code === 11000) {
-      return next(new AppError('Booking already exists', 400));
+    // Step 4: Save user changes if billingmethod is wallet
+    if (billingmethod === 'wallet') {
+      await user.save({ validateBeforeSave: false });
     }
-    res.status(500).json({ error: error.message });
+
+    // If everything succeeded, respond with the deposit
+    res.status(201).json(deposit);
+
+  } catch (error) {
+    // Rollback operations if an error occurs
+
+    if (error.code === 11000) {
+      return next(new AppError('Deposit already exists', 400));
+    }
+
+    if (req.body.billingmethod === 'wallet') {
+      // If there was an error and billingmethod was wallet, revert the user's wallet changes
+      user.walletBalance += req.item.deposit;
+      user.walletTransactions.pop();
+      await user.save({ validateBeforeSave: false });
+    }
+
+    return next(new AppError(`Server error during deposit: ${error.message}`, 500));
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Fetch notifications for the admin
 exports.getAdminNotifications = async (req, res) => {

@@ -1446,11 +1446,25 @@ exports.aggregateSubcategoryResults = async (req, res) => {
         $addFields: {
           status: {
             $cond: {
-              if: { $anyElementTrue: { $map: { input: '$resultsDetails', as: 'result', in: { $eq: ['$$result.adminApproval', false] } } } },
+              if: { 
+                $anyElementTrue: { 
+                  $map: { 
+                    input: '$resultsDetails', 
+                    as: 'result', 
+                    in: { 
+                      $and: [
+                        { $eq: ['$$result.adminApproval', false] },
+                        { $eq: ['$$result.status', 'winner'] }
+                      ]
+                    }
+                  } 
+                } 
+              },
               then: 'pendingWinner',
               else: 'approvedWinner'
             }
-          }
+          },
+          isWinner: true
         }
       },
       {
@@ -1474,6 +1488,7 @@ exports.aggregateSubcategoryResults = async (req, res) => {
       console.error('Error fetching pending and approved auctions:', error);
       throw new Error('Failed to fetch pending and approved auctions');
     });
+    
 
     // Fetch loser auctions
     const losers = await Winner.aggregate([
@@ -1510,7 +1525,7 @@ exports.aggregateSubcategoryResults = async (req, res) => {
 
     // Fetch rejected auctions
     const rejected = await Winner.aggregate([
-      { $match: { userId, status: 'rejected' } },
+      { $match: { userId, status: 'regected' } },
       {
         $lookup: {
           from: 'subcategories',

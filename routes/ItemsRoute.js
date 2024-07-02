@@ -24,7 +24,7 @@ createitems,getAllitems,getitems,deleteitems,updateitems
 } = require('../controllers/items/itemsController');
 const authMiddleware = require('../middleware/authMiddleware');
 const validationMiddleware = require('../middleware/validationMiddleware');
-const userValidator = require('../validationswithexpress/userValidator');
+const itemValidator = require('../validationswithexpress/itemValidator');
 const mult = require('../utils/multer');
 const AppError = require('../utils/appError');
 const upload = mult('images/items')
@@ -67,7 +67,7 @@ req.body.coverphoto ={name:req.files.coverphoto[0].originalname,path: generateVa
 
 next()
 
-},createitems );
+},itemValidator.createItem,validationMiddleware,createitems );
 
 
 

@@ -320,6 +320,7 @@ const APIFeatures = require('../../utils/apiFeatures');
 
 
 // Helper function to send Firebase notifications
+
 const sendFirebaseNotification = async (user, title, body) => {
   if (user && user.fcmToken ) {
     // console.log(user.fcmToken,user.isLogin)
@@ -341,26 +342,28 @@ const sendFirebaseNotification = async (user, title, body) => {
   }
 };
 
-// Book a file
 exports.bookFile = async (req, res, next) => {
   try {
-    const { userId, itemId, billingmethod, billImage } = req.body;
+    const { userId, itemId, billingmethod } = req.body;
     const amount = req.item.fileprice;
+
+    // Check for duplicate booking
+    const existingBooking = await Booking.findOne({ userId, item: itemId });
+    if (existingBooking) {
+      return next(new AppError('Booking already exists for this item and user', 400));
+    }
 
     const newBooking = new Booking({
       userId,
       item: itemId,
       amount,
       billingmethod,
-      billImage,
-      seenByadmin: billingmethod === 'wallet' ? true : false,
+      billImage: req.body.billImage,
+      seenByadmin: billingmethod === 'wallet',
       status: billingmethod === 'wallet' ? 'approved' : 'pending'
     });
 
-    const user = await User.findById(userId);
-    if (!user) {
-      return next(new AppError('User not found', 404));
-    }
+    const user = req.user;
 
     if (billingmethod === 'wallet') {
       if (user.walletBalance < amount) {
@@ -389,12 +392,72 @@ exports.bookFile = async (req, res, next) => {
 
     res.status(201).json({ message: 'Booking created successfully', booking: newBooking });
   } catch (error) {
-    if (error.code === 11000) {
-      return next(new AppError('Booking already exists', 400));
-    }
     next(new AppError(error.message, 500));
   }
 };
+
+
+
+
+
+
+
+
+
+// Book a file
+// exports.bookFile = async (req, res, next) => {
+//   try {
+//     const { userId, itemId, billingmethod, billImage } = req.body;
+//     const amount = req.item.fileprice;
+
+//     const newBooking = new Booking({
+//       userId,
+//       item: itemId,
+//       amount,
+//       billingmethod,
+//       billImage,
+//       seenByadmin: billingmethod === 'wallet' ? true : false,
+//       status: billingmethod === 'wallet' ? 'approved' : 'pending'
+//     });
+
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return next(new AppError('User not found', 404));
+//     }
+
+//     if (billingmethod === 'wallet') {
+//       if (user.walletBalance < amount) {
+//         return next(new AppError('Insufficient wallet balance', 400));
+//       }
+
+//       user.walletBalance -= amount;
+//       user.walletTransactions.push({ amount, type: 'withdrawal', description: `Booking for item ${itemId}` });
+//       await user.save({ validateBeforeSave: false });
+//     }
+
+//     await newBooking.save();
+
+//     const notificationMessage = billingmethod === 'wallet'
+//       ? `Your booking was successful for ${req.item.name}.`
+//       : `Your booking for ${req.item.name} is pending admin approval.`;
+
+//     const notification = new Notification({
+//       userId,
+//       message: notificationMessage,
+//       itemId
+//     });
+
+//     await sendFirebaseNotification(user, 'Booking Notification', notificationMessage);
+//     await notification.save();
+
+//     res.status(201).json({ message: 'Booking created successfully', booking: newBooking });
+//   } catch (error) {
+//     if (error.code === 11000) {
+//       return next(new AppError('Booking already exists', 400));
+//     }
+//     next(new AppError(error.message, 500));
+//   }
+// };
 
 // Get all bookings
 exports.getAllBookings = factory.getAll(Booking);

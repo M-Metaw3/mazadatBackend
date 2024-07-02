@@ -4,6 +4,7 @@ const depositController = require('../controllers/deposite/depositController');
 const validateDeposit = require('../middleware/validateDeposit');
 const authMiddleware = require('../middleware/authMiddleware');
 const validationMiddleware = require('../middleware/validationMiddleware');
+const depositValidator = require('../validationswithexpress/depositValidator');
 const userValidator = require('../validationswithexpress/userValidator');
 const mult = require('../utils/multer');
 const AppError = require('../utils/appError');
@@ -32,7 +33,11 @@ router.post('/',upload.single('billImage'),(req,res,next)=>{
   
   next()
   
-  },authMiddleware,validateDeposit, depositController.createDeposit);
+  },depositValidator.createDeposit, validationMiddleware,validateDeposit,depositController.createDeposit);
+
+
+
+
 router.get('/notifications/admin', depositController.getAdminNotifications);
 router.get('/', depositController.getAllDeposit);
 router.get('/:id', depositController.getDeposit);

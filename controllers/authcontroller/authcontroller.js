@@ -158,36 +158,121 @@ const factory = require('../../utils/apiFactory');
 const getallusers = factory.getAll(User);
  const getuser= factory.getOne(User);
 
-const registerUser = async (req, res ,next) => {
-  try {
-    const { name, email, birthdate, phoneNumber, password ,idImage,idNumber,companyname,adress,specialist,idbackImage} = req.body;
-console.log(idNumber)
+// const registerUser = async (req, res ,next) => {
+//   try {
+//     const { name, email, birthdate, phoneNumber, password ,idImage,idNumber,companyname,adress,specialist,idbackImage} = req.body;
+// console.log(idNumber)
 
-    const existingUser = await User.findOne({ $or: [{ email }, { phoneNumber }] });
-console.log('existingUser',existingUser)
+//     const existingUser = await User.findOne({ $or: [{ email }, { phoneNumber }] });
+// console.log('existingUser',existingUser)
 
-    if (existingUser) {
-      return next(new AppError('User already exists', 400))
+//     if (existingUser) {
+//       return next(new AppError('User already exists', 400))
    
+//     }
+
+//     const passwordHash = await bcrypt.hash(password, 10);
+//     const newUser = new User({ name, email, birthdate, phoneNumber, passwordHash,idImage,idNumber,companyname,adress,specialist,idbackImage });
+//     await newUser.save();
+//     console.log(newUser)
+
+//     // const otpCode = generateOTP();
+//     const newOTP = new OTP({ userId: newUser._id, otpCode:'123456', expiresAt: Date.now() + 1000 * 60 * 1000 });
+//     await newOTP.save();
+
+//     // sendOTP(phoneNumber, '123456');
+
+//     res.status(201).json({status:"success",data:{ message: 'User registered successfully. Please verify your phone number.',data:newUser._id }});
+//   } catch (error) {
+//     console.log(error)
+//   return next(new AppError(`Server error ${error}`, 500));
+//   }
+// };
+
+
+
+
+const registerUser = async (req, res, next) => {
+  try {
+    // const errors = validationResult(req);
+    // if (!errors.isEmpty()) {
+    //   return next(new AppError('Validation Error', 400, errors.array()));
+    // }
+
+
+    const {
+      name, email, birthdate, phoneNumber, password, idImage, idNumber,
+      companyname, adress, specialist, idbackImage
+    } = req.body;
+    // Check if user already exists by email or phone number
+    const existingUser = await User.findOne({ $or: [{ email }, { phoneNumber }] });
+    if (existingUser) {
+      return next(new AppError('User already exists', 400));
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
-    const newUser = new User({ name, email, birthdate, phoneNumber, passwordHash,idImage,idNumber,companyname,adress,specialist,idbackImage });
-    await newUser.save();
-    console.log(newUser)
+    // Check if user already exists by ID number
+    const existingIdUser = await User.findOne({ idNumber });
+    if (existingIdUser) {
+      return next(new AppError('User with this ID number already exists', 400));
+    }
 
-    // const otpCode = generateOTP();
-    const newOTP = new OTP({ userId: newUser._id, otpCode:'123456', expiresAt: Date.now() + 1000 * 60 * 1000 });
+    // Hash the password
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // Create new user
+    const newUser = new User({
+      name, email, birthdate, phoneNumber, passwordHash, idImage, idNumber,
+      companyname, adress, specialist, idbackImage
+    });
+    await newUser.save();
+
+    // Create and save OTP
+    const newOTP = new OTP({
+      userId: newUser._id,
+      otpCode: '123456',
+      expiresAt: Date.now() + 1000 * 60 * 1000
+    });
     await newOTP.save();
 
-    // sendOTP(phoneNumber, '123456');
-
-    res.status(201).json({status:"success",data:{ message: 'User registered successfully. Please verify your phone number.',data:newUser._id }});
+    res.status(201).json({
+      status: "success",
+      data: {
+        message: 'User registered successfully. Please verify your phone number.',
+        userId: newUser._id
+      }
+    });
   } catch (error) {
-    console.log(error)
-  return next(new AppError(`Server error ${error}`, 500));
+    console.error(error);
+    return next(new AppError(`Server error ${error.message}`, 500));
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const verifyOTP = async (req, res,next) => {
   try {
@@ -207,74 +292,23 @@ console.log(userId,otpCode)
   }
 };
 
-// const loginUser = async (req, res,next) => {
-//   try {
-//     const { phoneNumber, password ,idNumber,fcmToken } = req.body;
-//     let query;
-//     if (idNumber) {
-//       if(idNumber.length>14){
-//         return next(new AppError('Invalid id number', 400));
-//       }
-//         query = { idNumber: idNumber };
-
-//     } else if (phoneNumber) {
-//         query = { phoneNumber: phoneNumber };
-//     } else {
-//         return res.status(400).json({ error: 'Email or phone number must be provided' });
-//     }
-//     console.log(query)
-//     const user = await User.findOne(query);
-//     if (!user) {
-//       return next(new AppError('Invalid credentials', 400));
-   
-//     }
-
-//     const isMatch = await bcrypt.compare(password, user.passwordHash);
-//     if (!isMatch) {
-//       return next(new AppError('Invalid credentials', 400));
- 
-//     }
-
-//     if (!user.verified) {
-//       return next(new AppError('Please verify your phone number first', 400));
-//     }
-//     if (user.blocked) {
-//       return next(new AppError('you are blocked', 400));
-//     }
-// user.passwordHash=undefined;
-// await User.findByIdAndUpdate(user._id, { isLogin: true,fcmToken });
-
-// return createSendToken(user, 200, res);
-//   } catch (error) {
-//     res.status(500).json({ message: 'Server error', error });
-//   }
-// };
-
-
-
-
-
-
-
-
-
-
-
-
 
 const loginUser = async (req, res, next) => {
   try {
     const { phoneNumber, password, idNumber, fcmToken } = req.body;
+
+    if (!phoneNumber && !idNumber) {
+      return res.status(400).json({ error: 'Phone number or ID number must be provided' });
+    }
+
     let query;
     if (idNumber) {
       if (idNumber.length > 14) {
         return next(new AppError('Invalid ID number', 400));
       }
       query = { idNumber: idNumber };
-    } else if (phoneNumber) {
-      query = { phoneNumber: phoneNumber };
     } else {
-      return res.status(400).json({ error: 'Phone number or ID number must be provided' });
+      query = { phoneNumber: phoneNumber };
     }
 
     const user = await User.findOne(query).select('+passwordHash');
@@ -290,21 +324,35 @@ const loginUser = async (req, res, next) => {
     if (!user.verified) {
       return next(new AppError('Please verify your phone number first', 400));
     }
+
     if (user.blocked) {
       return next(new AppError('You are blocked', 400));
     }
+
     if (!user.approved) {
       return next(new AppError('Your account has not been approved by the admin yet', 400));
     }
 
     user.passwordHash = undefined;
-   const a= await  User.findByIdAndUpdate(user._id, {fcmToken});
-console.log(a)
+    await User.findByIdAndUpdate(user._id, { fcmToken });
+
     return createSendToken(user, 200, res);
   } catch (error) {
-    next(new AppError('Server error during login', 500));
+    return next(new AppError('Server error during login', 500));
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Admin Approval Controller
 const approveUser = async (req, res, next) => {

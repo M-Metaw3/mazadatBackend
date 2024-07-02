@@ -2821,7 +2821,26 @@ const processStartingSubcategories = async (now, notificationNamespace) => {
 
   for (const subcategory of startingSubcategories) {
     const deposits = await Deposit.find({ item: subcategory._id, status: 'approved' });
+    const fcmTokens = deposits.map(deposit => deposit.userId.fcmToken).filter(token => token);
+    console.log(fcmTokens)
+    if (fcmTokens.length > 0) {
 
+      const message = {
+        notification: {
+          title: 'Auction Started',
+          body: `The auction for subcategory ${subcategory.name} has started and will end at ${subcategory.endDate.toLocaleTimeString()}.`,
+        },
+        tokens: fcmTokens,
+      };
+
+      admin.messaging().sendMulticast(message)
+        .then((response) => {
+          console.log(`${response.successCount} messages were sent successfully`);
+        })
+        .catch((error) => {
+          console.error('Error sending multicast message:', error);
+        });
+    }
     const startNotifications = deposits.map(async (deposit) => {
       const notification = new Notification({
         userId: deposit.userId,
@@ -2835,18 +2854,8 @@ const processStartingSubcategories = async (now, notificationNamespace) => {
         subcategory: subcategory,
       });
 
-      const user = await User.findById(deposit.userId);
-      if (user && user.fcmToken) {
-        const message = {
-          notification: {
-            title: 'Auction Started',
-            body: `The auction for subcategory ${subcategory.name} has started and will end at ${subcategory.endDate.toLocaleTimeString()}.`,
-          },
-          token: user.fcmToken,
-        };
-        await admin.messaging().send(message);
-        console.log("ended succefully notifications")
-      }
+
+
     });
 
     await Promise.all(startNotifications);
@@ -2878,6 +2887,27 @@ const processEndingSubcategories = async (now, notificationNamespace) => {
     await subcategory.save();
 
     const deposits = await Deposit.find({ item: subcategory._id, status: 'approved' });
+
+    const fcmTokens = deposits.map(deposit => deposit.userId.fcmToken).filter(token => token);
+    console.log(fcmTokens)
+    if (fcmTokens.length > 0) {
+
+      const message = {
+         notification: {
+            title: 'Auction Ended',
+            body: `The auction for subcategory ${subcategory.name} has ended.`,
+          },
+        tokens: fcmTokens,
+      };
+
+      admin.messaging().sendMulticast(message)
+        .then((response) => {
+          console.log(`${response.successCount} messages were sent successfully`);
+        })
+        .catch((error) => {
+          console.error('Error sending multicast message:', error);
+        });
+    }
     for (const deposit of deposits) {
       notificationNamespace.to(`user_${deposit.userId._id}`).emit('notification', {
         message: `The auction for subcategory ${subcategory.name} has ended.`,
@@ -2890,17 +2920,7 @@ const processEndingSubcategories = async (now, notificationNamespace) => {
         itemId: subcategory._id,
       });
       await auctionEnded.save();
-console.log("done")
-      if (user && user.fcmToken ) {
-        const message = {
-          notification: {
-            title: 'Auction Ended',
-            body: `The auction for subcategory ${subcategory.name} has ended.`,
-          },
-          token: user.fcmToken,
-        };
-        await admin.messaging().send(message);
-      }
+
     }
   }
 };
@@ -2909,6 +2929,7 @@ console.log("done")
 
 
 const handleWinner = async (item, winnerBid, subcategory, notificationNamespace) => {
+  console.log('handleWinner')
   const deposits = await Deposit.find({ item: subcategory._id, status: 'approved' });
   const depositAmount = deposits.find(deposit => deposit.userId.equals(winnerBid.userId))?.amount || 0;
 
@@ -3111,7 +3132,7 @@ const aggregateSubcategoryResults = async () => {
 };
 
 const setupNotificationInterval = (notificationNamespace) => {
-  setInterval(() => notifyAuctionEvents(notificationNamespace), 60 * 1000);
+  setInterval(() => notifyAuctionEvents(notificationNamespace), 10 * 1000);
 };
 
 module.exports = {

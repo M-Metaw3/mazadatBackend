@@ -15,6 +15,7 @@ const catchAsync = require('../utils/catchAsync');
 const jwt = require('jsonwebtoken');
 const { promisify } = require('util');
 const User = require('../models/User');
+const subcategoryValidator = require('../validationswithexpress/subcategoryvalidation');
 
 // const {deleteFileIfExists} =require('../utils/deleteimages');
 function generateValidFilePath(filename) {
@@ -113,7 +114,7 @@ router.post('/', upload.fields([
   };
 
   next();
-}, async (req, res, next) => {
+}, subcategoryValidator.createSubcategory,validationMiddleware,async (req, res, next) => {
   try {
     await createCategory(req, res,next);
   } catch (error) {

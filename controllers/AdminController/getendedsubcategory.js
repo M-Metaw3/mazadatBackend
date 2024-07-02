@@ -652,6 +652,7 @@ console.log(action);
         break;
       case 'regected':
       case 'cancelled':
+        console.log(action)
         winner.status = action;
         item.status = 'cancelled';
         message = 'Your winning bid has been rejected or cancelled.';

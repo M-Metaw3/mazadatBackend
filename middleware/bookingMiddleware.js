@@ -1,42 +1,36 @@
-// middlewares/bookingMiddleware.js
-
 const User = require('../models/User');
 const Subcategory = require('../models/subcategory');
+const AppError = require('../utils/appError');
 
 exports.checkWalletBalance = async (req, res, next) => {
   try {
-    // if (req.body.billingmethod !== 'wallet') {
-    //   return next();
-    // }
-
     const user = await User.findById(req.body.userId);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return next(new AppError('User not found', 404));
     }
 
     const subcategory = await Subcategory.findById(req.body.itemId);
-
     if (!subcategory) {
-      return res.status(404).json({ message: 'Subcategory not found' });
+      return next(new AppError('Subcategory not found', 404));
     }
 
-
-    req.item = subcategory; 
+    req.user = user;
+    req.item = subcategory;
     next();
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(new AppError(error.message, 500));
   }
 };
 
 exports.validateBookingData = (req, res, next) => {
   const { userId, itemId, billingmethod } = req.body;
-console.log(req.body)
+
   if (!userId || !itemId || !billingmethod) {
-    return res.status(400).json({ message: 'All fields are required' });
+    return next(new AppError('All fields are required', 400));
   }
 
   if (!['mobile', 'bank', 'instapay', 'wallet'].includes(billingmethod)) {
-    return res.status(400).json({ message: 'Invalid billing method' });
+    return next(new AppError('Invalid billing method', 400));
   }
 
   next();

@@ -1,22 +1,31 @@
 const { body } = require('express-validator');
 
 const userValidator = {
-  register: [
+
+  register : [
     body('name').notEmpty().withMessage('Name is required'),
-    body('email').isEmail().withMessage('Invalid email'),
-    body('birthdate').notEmpty().withMessage('Invalid birthdate'),
+    body('email').isEmail().withMessage('Valid email is required'),
+    // body('birthdate').isISO8601().withMessage('Valid birthdate is required'),
     body('phoneNumber').notEmpty().withMessage('Phone number is required'),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
-    body('idNumber').isLength({ min: 14 }).withMessage('id number  must be at least 15 characters long'),
-    body('idImage').notEmpty().withMessage('Invalid ID image'),
-    // body('profileImage').notEmpty().withMessage('Invalid profile image image'),
-
-
-
+    body('idNumber').notEmpty().withMessage('ID number is required'),
+    // body('companyname').notEmpty().withMessage('Company name is required'),
+    // body('adress').notEmpty().withMessage('Address is required'),
+    // body('specialist').notEmpty().withMessage('Specialist field is required')
   ],
-  login: [
-    // body('email').isEmail().withMessage('Invalid email'),
-    body('password').notEmpty().withMessage('Password is required')
+  
+login : [
+    body('phoneNumber')
+      .optional()
+      .isMobilePhone()
+      .withMessage('Invalid phone number format'),
+    body('idNumber')
+      .optional()
+      .isLength({ max: 14 })
+      .withMessage('ID number must be less than or equal to 14 characters'),
+    body('password')
+      .notEmpty()
+      .withMessage('Password is required')
   ],
   forgotPassword: [
     body('email').isEmail().withMessage('Invalid email')

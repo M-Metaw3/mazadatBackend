@@ -124,10 +124,10 @@ depositSchema.pre('save', async function (next) {
 depositSchema.pre('find', function(next) {
   this.populate({
     path: 'userId',
-    select: 'name email photo'
+    select: 'name email photo fcmToken'
   }).populate({
     path: 'item',
-    select: 'imagecover name endDate startDate subcategoryId'
+    select: 'imagecover name endDate startDate subcategoryId '
   });
 
   next();

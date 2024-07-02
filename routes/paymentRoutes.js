@@ -29,7 +29,7 @@ router.post('/pay',upload.single('billImage'),(req,res,next)=>{
   
   next()
   
-  } ,ensureWinner, ensureSubcategoryEnded, processPayment);
+  } ,ensureWinner, processPayment);
 router.post('/admin/approve-payment', approvePayment);
 
 module.exports = router;

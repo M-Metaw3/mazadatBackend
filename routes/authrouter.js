@@ -76,6 +76,22 @@ router.post('/register',upload.fields([
 next()
 
 }, userValidator.register, validationMiddleware, registerUser);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 router.post('/verify-otp', verifyOTP);
 router.post('/login', userValidator.login, validationMiddleware, loginUser);
 router.post('/forgot-password', userValidator.forgotPassword, validationMiddleware, forgotPassword);
