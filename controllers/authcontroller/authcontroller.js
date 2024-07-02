@@ -230,7 +230,7 @@ const registerUser = async (req, res, next) => {
     const newOTP = new OTP({
       userId: newUser._id,
       otpCode: '123456',
-      expiresAt: Date.now() + 1000 * 60 * 1000
+      expiresAt: Date.now() + 10000 * 60 * 1000
     });
     await newOTP.save();
 
