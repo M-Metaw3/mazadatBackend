@@ -115,7 +115,6 @@ const itemSchema = new mongoose.Schema({
   },
   mainlystartPrice: {
     type: Number,
-    required: true
   },
   minBidIncrement: {
     type: Number,
