@@ -98,7 +98,7 @@ router.post('/deleted', deleteuser);
 
 router.post('/verify-otp', verifyOTP);
 router.post('/login', loginUser);
-router.post('/forgot-password', userValidator.forgotPassword, validationMiddleware, forgotPassword);
+router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', userValidator.resetPassword, validationMiddleware, resetPassword);
 router.post('/change-password', authMiddleware, userValidator.changePassword, validationMiddleware, changePassword);
 router.put('/update-profile/:userId', upload.fields([

@@ -5,7 +5,15 @@ const notificationSchema = new mongoose.Schema({
   message: { type: String, required: true },
   itemId: { type: mongoose.Schema.Types.ObjectId, ref: 'Subcategory' },
   read: { type: Boolean, default: false },
-  createdAt: { type: Date, default: Date.now },
+  type: {
+    type: String,
+    enum: ['payment', 'bookingfiles', 'deposit', 'wallet',"bid",'winner','loser'],
+    required: true,
+  },
+},{
+  timestamps: true,
+  // toJSON: { virtuals: true },
+  // toObject: { virtuals: true },
 });
 notificationSchema.pre('find', function(next) {
   this.populate({
