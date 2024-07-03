@@ -573,7 +573,7 @@ const approveUser = async (req, res, next) => {
 
 const forgotPassword = async (req, res, next) => {
   try {
-    const { email } = req.body;
+    const { phoneNumber } = req.body;
     const user = await User.findOne({ email });
 
     if (!user) {
