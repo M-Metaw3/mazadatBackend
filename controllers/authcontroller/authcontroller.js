@@ -574,7 +574,7 @@ const approveUser = async (req, res, next) => {
 const forgotPassword = async (req, res, next) => {
   try {
     const { phoneNumber } = req.body;
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ phoneNumber });
 
     if (!user) {
       return next(new AppError('User not found', 400));
