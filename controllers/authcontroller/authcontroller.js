@@ -563,34 +563,55 @@ const approveUser = async (req, res, next) => {
   }
 };
 
-const forgotPassword = async (req, res,next) => {
+
+
+
+
+
+
+
+
+const forgotPassword = async (req, res, next) => {
   try {
     const { email } = req.body;
-
     const user = await User.findOne({ email });
+
     if (!user) {
       return next(new AppError('User not found', 400));
-   
     }
 
-    // const otpCode = generateOTP();
-    const newOTP = new OTP({ userId: user._id, otpCode:'123456', expiresAt: Date.now() + 10 * 60 * 1000 });
+    // Check if an OTP was sent recently
+    const recentOTP = await OTP.findOne({ userId: user._id }).sort({ createdAt: -1 });
+    if (recentOTP && (Date.now() - new Date(recentOTP.createdAt).getTime()) < 3 * 60 * 1000) {
+      return next(new AppError('An OTP was sent recently. Please wait a few minutes before requesting a new one.', 400));
+    }
+
+    const otpCode = generateOTP();
+    const newOTP = new OTP({ userId: user._id, otpCode, expiresAt: Date.now() + 10 * 60 * 1000 });
     await newOTP.save();
 
-    sendOTP(user.phoneNumber, '123456');
+    try {
+      await sendOTP(user.phoneNumber, otpCode);
+    } catch (error) {
+      await OTP.deleteMany({ userId: user._id });
+      return next(new AppError('Failed to send OTP. Please try again later.', 500));
+    }
 
-   return res.status(200).json({status:"success",data:{ message: 'OTP sent to your phone number',data:user._id }});;
+    return res.status(200).json({ status: "success", data: { message: 'OTP sent to your phone number', userId: user._id } });
   } catch (error) {
     return next(new AppError('Server error', 500));
   }
 };
 
-const resetPassword = async (req, res,next) => {
+
+
+
+
+const resetPassword = async (req, res, next) => {
   try {
     const { userId, otpCode, newPassword } = req.body;
 
     const otpRecord = await OTP.findOne({ userId, otpCode });
-    console.log(otpRecord)
     if (!otpRecord || otpRecord.expiresAt < Date.now()) {
       return next(new AppError('Invalid or expired OTP', 400));
     }
@@ -599,11 +620,72 @@ const resetPassword = async (req, res,next) => {
     await User.findByIdAndUpdate(userId, { passwordHash });
     await OTP.deleteMany({ userId });
 
-   return res.status(200).json({ message: 'Password reset successfully' });
+    return res.status(200).json({ message: 'Password reset successfully' });
   } catch (error) {
-  return  res.status(500).json({ message: 'Server error', error });
+    return res.status(500).json({ message: 'Server error', error });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// const forgotPassword = async (req, res,next) => {
+//   try {
+//     const { email } = req.body;
+
+//     const user = await User.findOne({ email });
+//     if (!user) {
+//       return next(new AppError('User not found', 400));
+   
+//     }
+
+//     // const otpCode = generateOTP();
+//     const newOTP = new OTP({ userId: user._id, otpCode:'123456', expiresAt: Date.now() + 10 * 60 * 1000 });
+//     await newOTP.save();
+
+//     sendOTP(user.phoneNumber, '123456');
+
+//    return res.status(200).json({status:"success",data:{ message: 'OTP sent to your phone number',data:user._id }});;
+//   } catch (error) {
+//     return next(new AppError('Server error', 500));
+//   }
+// };
+
+// const resetPassword = async (req, res,next) => {
+//   try {
+//     const { userId, otpCode, newPassword } = req.body;
+
+//     const otpRecord = await OTP.findOne({ userId, otpCode });
+//     console.log(otpRecord)
+//     if (!otpRecord || otpRecord.expiresAt < Date.now()) {
+//       return next(new AppError('Invalid or expired OTP', 400));
+//     }
+
+//     const passwordHash = await bcrypt.hash(newPassword, 10);
+//     await User.findByIdAndUpdate(userId, { passwordHash });
+//     await OTP.deleteMany({ userId });
+
+//    return res.status(200).json({ message: 'Password reset successfully' });
+//   } catch (error) {
+//   return  res.status(500).json({ message: 'Server error', error });
+//   }
+// };
 
 const changePassword = async (req, res) => {
   try {
@@ -684,6 +766,21 @@ const blockUser = async (req, res) => {
         res.status(500).json({ message: 'An error occurred during logout.', error: error.message });
       }
     };
+    const deleteuser = async (req, res) => {
+      try {
+       
+    
+        // Update isLogin status to false
+        await User.findOneAndDelete({ phoneNumber:req.body.phoneNumber })
+    
+        // Optionally, you can also invalidate the token if you're using token-based authentication
+        // For example, add the token to a blacklist (implementation depends on your token strategy)
+    
+        res.status(200).json({ message: 'deleted out successfully.' });
+      } catch (error) {
+        res.status(500).json({ message: 'An error occurred during logout.', error: error.message });
+      }
+    };
 module.exports = {
   getallusers,
   logoutUser,
@@ -694,5 +791,6 @@ module.exports = {
   resetPassword,
   changePassword,
   resendOTP,
+  deleteuser,
   updateProfile,getuser,blockUser,getme,approveUser
 };

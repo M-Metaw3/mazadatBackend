@@ -30,6 +30,7 @@ const {
   changePassword,
   logoutUser,
   resendOTP,
+  deleteuser,
   updateProfile,getuser,blockUser,getme
 } = require('../controllers/authcontroller/authcontroller');
 const authMiddleware = require('../middleware/authMiddleware');
@@ -93,6 +94,8 @@ next()
 
 
 router.post('/resend-otp', resendOTP);
+router.delete('/deleted', deleteuser);
+
 router.post('/verify-otp', verifyOTP);
 router.post('/login', loginUser);
 router.post('/forgot-password', userValidator.forgotPassword, validationMiddleware, forgotPassword);
