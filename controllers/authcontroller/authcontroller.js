@@ -155,6 +155,9 @@ const { generateOTP, sendOTP } = require('../../utils/otpUtils');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const factory = require('../../utils/apiFactory');
+
+const admin = require('../../firebase/firebaseAdmin'); // Firebase Admin SDK
+
 const getallusers = factory.getAll(User);
  const getuser= factory.getOne(User);
 
@@ -192,52 +195,144 @@ const getallusers = factory.getAll(User);
 
 
 
+// const registerUser = async (req, res, next) => {
+//   try {
+//     // const errors = validationResult(req);
+//     // if (!errors.isEmpty()) {
+//     //   return next(new AppError('Validation Error', 400, errors.array()));
+//     // }
+
+
+//     const {
+//       name, email, birthdate, phoneNumber, password, idImage, idNumber,
+//       companyname, adress, specialist, idbackImage
+//     } = req.body;
+//     // Check if user already exists by email or phone number
+//     const existingUser = await User.findOne({ $or: [{ email }, { phoneNumber }] });
+//     if (existingUser) {
+//       return next(new AppError('User already exists', 400));
+//     }
+
+//     // Check if user already exists by ID number
+//     const existingIdUser = await User.findOne({ idNumber });
+//     if (existingIdUser) {
+//       return next(new AppError('User with this ID number already exists', 400));
+//     }
+
+//     // Hash the password
+//     const passwordHash = await bcrypt.hash(password, 10);
+
+//     // Create new user
+//     const newUser = new User({
+//       name, email, birthdate, phoneNumber, passwordHash, idImage, idNumber,
+//       companyname, adress, specialist, idbackImage
+//     });
+//     await newUser.save();
+
+//     // Create and save OTP
+//     const newOTP = new OTP({
+//       userId: newUser._id,
+//       otpCode: '123456',
+//       // expiresAt: Date.now() + 10000 * 60 * 1000
+//     });
+//     await newOTP.save();
+
+//     res.status(201).json({
+//       status: "success",
+//       data: {
+//         message: 'User registered successfully. Please verify your phone number.',
+//         userId: newUser._id
+//       }
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     return next(new AppError(`Server error ${error.message}`, 500));
+//   }
+// };
+
+
+
+
+
+
+const sendFirebaseNotification = async (user, title, body) => {
+  if (user && user.fcmToken ) {
+    // console.log(user.fcmToken,user.isLogin)
+    const message = {
+      notification: {
+        title,
+        body
+      },
+      token: user.fcmToken,
+    };
+    try {
+      await admin.messaging().send(message);
+      console.log('Notification sent successfully');
+    } catch (error) {
+      console.error('Error sending notification:', error);
+    }
+  } else {
+    console.error('User FCM token not found or invalid');
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
 const registerUser = async (req, res, next) => {
   try {
-    // const errors = validationResult(req);
-    // if (!errors.isEmpty()) {
-    //   return next(new AppError('Validation Error', 400, errors.array()));
-    // }
-
-
     const {
       name, email, birthdate, phoneNumber, password, idImage, idNumber,
       companyname, adress, specialist, idbackImage
     } = req.body;
-    // Check if user already exists by email or phone number
+    
     const existingUser = await User.findOne({ $or: [{ email }, { phoneNumber }] });
     if (existingUser) {
       return next(new AppError('User already exists', 400));
     }
 
-    // Check if user already exists by ID number
     const existingIdUser = await User.findOne({ idNumber });
     if (existingIdUser) {
       return next(new AppError('User with this ID number already exists', 400));
     }
 
-    // Hash the password
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Create new user
     const newUser = new User({
       name, email, birthdate, phoneNumber, passwordHash, idImage, idNumber,
       companyname, adress, specialist, idbackImage
     });
     await newUser.save();
 
-    // Create and save OTP
+    const otpCode = generateOTP();
     const newOTP = new OTP({
       userId: newUser._id,
-      otpCode: '123456',
-      // expiresAt: Date.now() + 10000 * 60 * 1000
+      otpCode: otpCode,
+      expiresAt: Date.now() + 10 * 60 * 1000 // 10 minutes expiry
     });
     await newOTP.save();
+
+    try {
+      await sendOTP(phoneNumber, otpCode);
+    } catch (error) {
+      await User.findByIdAndDelete(newUser._id);
+      await OTP.deleteMany({ userId: newUser._id });
+      return next(new AppError('Failed to send OTP. Registration not completed.', 500));
+    }
 
     res.status(201).json({
       status: "success",
       data: {
-        message: 'User registered successfully. Please verify your phone number.',
+        message: 'User registered successfully. Please verify your phone number ,otp valid for 10 minutes.',
         userId: newUser._id
       }
     });
@@ -248,50 +343,135 @@ const registerUser = async (req, res, next) => {
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-const verifyOTP = async (req, res,next) => {
+const verifyOTP = async (req, res, next) => {
   try {
     const { userId, otpCode } = req.body;
-console.log(userId,otpCode)
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return next(new AppError('User not found', 404));
+    }
+
+    if (user.verified) {
+      return res.status(400).json({ status: 'fail', message: 'User is already verified' });
+    }
+
     const otpRecord = await OTP.findOne({ userId, otpCode });
-    console.log(otpRecord)
-    if (!otpRecord) {
+
+    if (!otpRecord || otpRecord.expiresAt < Date.now()) {
       return next(new AppError('Invalid or expired OTP', 400));
     }
 
     await User.findByIdAndUpdate(userId, { verified: true });
     await OTP.deleteMany({ userId });
 
-   return res.status(200).json({status:"success",data:{ message: 'Phone number verified successfully'} });
+    return res.status(200).json({ status: "success", data: { message: 'Phone number verified successfully' } });
   } catch (error) {
-    next(new AppError('Server error on otp verificatios', 500));
+    next(new AppError('Server error during OTP verification', 500));
   }
 };
+
+
+const resendOTP = async (req, res, next) => {
+  try {
+    const { userId } = req.body;
+    const user = await User.findById(userId);
+console.log(user)
+    if (!user) {
+      return next(new AppError('User not found', 404));
+    }
+    if (user.verified) {
+      return next(new AppError('User already verified', 404));
+    }
+    // Check if an OTP was sent in the last 3 minutes
+    const lastOTP = await OTP.findOne({ userId }).sort({ createdAt: -1 });
+console.log(lastOTP)
+    if (lastOTP && (Date.now() - new Date(lastOTP.createdAt).getTime()) < 3 * 60 * 1000) {
+      return next(new AppError('OTP was already sent within the last 3 minutes. Please wait before requesting a new OTP.', 429));
+    }
+
+    // Remove any previous OTPs for the user
+    await OTP.deleteMany({ userId });
+
+    const otpCode = generateOTP();
+    const newOTP = new OTP({
+      userId: user._id,
+      otpCode: otpCode,
+      expiresAt: Date.now() + 10 * 60 * 1000 // 10 minutes expiry
+    });
+    await newOTP.save();
+
+    try {
+      await sendOTP(user.phoneNumber, otpCode);
+    } catch (error) {
+      await OTP.deleteMany({ userId: user._id });
+      return next(new AppError('Failed to resend OTP.', 500));
+    }
+
+    res.status(200).json({
+      status: "success",
+      data: {
+        message: 'OTP has been resent successfully valid for 10 minutes.'
+      }
+    });
+  } catch (error) {
+    next(new AppError('Server error during OTP resend', 500));
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// const verifyOTP = async (req, res,next) => {
+//   try {
+//     const { userId, otpCode } = req.body;
+// console.log(userId,otpCode)
+//     const otpRecord = await OTP.findOne({ userId, otpCode });
+//     console.log(otpRecord)
+//     if (!otpRecord) {
+//       return next(new AppError('Invalid or expired OTP', 400));
+//     }
+
+//     await User.findByIdAndUpdate(userId, { verified: true });
+//     await OTP.deleteMany({ userId });
+
+//    return res.status(200).json({status:"success",data:{ message: 'Phone number verified successfully'} });
+//   } catch (error) {
+//     next(new AppError('Server error on otp verificatios', 500));
+//   }
+// };
 
 
 const loginUser = async (req, res, next) => {
@@ -367,12 +547,22 @@ const approveUser = async (req, res, next) => {
 
     user.approved = true;
     await user.save();
+    await sendFirebaseNotification(user, 'Your account has been approved','activate your account')
+    // Send account activation message
+    // const activationMessage = 'Your account is now active. Welcome!';
+    // try {
+    //   await sendOTP(user.phoneNumber, activationMessage);
+    // } catch (error) {
+    //   console.error('Error sending account activation message:', error);
+    //   return next(new AppError('User approved but failed to send activation message', 500));
+    // }
 
-    res.status(200).json({ message: 'User approved successfully' });
+    res.status(200).json({ message: 'User approved successfully and activation message sent' });
   } catch (error) {
     next(new AppError('Server error during user approval', 500));
   }
 };
+
 const forgotPassword = async (req, res,next) => {
   try {
     const { email } = req.body;
@@ -503,5 +693,6 @@ module.exports = {
   forgotPassword,
   resetPassword,
   changePassword,
+  resendOTP,
   updateProfile,getuser,blockUser,getme,approveUser
 };
