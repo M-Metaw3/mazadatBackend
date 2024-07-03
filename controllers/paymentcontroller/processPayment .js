@@ -150,7 +150,9 @@ const processPayment = async (req, res, next) => {
       message: billingMethod === 'wallet' 
         ? `Your payment of ${dueAmount} for ${item.name} was successful.` 
         : `Your payment for ${item.name} is pending admin approval.`,
-      itemId
+      itemId,
+      type:'payment'
+
     });
 
     if (user && user.fcmToken) {
@@ -253,7 +255,9 @@ const approvePayment = async (req, res, next) => {
       const notification = new Notification({
         userId: payment.userId,
         message: `Your payment of ${payment.amount} for item ${payment.itemId} has been approved.`,
-        itemId: payment.itemId
+        itemId: payment.itemId,
+        type:'payment'
+
       });
       await notification.save();
     } else if (action === 'reject') {
@@ -261,7 +265,9 @@ const approvePayment = async (req, res, next) => {
       const notification = new Notification({
         userId: payment.userId,
         message: `Your payment of ${payment.amount} for item ${payment.itemId} has been rejected.`,
-        itemId: payment.itemId
+        itemId: payment.itemId,
+        type:'payment'
+
       });
       await notification.save();
     } else {

@@ -78,16 +78,16 @@ require('./sockets/socket')(io);
 
 const notificationNamespace = createNotificationNamespace(io);
 setupNotificationInterval(notificationNamespace);
-mongoose
-  .connect(DB, {
-    // useUnifiedTopology: true ,
-    // useNewUrlParser: true,
-    // useCreateIndex: true,
-    // useFindAndModify: false
-  })
-  .then(() => console.log(`DB connection successful! ${process.env.NODE_ENV_docker}`)).catch(err => {
-    console.log(err);
-  });
+// mongoose
+//   .connect(DB, {
+//     // useUnifiedTopology: true ,
+//     // useNewUrlParser: true,
+//     // useCreateIndex: true,
+//     // useFindAndModify: false
+//   })
+//   .then(() => console.log(`DB connection successful! ${process.env.NODE_ENV_docker}`)).catch(err => {
+//     console.log(err);
+//   });
 
 // mongoose
 //   .connect(`mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@mongo:27017/${process.env.NODE_ENV_DOCKER === 'production' ? 'mazadat-prod' : 'mazadates-dev'}`, {
@@ -112,18 +112,18 @@ mongoose
 const dbName = process.env.NODE_ENV_docker === 'production' ? 'mazadat-prod' : 'mazadates-dev';
 // .connect(`mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@mongo:27017/${dbName}?authSource=admin`, {
 
-// mongoose
-//   .connect(`mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@localhost:27017/mazadates-dev?authSource=admin`, {
-//     useUnifiedTopology: true,
-//     useNewUrlParser: true,
+mongoose
+  .connect(`mongodb://${process.env.DB_USER}:${process.env.DB_PASSWORD}@localhost:27017/mazadates-dev?authSource=admin`, {
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
     
-//     // useCreateIndex: true,
-//     // useFindAndModify: false,
-//   })
-//   .then(() => console.log(`DB connection successful! Environment: ${process.env.NODE_ENV_docker}`))
-//   .catch(err => {
-//     console.error('DB connection error:', err);
-//   });
+    // useCreateIndex: true,
+    // useFindAndModify: false,
+  })
+  .then(() => console.log(`DB connection successful! Environment: ${process.env.NODE_ENV_docker}`))
+  .catch(err => {
+    console.error('DB connection error:', err);
+  });
 
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {

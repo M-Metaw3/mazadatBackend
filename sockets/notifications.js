@@ -2846,6 +2846,8 @@ const processStartingSubcategories = async (now, notificationNamespace) => {
         userId: deposit.userId,
         message: `The auction for subcategory ${subcategory.name} has started.`,
         itemId: subcategory._id,
+        type:'auction'
+
       });
       await notification.save();
 
@@ -2918,6 +2920,8 @@ const processEndingSubcategories = async (now, notificationNamespace) => {
         userId: deposit.userId,
         message: `The auction for subcategory ${subcategory.name} has ended.`,
         itemId: subcategory._id,
+        type:'auction'
+
       });
       await auctionEnded.save();
 
@@ -2949,6 +2953,8 @@ const handleWinner = async (item, winnerBid, subcategory, notificationNamespace)
       userId: winnerBid.userId,
       message: `Congratulations! You have won the auction for item ${item.name} in subcategory ${subcategory.name} with a bid of ${winnerBid.amount}.`,
       itemId: item._id,
+      type:'winner'
+
     });
     await winnerNotification.save();
 

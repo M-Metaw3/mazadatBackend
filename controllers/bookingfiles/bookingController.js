@@ -384,7 +384,8 @@ exports.bookFile = async (req, res, next) => {
     const notification = new Notification({
       userId,
       message: notificationMessage,
-      itemId
+      itemId,
+      type:'bookingfiles'
     });
 
     await sendFirebaseNotification(user, 'Booking Notification', notificationMessage);
@@ -479,7 +480,9 @@ exports.approveBooking = async (req, res) => {
     const notification = new Notification({
       userId: booking.userId,
       message: 'Your booking has been approved.',
-      itemId: booking.item
+      itemId: booking.item,
+      type:'bookingfiles'
+
     });
     await notification.save();
 
@@ -509,7 +512,9 @@ exports.rejectBooking = async (req, res) => {
     const notification = new Notification({
       userId: booking.userId,
       message: 'Your booking has been rejected.',
-      itemId: booking.item
+      itemId: booking.item,
+      type:'bookingfiles'
+
     });
     await notification.save();
 

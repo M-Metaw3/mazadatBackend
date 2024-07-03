@@ -481,7 +481,9 @@ exports.createDeposit = async (req, res, next) => {
     const notification = new Notification({
       userId,
       message: notificationMessage,
-      itemId: item._id
+      itemId: item._id,
+      type:'deposit'
+
     });
 
     await sendFirebaseNotification(user, 'Deposit Notification', notificationMessage);

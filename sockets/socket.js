@@ -1179,6 +1179,8 @@ const notifySubcategoryStart = async () => {
         userId: deposit.userId,
         message: `The auction for subcategory ${subcategory.name} has started.`,
         subcategoryId: subcategory._id,
+        type:'auction'
+
       });
       return notification.save();
     });
@@ -1554,6 +1556,8 @@ socket.on('placeBid', async (bidData) => {
         userId: deposit.userId,
         message: `A new bid of ${amount} has been placed on item ${item.name} in subcategory ${item.subcategoryId.name}`,
         itemId,
+        type:'bid'
+
       });
       return notification.save();
     });
@@ -1750,6 +1754,8 @@ console.log(deposits);
         userId: winnerBid.userId,
         message: `Congratulations! You have won the auction for item ${item.name} with a bid of ${winnerBid.amount}.`,
         itemId: item._id,
+        type:'winner'
+
       });
       await winnerNotification.save();
 
@@ -1763,6 +1769,8 @@ console.log(deposits);
         userId: deposit.userId,
         message: `The auction for item ${item.name} has ended.`,
         itemId: item._id,
+        type:'auction'
+
       });
       return notification.save();
     });

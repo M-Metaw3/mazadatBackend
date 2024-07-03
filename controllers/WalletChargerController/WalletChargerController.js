@@ -18,6 +18,8 @@ exports.chargeWallet = catchAsync(async (req, res, next) => {
     await Notification.create({
       userId,
       message: 'You have sent a request for charging.',
+      type:'wallet'
+
     });
   
     // Send notification with Firebase
@@ -85,6 +87,8 @@ exports.reviewWalletCharger = catchAsync(async (req, res, next) => {
   await Notification.create({
     userId: walletCharger.userId,
     message: status === 'completed' ? `Your payment of amount ${amount} has been approved.` : 'Your payment has been rejected.',
+    type:'wallet'
+
   });
 
   if (walletCharger.status !== 'completed' && user && user.fcmToken) {
