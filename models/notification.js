@@ -8,6 +8,7 @@ const notificationSchema = new mongoose.Schema({
   type: {
     type: String,
     enum: ['payment', 'bookingfiles', 'deposit', 'wallet',"bid",'winner','loser', 'auction'],
+    default: 'auction',
   },
 },{
   timestamps: true,
