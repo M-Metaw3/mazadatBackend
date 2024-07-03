@@ -94,7 +94,7 @@ next()
 
 
 router.post('/resend-otp', resendOTP);
-router.delete('/deleted', deleteuser);
+router.post('/deleted', deleteuser);
 
 router.post('/verify-otp', verifyOTP);
 router.post('/login', loginUser);
