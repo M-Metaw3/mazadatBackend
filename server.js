@@ -74,7 +74,9 @@ const DB = process.env.DATABASE.replace(
   process.env.DATABASE_PASSWORD
 );
 
+require('./sockets/getauctionsdetails')(io);
 require('./sockets/socket')(io);
+
 
 const notificationNamespace = createNotificationNamespace(io);
 setupNotificationInterval(notificationNamespace);
