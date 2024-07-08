@@ -1,5 +1,5 @@
 const Admin = require('../../models/Admin');
-const Permission = require('../../models/Permission');
+const Permission = require('../../models/permissions');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const AppError = require('../../utils/appError');

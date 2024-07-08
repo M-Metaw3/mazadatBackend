@@ -18,7 +18,7 @@ const permissionSchema = new mongoose.Schema({
 
   }
 });
-depositSchema.index({ method: 1, endpoint: 1 }, { unique: true });
+permissionSchema.index({ method: 1, endpoint: 1 }, { unique: true });
 
 const Permission = mongoose.model('Permission', permissionSchema);
 
