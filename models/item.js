@@ -113,6 +113,7 @@ const itemSchema = new mongoose.Schema({
     type: Number,
     required: true
   },
+  //////////
   mainlystartPrice: {
     type: Number,
     required: true
