@@ -24,6 +24,8 @@ createitems,getAllitems,getitems,deleteitems,updateitems
 } = require('../controllers/items/itemsController');
 const authMiddleware = require('../middleware/authMiddleware');
 const validationMiddleware = require('../middleware/validationMiddleware');
+const checkPermission = require('../middleware/checkPermission ');
+
 const itemValidator = require('../validationswithexpress/itemValidator');
 const mult = require('../utils/multer');
 const AppError = require('../utils/appError');
@@ -71,7 +73,7 @@ next()
 
 
 
-
+// ,checkPermission()
 router.get('/',getAllitems );
 router.get('/:id', getitems);
 

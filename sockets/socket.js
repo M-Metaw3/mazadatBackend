@@ -1210,15 +1210,20 @@ const createAuctionNamespace = (io) => {
     const room = auctionNamespace.adapter.rooms.get(socket.item._id.toString());
     const userCount = room ? room.size : 0;
     const bidCount = await Bid.countDocuments({ item: socket.item._id });
-    const bidusers = await Bid.findOne().sort({createdAt:-1}).limit(1);
-  
+    const bidusers = await Bid.findOne({item: socket.item._id}).sort({createdAt:-1}).limit(1);
     console.log(bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId)));
+    const now = new Date().getTime();
+    const endTime = new Date(socket.item.subcategoryId.endDate).getTime();
+    
+    const timeRemaining = endTime - now;
+    console.log("newdate",timeRemaining)
+    console.log("date",socket.item.subcategoryId.endDate)
+
     socket.emit('itemDetails', {
       item: socket.item,
       userCount,
       bidCount,
-latsbid:bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId))
-
+     latsbid:bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId))
     });
 
     auctionNamespace.to(socket.item._id.toString()).emit('usercount', { userCount });
@@ -1522,7 +1527,7 @@ socket.on('placeBid', async (bidData) => {
     // Extend the auction end time if less than ten minutes remain
     if (timeRemaining <= tenMinutes) {
       item.subcategoryId.endDate = new Date(new Date(item.subcategoryId.endDate).getTime() + twentyMinutes).toISOString();
-      console.log('New end date:', item.subcategoryId.endDate);
+      // console.log('New end date:', item.subcategoryId.endDate);
 
       // if (!socket.firstExtensionDone) {
       //   socket.firstExtensionDone = true;
@@ -1545,7 +1550,8 @@ socket.on('placeBid', async (bidData) => {
 
     // Notify all users about the new bid
     const bidCount = await Bid.countDocuments({ item: itemId });
-    const bidusers = await Bid.findOne().sort({createdAt:-1}).limit(1);
+    const bidusers = await Bid.findOne({ item: itemId }).sort({createdAt:-1}).limit(1);
+    console.log("bidusers",bidusers)
 
     console.log(bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId)));
 

@@ -11,13 +11,14 @@ const permissionSchema = new mongoose.Schema({
     enum: ['GET', 'POST', 'PUT', 'DELETE'],
     required: true
   },
-  description: {
+  endpoint: {
     type: String,
     required: true,
-    unique: true
+
 
   }
 });
+depositSchema.index({ method: 1, endpoint: 1 }, { unique: true });
 
 const Permission = mongoose.model('Permission', permissionSchema);
 

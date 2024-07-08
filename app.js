@@ -28,6 +28,8 @@ const bookingfiles = require('./routes/bookingfilesRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const adminRoutes = require('./routes/adminRoutes'); 
 const permissionRoutes = require('./routes/permissions');
+const apppermissionRoutes = require('./routes/permissionRoutes');
+
 const privacyPolicyRoutes = require('./routes/privacyPolicy');
 const socialMediaLinkRoutes = require('./routes/socialMediaLink');
 const phoneNumberRoutes = require('./routes/phoneNumber');
@@ -93,7 +95,7 @@ const path = require('path');
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
-// app.use(cors())
+app.use(cors())
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.json());
@@ -129,6 +131,7 @@ app.use('/api/v1/appShareLink', appShareLinkRoutes);
 
 
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/apppermissions', apppermissionRoutes);
 app.use('/api/v1/permissions', permissionRoutes);
 app.use('/api/v1/categories', CategoryRoute);
 app.use('/api/v1/notifications', notificationsroute);
