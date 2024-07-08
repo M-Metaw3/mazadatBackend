@@ -1216,13 +1216,17 @@ const createAuctionNamespace = (io) => {
     const endTime = new Date(socket.item.subcategoryId.endDate).getTime();
     
     const timeRemaining = endTime - now;
-    console.log("newdate",timeRemaining)
-    console.log("date",socket.item.subcategoryId.endDate)
+    // console.log("newdate",timeRemaining)
+    // console.log("date",socket.item.subcategoryId.endDate)
+    const remainingDate = new Date(now + timeRemaining);
 
+    console.log("newdate", remainingDate.toISOString()); // Log the remaining time as a date
+    console.log("date", new Date(endTime).toISOString());
     socket.emit('itemDetails', {
       item: socket.item,
       userCount,
       bidCount,
+      newdate: remainingDate.toISOString(),
      latsbid:bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId))
     });
 
@@ -1583,12 +1587,31 @@ console.log(item.startPrice)
 
     // await session.commitTransaction(); // Commit the transaction
 
+    const nowq = new Date().getTime();
+    const endTime = new Date(item.subcategoryId.endDate).getTime();
+    
+    const timeRemainingq = endTime - nowq;
+    // console.log("newdate",timeRemaining)
+    // console.log("date",socket.item.subcategoryId.endDate)
+    const remainingDate = new Date(nowq + timeRemainingq);
+
+    console.log("newdateaaaaaaaaaaaaaaa", remainingDate.toISOString()); // Log the remaining time as a date
+    console.log("datsssssse", new Date(endTime).toISOString());
+
+
+
+
+
+
+
             auctionNamespace.to(itemId).emit('newBid', {
       userId: socket.userId,
       itemId: item._id,
       item: item,
       usercount:userCount,
       latsbid:bidusers?.userId,
+      newdate: remainingDate.toISOString(),
+
       amount,
       newprice: item.startPrice,
       bidcount: bidCount
