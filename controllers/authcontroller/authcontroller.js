@@ -292,7 +292,7 @@ const registerUser = async (req, res, next) => {
   try {
     const {
       name, email, birthdate, phoneNumber, password, idImage, idNumber,
-      companyname, adress, specialist, idbackImage
+      companyname, adress, specialist, idbackImage,fcmToken
     } = req.body;
     
     const existingUser = await User.findOne({ $or: [{ email }, { phoneNumber }] });
@@ -309,7 +309,7 @@ const registerUser = async (req, res, next) => {
 
     const newUser = new User({
       name, email, birthdate, phoneNumber, passwordHash, idImage, idNumber,
-      companyname, adress, specialist, idbackImage
+      companyname, adress, specialist, idbackImage,fcmToken
     });
     await newUser.save();
 
@@ -493,9 +493,12 @@ const loginUser = async (req, res, next) => {
     }
 
     const user = await User.findOne(query).select('+passwordHash');
+    user.fcmToken = fcmToken;
+    await user.save({validateBeforeSave: false});
     if (!user) {
       return next(new AppError('Invalid credentials', 400));
     }
+    // await User.findByIdAndUpdate(user._id, { fcmToken });
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
@@ -515,7 +518,6 @@ const loginUser = async (req, res, next) => {
     }
 
     user.passwordHash = undefined;
-    await User.findByIdAndUpdate(user._id, { fcmToken });
 
     return createSendToken(user, 200, res);
   } catch (error) {

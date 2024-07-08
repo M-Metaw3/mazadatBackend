@@ -127,6 +127,13 @@ const dbName = process.env.NODE_ENV_docker === 'production' ? 'mazadat-prod' : '
 //     console.error('DB connection error:', err);
 //   });
 
+
+
+
+
+
+
+
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {
   console.log(`App running on port ${port}...`);
