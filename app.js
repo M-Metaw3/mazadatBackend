@@ -35,8 +35,11 @@ const socialMediaLinkRoutes = require('./routes/socialMediaLink');
 const phoneNumberRoutes = require('./routes/phoneNumber');
 const appShareLinkRoutes = require('./routes/appShareLink');
 const chargewallet = require('./routes/walletCharger');
-const paymentMethodinfo = require('./routes/paymentMethodRoutes');
+const walletcontroller = require('./routes/WalletControllerRoute');
 
+const paymentMethodinfo = require('./routes/paymentMethodRoutes');
+const notificationAdminRoutes = require('./routes/notificationAdminRoutes');
+require('./controllers/NotifcationAdminController/sendScheduledNotifications');
 // const allowedOrigins = ['http://localhost:3000', 'http://localhost:8888'];
 
 // const {initializeApp, applicationDefault } = require('firebase-admin/app');
@@ -115,6 +118,8 @@ app.get('/', (req, res) => {
 
 
 app.use('/api/v1/privacyPolicy', privacyPolicyRoutes);
+app.use('/api/v1/walletcontroller', walletcontroller);
+
 app.use('/api/v1/paymentmethodinfo', paymentMethodinfo);
 
 app.use('/api/v1/walletcharge', chargewallet);
@@ -123,7 +128,7 @@ app.use('/api/v1/socialMediaLink', socialMediaLinkRoutes);
 app.use('/api/v1/phoneNumber', phoneNumberRoutes);
 app.use('/api/v1/appShareLink', appShareLinkRoutes);
 
-
+app.use('/api/v1/notificationsadmin', notificationAdminRoutes);
 
 
 

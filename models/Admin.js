@@ -10,5 +10,14 @@ const adminSchema = new Schema({
   timestamps: true
 });
 
+const autoPopulatePermissions = function(next) {
+  this.populate('permissions');
+  next();
+};
+
+adminSchema.pre('find', autoPopulatePermissions);
+adminSchema.pre('findOne', autoPopulatePermissions);
+adminSchema.pre('findById', autoPopulatePermissions);
+
 const Admin = mongoose.model('Admin', adminSchema);
 module.exports = Admin;

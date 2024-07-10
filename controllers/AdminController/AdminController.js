@@ -12,7 +12,7 @@ const signToken = id => {
 };
 
 const createSendToken = (admin, statusCode, res) => {
-  const token = signToken(admin._id);
+  const token = signToken(admin);
   const cookieOptions = {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
