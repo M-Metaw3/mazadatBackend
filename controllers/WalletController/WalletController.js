@@ -23,7 +23,8 @@ exports.getAllTransactions = async (req, res) => {
 exports.withdrawFromWallet = async (req, res) => {
   const { userId, amount } = req.body;
 //   const adminId = req.admin._id;
-  const adminId = '668a4c6d7404b24fc8465be6';
+const adminId = '668e669e2df2923c9d5f27e7';
+ 
 
 
   if (!userId || !amount) {
@@ -75,7 +76,9 @@ exports.withdrawFromWallet = async (req, res) => {
 
 exports.addToWallet = async (req, res) => {
   const { userId, amount } = req.body;
-  const adminId = req.admin._id;
+  // const adminId = req.admin._id;
+  const adminId = '668e669e2df2923c9d5f27e7';
+
 
   if (!userId || !amount) {
     return res.status(400).json({ message: 'User ID and amount are required' });
@@ -122,7 +125,8 @@ exports.addToWallet = async (req, res) => {
 
 exports.deleteTransaction = async (req, res) => {
   const { id } = req.body;
-  const adminId = req.admin._id;
+  // const adminId = req.admin._id;
+  const adminId = '668e669e2df2923c9d5f27e7';
 
   const session = await mongoose.startSession();
   session.startTransaction();
