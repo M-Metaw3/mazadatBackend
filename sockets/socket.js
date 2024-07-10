@@ -1198,480 +1198,7 @@ const notifySubcategoryStart = async () => {
   }
 };
 
-const createAuctionNamespace = (io) => {
-  const auctionNamespace = io.of('/auction');
-  auctionNamespace.use(checkDepositAndItemStatus);
 
-  auctionNamespace.on('connection', async (socket) => {
-    console.log('User connected:', socket.userId);
-
-    socket.join(socket.item._id.toString());
-
-    const room = auctionNamespace.adapter.rooms.get(socket.item._id.toString());
-    const userCount = room ? room.size : 0;
-    const bidCount = await Bid.countDocuments({ item: socket.item._id });
-    const bidusers = await Bid.findOne({item: socket.item._id}).sort({createdAt:-1}).limit(1);
-    console.log(bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId)));
-    const now = new Date().getTime();
-    const endTime = new Date(socket.item.subcategoryId.endDate).getTime();
-    
-    const timeRemaining = endTime - now;
-    // console.log("newdate",timeRemaining)
-    // console.log("date",socket.item.subcategoryId.endDate)
-    const remainingDate = new Date(now + timeRemaining);
-
-    console.log("newdate", remainingDate.toISOString()); // Log the remaining time as a date
-    console.log("date", new Date(endTime).toISOString());
-    socket.emit('itemDetails', {
-      item: socket.item,
-      userCount,
-      bidCount,
-      newdate: remainingDate.toISOString(),
-     latsbid:bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId))
-    });
-
-    auctionNamespace.to(socket.item._id.toString()).emit('usercount', { userCount });
-
-    // socket.on('placeBid', async (bidData) => {
-    //   try {
-    //     const { itemId, amount } = bidData;
-    //     const item = await Item.findById(itemId).populate('subcategoryId');
-    //     const now = new Date();
-    //     if (now > item.subcategoryId.endDate) {
-    //       socket.emit('bidError', 'The auction for this item has ended.');
-    //       return;
-    //     }
-    //     if (now < item.subcategoryId.startDate) {
-    //       socket.emit('bidError', 'The auction for this item not started.');
-    //       return;
-    //     }
-    //     if (amount < item.minBidIncrement) {
-    //       socket.emit('bidError', `Bid amount must be greater than or equal to the minimum bid amount (${item.minBidIncrement}).`);
-    //       return;
-    //     }
-
-    //     const bid = new Bid({
-    //       userId: socket.userId,
-    //       item: itemId,
-    //       amount,
-    //       bidTime: now,
-    //     });
-    //     await bid.save();
-    //     /////////////////////////for testing//////////////////////////////////
-    //     // const totalBids = await Bid.aggregate([
-    //     //   { $match: { item: new mongoose.Types.ObjectId(itemId) } },
-    //     //   { $group: { _id: null, totalAmount: { $sum: '$amount' } } }
-    //     // ]);
-    
-    //     // const totalBidAmount = totalBids.length ? totalBids[0].totalAmount : 0;
-    //     item.startPrice += amount;
-    //     ///////////////////////////////////////////////////////////
-
-   
-    //     // item.startPrice += amount;
-
-    //     const timeRemaining = item.subcategoryId.endDate - now;
-    //     const tenMinutes = 10 * 60 * 1000;
-    //     const twentyMinutes = 2 * 60 * 1000;
-  
-    //     if (timeRemaining <= tenMinutes) {
-    //       item.subcategoryId.endDate = new Date(new Date(item.subcategoryId.endDate).getTime() + twentyMinutes).toISOString();
-    //       console.log('New end date:', item.subcategoryId.endDate);
-
-    //       if (!socket.firstExtensionDone) {
-    //         socket.firstExtensionDone = true;
-    //       } else {
-    //         item.minBidIncrement *= 2;
-    //       }
-
-  
-
-    //       auctionNamespace.to(itemId).emit('auctionExtended', {
-    //         item: item,
-    //         itemId: item._id,
-    //         newEndTime: item.subcategoryId.endDate,
-    //         newMinBidIncrement: item.minBidIncrement
-    //       });
-    //     }
-    //     await item.subcategoryId.save();
-    //     await item.save();
-         
-    //     const bidCount = await Bid.countDocuments({ item: socket.item._id });
-    //     const deposits = await Deposit.find({ subcategory: item.subcategoryId._id, status: 'approved' });
-    //     const notificationPromises = deposits.map(deposit => {
-    //       const notification = new Notification({
-    //         userId: deposit.userId,
-    //         message: `A new bid of ${amount} has been placed on item ${item.name} in subcategory ${item.subcategoryId.name}`,
-    //         itemId,
-    //       });
-    //       return notification.save();
-    //     });
-
-    //     await Promise.all(notificationPromises);
-
-    //     auctionNamespace.to(itemId).emit('newBid', {
-    //       userId: socket.userId,
-    //       itemId: item._id,
-    //       item: item,
-    //       usercount:userCount,
-
-    //       amount,
-    //       newprice: item.startPrice,
-    //       bidcount: bidCount
-    //     });
-
-    //   } catch (error) {
-    //     socket.emit('bidError', error.message);
-    //   }
-    // });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-///////////////////////////////////////////////////////////////////////withsesion///////////////////////////////////////
-    // socket.on('placeBid', async (bidData) => {
-    //   const session = await mongoose.startSession(); // Start a MongoDB session for the transaction
-    //   session.startTransaction(); // Start a transaction
-    //   try {
-    //     const { itemId, amount } = bidData;
-    //     const now = new Date();
-    
-    //     // Find item and populate subcategory details
-    //     const item = await Item.findById(itemId).populate('subcategoryId').session(session);
-    
-    //     // Check if auction has ended
-    //     if (now > item.subcategoryId.endDate) {
-    //       socket.emit('bidError', 'The auction for this item has ended.');
-    //       await session.abortTransaction();
-    //       session.endSession();
-    //       return;
-    //     }
-    
-    //     // Check if auction has not started
-    //     if (now < item.subcategoryId.startDate) {
-    //       socket.emit('bidError', 'The auction for this item has not started.');
-    //       await session.abortTransaction();
-    //       session.endSession();
-    //       return;
-    //     }
-    
-    //     // Check if bid amount is valid
-    //     if (amount < item.minBidIncrement) {
-    //       socket.emit('bidError', `Bid amount must be greater than or equal to the minimum bid amount (${item.minBidIncrement}).`);
-    //       await session.abortTransaction();
-    //       session.endSession();
-    //       return;
-    //     }
-    
-    //     // Create and save the new bid
-    //     const bid = new Bid({
-    //       userId: socket.userId,
-    //       item: itemId,
-    //       subcategory:item.subcategoryId,
-    //       amount,
-    //       createdAt: now,
-    //     });
-    //     await bid.save({ session });
-    
-    //     // Update the item's start price
-    //     item.startPrice += amount;
-    
-    //     const timeRemaining = item.subcategoryId.endDate - now;
-    //     const tenMinutes = 10 * 60 * 1000;
-    //     const twentyMinutes = 10 * 60 * 1000;
-    
-    //     // Extend the auction end time if less than ten minutes remain
-    //     if (timeRemaining <= tenMinutes) {
-    //       item.subcategoryId.endDate = new Date(new Date(item.subcategoryId.endDate).getTime() + twentyMinutes).toISOString();
-    //       console.log('New end date:', item.subcategoryId.endDate);
-    
-    //       // if (!socket.firstExtensionDone) {
-    //       //   socket.firstExtensionDone = true;
-    //       // } else {
-    //       //   item.minBidIncrement *= 2;
-    //      // }
-    //     item.minBidIncrement *= 2;
-    
-    //           // Save the updated subcategory and item
-    //           await item.subcategoryId.save({ session });
-    //           auctionNamespace.to(itemId).emit('auctionExtended', {
-    //             item: item,
-    //             itemId: item._id,
-    //             newEndTime: item.subcategoryId.endDate,
-    //             newMinBidIncrement: item.minBidIncrement,
-    //           });
-    //         }
-        
-    //             await item.save({ session });
-    
-    //     // Notify all users about the new bid
-    //     const bidCount = await Bid.countDocuments({ item: itemId }).session(session);
-    //     const bidusers = await Bid.findOne().sort({createdAt:-1}).limit(1).session(session);
-
-    //     console.log(bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId)));
-
-    //     const deposits = await Deposit.find({ subcategory: item.subcategoryId._id, status: 'approved' }).session(session);
-    
-    //     const notificationPromises = deposits.map(deposit => {
-    //       const notification = new Notification({
-    //         userId: deposit.userId,
-    //         message: `A new bid of ${amount} has been placed on item ${item.name} in subcategory ${item.subcategoryId.name}`,
-    //         itemId,
-    //       });
-    //       return notification.save({ session });
-    //     });
-    
-    //     await Promise.all(notificationPromises);
-    // console.log(item.startPrice)
-    //     // Emit the new bid event to all users
-    //     // auctionNamespace.to(itemId).emit('newBid', {
-    //     //   userId: socket.userId,
-    //     //   itemId: item._id,
-    //     //   item: item,
-    //     //   userCount: userCount,
-    //     //   amount,
-    //     //   newPrice: item.startPrice,
-    //     //   bidCount: bidCount,
-    //     // });
-    
-    //     await session.commitTransaction(); // Commit the transaction
-
-    //             auctionNamespace.to(itemId).emit('newBid', {
-    //       userId: socket.userId,
-    //       itemId: item._id,
-    //       item: item,
-    //       usercount:userCount,
-    //       latsbid:bidusers?.userId,
-    //       amount,
-    //       newprice: item.startPrice,
-    //       bidcount: bidCount
-    //     });
-    //     session.endSession(); // End the session
-    // console.log( item.startPrice)
-    //   } catch (error) {
-    //     await session.abortTransaction(); // Abort the transaction on error
-    //     session.endSession(); // End the session
-    //     socket.emit('bidError', error.message); // Emit the error to the user
-    //   }
-    // });
-    
-
-///////////////////////////////////////////////////////////////////////withsesion///////////////////////////////////////
-
-
-
-
-socket.on('placeBid', async (bidData) => {
-  // const session = await mongoose.startSession(); // Start a MongoDB session for the transaction
-  // session.startTransaction(); // Start a transaction
-  try {
-    const { itemId, amount } = bidData;
-    const now = new Date();
-
-    // Find item and populate subcategory details
-    const item = await Item.findById(itemId).populate('subcategoryId');
-
-    // Check if auction has ended
-    if (now > item.subcategoryId.endDate) {
-      socket.emit('bidError', 'The auction for this item has ended.');
-      await session.abortTransaction();
-      session.endSession();
-      return;
-    }
-
-    // Check if auction has not started
-    if (now < item.subcategoryId.startDate) {
-      socket.emit('bidError', 'The auction for this item has not started.');
-      // await session.abortTransaction();
-      // session.endSession();
-      return;
-    }
-
-    // Check if bid amount is valid
-    if (amount < item.minBidIncrement) {
-      socket.emit('bidError', `Bid amount must be greater than or equal to the minimum bid amount (${item.minBidIncrement}).`);
-      // await session.abortTransaction();
-      // session.endSession();
-      return;
-    }
-
-    // Create and save the new bid
-    const bid = new Bid({
-      userId: socket.userId,
-      item: itemId,
-      subcategory:item.subcategoryId,
-      amount,
-      createdAt: now,
-    });
-    await bid.save();
-
-    // Update the item's start price
-    item.startPrice += amount;
-
-    const timeRemaining = item.subcategoryId.endDate - now;
-    const tenMinutes = 10 * 60 * 1000;
-    const twentyMinutes = 10 * 60 * 1000;
-
-    // Extend the auction end time if less than ten minutes remain
-    if (timeRemaining <= tenMinutes) {
-      item.subcategoryId.endDate = new Date(new Date(item.subcategoryId.endDate).getTime() + twentyMinutes).toISOString();
-      // console.log('New end date:', item.subcategoryId.endDate);
-
-      // if (!socket.firstExtensionDone) {
-      //   socket.firstExtensionDone = true;
-      // } else {
-      //   item.minBidIncrement *= 2;
-     // }
-    item.minBidIncrement *= 2;
-
-          // Save the updated subcategory and item
-          await item.subcategoryId.save();
-          auctionNamespace.to(itemId).emit('auctionExtended', {
-            item: item,
-            itemId: item._id,
-            newEndTime: item.subcategoryId.endDate,
-            newMinBidIncrement: item.minBidIncrement,
-          });
-        }
-    
-            await item.save();
-
-    // Notify all users about the new bid
-    const bidCount = await Bid.countDocuments({ item: itemId });
-    const bidusers = await Bid.findOne({ item: itemId }).sort({createdAt:-1}).limit(1);
-    console.log("bidusers",bidusers)
-
-    console.log(bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId)));
-
-    const deposits = await Deposit.find({ item: item.subcategoryId, status: 'approved' }).populate('userId');
-
-    const notificationPromises = deposits.map(deposit => {
-      const notification = new Notification({
-        userId: deposit.userId,
-        message: `A new bid of ${amount} has been placed on item ${item.name} in subcategory ${item.subcategoryId.name}`,
-        itemId,
-        type:'bid'
-
-      });
-      return notification.save();
-    });
-
-    await Promise.all(notificationPromises);
-console.log(item.startPrice)
-    // Emit the new bid event to all users
-    // auctionNamespace.to(itemId).emit('newBid', {
-    //   userId: socket.userId,
-    //   itemId: item._id,
-    //   item: item,
-    //   userCount: userCount,
-    //   amount,
-    //   newPrice: item.startPrice,
-    //   bidCount: bidCount,
-    // });
-
-    // await session.commitTransaction(); // Commit the transaction
-
-    const nowq = new Date().getTime();
-    const endTime = new Date(item.subcategoryId.endDate).getTime();
-    
-    const timeRemainingq = endTime - nowq;
-    // console.log("newdate",timeRemaining)
-    // console.log("date",socket.item.subcategoryId.endDate)
-    const remainingDate = new Date(nowq + timeRemainingq);
-
-    console.log("newdateaaaaaaaaaaaaaaa", remainingDate.toISOString()); // Log the remaining time as a date
-    console.log("datsssssse", new Date(endTime).toISOString());
-
-
-
-
-
-
-
-            auctionNamespace.to(itemId).emit('newBid', {
-      userId: socket.userId,
-      itemId: item._id,
-      item: item,
-      usercount:userCount,
-      latsbid:bidusers?.userId,
-      newdate: remainingDate.toISOString(),
-
-      amount,
-      newprice: item.startPrice,
-      bidcount: bidCount
-    });
-    const fcmTokens = deposits.map(deposit => deposit.userId.fcmToken).filter(token => token);
-    console.log(fcmTokens)
-    if (fcmTokens.length > 0) {
-
-      const message = {
-        notification: {
-          title: 'New Bid Placed',
-          body: `A new bid of ${amount} has been placed on item ${item.name} in subcategory ${item.subcategoryId.name}`,
-        },
-        tokens: fcmTokens,
-      };
-
-      admin.messaging().sendMulticast(message)
-        .then((response) => {
-          console.log(`${response.successCount} messages were sent successfully`);
-        })
-        .catch((error) => {
-          console.error('Error sending multicast message:', error);
-        });
-    }
-    // session.endSession(); // End the session
-// console.log( item.startPrice)
-  } catch (error) {
-    // await session.abortTransaction(); // Abort the transaction on error
-    // session.endSession(); // End the session
-    socket.emit('bidError', error.message); // Emit the error to the user
-  }
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    socket.on('disconnect', () => {
-      console.log('User disconnected:', socket.userId);
-
-      const room = auctionNamespace.adapter.rooms.get(socket.item._id.toString());
-      const userCount = room ? room.size : 0;
-      auctionNamespace.to(socket.item._id.toString()).emit('usercount', { userCount });
-    });
-  });
-};
-
-module.exports = createAuctionNamespace;
 
 
 // const createAuctionNamespace = (io) => {
@@ -1810,4 +1337,745 @@ console.log(deposits);
 // setInterval(checkAuctionEnd, 10 * 1000);
 // setInterval(notifySubcategoryStart, 60 * 1000);
 
+// module.exports = createAuctionNamespace;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/////////////////////////////////////////////////////the worked version /////////////////////////////////////////////////////////
+// const createAuctionNamespace = (io) => {
+//   const auctionNamespace = io.of('/auction');
+//   auctionNamespace.use(checkDepositAndItemStatus);
+
+//   auctionNamespace.on('connection', async (socket) => {
+//     console.log('User connected:', socket.userId);
+
+//     socket.join(socket.item._id.toString());
+
+//     const room = auctionNamespace.adapter.rooms.get(socket.item._id.toString());
+//     const userCount = room ? room.size : 0;
+//     const bidCount = await Bid.countDocuments({ item: socket.item._id });
+//     const bidusers = await Bid.findOne({item: socket.item._id}).sort({createdAt:-1}).limit(1);
+//     console.log(bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId)));
+//     const now = new Date().getTime();
+//     const endTime = new Date(socket.item.subcategoryId.endDate).getTime();
+    
+//     const timeRemaining = endTime - now;
+//     // console.log("newdate",timeRemaining)
+//     // console.log("date",socket.item.subcategoryId.endDate)
+//     const remainingDate = new Date(now + timeRemaining);
+
+//     console.log("newdate", remainingDate.toISOString()); // Log the remaining time as a date
+//     console.log("date", new Date(endTime).toISOString());
+//     socket.emit('itemDetails', {
+//       item: socket.item,
+//       userCount,
+//       bidCount,
+//       newdate: remainingDate.toISOString(),
+//      latsbid:bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId))
+//     });
+
+//     auctionNamespace.to(socket.item._id.toString()).emit('usercount', { userCount });
+
+//     // socket.on('placeBid', async (bidData) => {
+//     //   try {
+//     //     const { itemId, amount } = bidData;
+//     //     const item = await Item.findById(itemId).populate('subcategoryId');
+//     //     const now = new Date();
+//     //     if (now > item.subcategoryId.endDate) {
+//     //       socket.emit('bidError', 'The auction for this item has ended.');
+//     //       return;
+//     //     }
+//     //     if (now < item.subcategoryId.startDate) {
+//     //       socket.emit('bidError', 'The auction for this item not started.');
+//     //       return;
+//     //     }
+//     //     if (amount < item.minBidIncrement) {
+//     //       socket.emit('bidError', `Bid amount must be greater than or equal to the minimum bid amount (${item.minBidIncrement}).`);
+//     //       return;
+//     //     }
+
+//     //     const bid = new Bid({
+//     //       userId: socket.userId,
+//     //       item: itemId,
+//     //       amount,
+//     //       bidTime: now,
+//     //     });
+//     //     await bid.save();
+//     //     /////////////////////////for testing//////////////////////////////////
+//     //     // const totalBids = await Bid.aggregate([
+//     //     //   { $match: { item: new mongoose.Types.ObjectId(itemId) } },
+//     //     //   { $group: { _id: null, totalAmount: { $sum: '$amount' } } }
+//     //     // ]);
+    
+//     //     // const totalBidAmount = totalBids.length ? totalBids[0].totalAmount : 0;
+//     //     item.startPrice += amount;
+//     //     ///////////////////////////////////////////////////////////
+
+   
+//     //     // item.startPrice += amount;
+
+//     //     const timeRemaining = item.subcategoryId.endDate - now;
+//     //     const tenMinutes = 10 * 60 * 1000;
+//     //     const twentyMinutes = 2 * 60 * 1000;
+  
+//     //     if (timeRemaining <= tenMinutes) {
+//     //       item.subcategoryId.endDate = new Date(new Date(item.subcategoryId.endDate).getTime() + twentyMinutes).toISOString();
+//     //       console.log('New end date:', item.subcategoryId.endDate);
+
+//     //       if (!socket.firstExtensionDone) {
+//     //         socket.firstExtensionDone = true;
+//     //       } else {
+//     //         item.minBidIncrement *= 2;
+//     //       }
+
+  
+
+//     //       auctionNamespace.to(itemId).emit('auctionExtended', {
+//     //         item: item,
+//     //         itemId: item._id,
+//     //         newEndTime: item.subcategoryId.endDate,
+//     //         newMinBidIncrement: item.minBidIncrement
+//     //       });
+//     //     }
+//     //     await item.subcategoryId.save();
+//     //     await item.save();
+         
+//     //     const bidCount = await Bid.countDocuments({ item: socket.item._id });
+//     //     const deposits = await Deposit.find({ subcategory: item.subcategoryId._id, status: 'approved' });
+//     //     const notificationPromises = deposits.map(deposit => {
+//     //       const notification = new Notification({
+//     //         userId: deposit.userId,
+//     //         message: `A new bid of ${amount} has been placed on item ${item.name} in subcategory ${item.subcategoryId.name}`,
+//     //         itemId,
+//     //       });
+//     //       return notification.save();
+//     //     });
+
+//     //     await Promise.all(notificationPromises);
+
+//     //     auctionNamespace.to(itemId).emit('newBid', {
+//     //       userId: socket.userId,
+//     //       itemId: item._id,
+//     //       item: item,
+//     //       usercount:userCount,
+
+//     //       amount,
+//     //       newprice: item.startPrice,
+//     //       bidcount: bidCount
+//     //     });
+
+//     //   } catch (error) {
+//     //     socket.emit('bidError', error.message);
+//     //   }
+//     // });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ///////////////////////////////////////////////////////////////////////withsesion///////////////////////////////////////
+//     // socket.on('placeBid', async (bidData) => {
+//     //   const session = await mongoose.startSession(); // Start a MongoDB session for the transaction
+//     //   session.startTransaction(); // Start a transaction
+//     //   try {
+//     //     const { itemId, amount } = bidData;
+//     //     const now = new Date();
+    
+//     //     // Find item and populate subcategory details
+//     //     const item = await Item.findById(itemId).populate('subcategoryId').session(session);
+    
+//     //     // Check if auction has ended
+//     //     if (now > item.subcategoryId.endDate) {
+//     //       socket.emit('bidError', 'The auction for this item has ended.');
+//     //       await session.abortTransaction();
+//     //       session.endSession();
+//     //       return;
+//     //     }
+    
+//     //     // Check if auction has not started
+//     //     if (now < item.subcategoryId.startDate) {
+//     //       socket.emit('bidError', 'The auction for this item has not started.');
+//     //       await session.abortTransaction();
+//     //       session.endSession();
+//     //       return;
+//     //     }
+    
+//     //     // Check if bid amount is valid
+//     //     if (amount < item.minBidIncrement) {
+//     //       socket.emit('bidError', `Bid amount must be greater than or equal to the minimum bid amount (${item.minBidIncrement}).`);
+//     //       await session.abortTransaction();
+//     //       session.endSession();
+//     //       return;
+//     //     }
+    
+//     //     // Create and save the new bid
+//     //     const bid = new Bid({
+//     //       userId: socket.userId,
+//     //       item: itemId,
+//     //       subcategory:item.subcategoryId,
+//     //       amount,
+//     //       createdAt: now,
+//     //     });
+//     //     await bid.save({ session });
+    
+//     //     // Update the item's start price
+//     //     item.startPrice += amount;
+    
+//     //     const timeRemaining = item.subcategoryId.endDate - now;
+//     //     const tenMinutes = 10 * 60 * 1000;
+//     //     const twentyMinutes = 10 * 60 * 1000;
+    
+//     //     // Extend the auction end time if less than ten minutes remain
+//     //     if (timeRemaining <= tenMinutes) {
+//     //       item.subcategoryId.endDate = new Date(new Date(item.subcategoryId.endDate).getTime() + twentyMinutes).toISOString();
+//     //       console.log('New end date:', item.subcategoryId.endDate);
+    
+//     //       // if (!socket.firstExtensionDone) {
+//     //       //   socket.firstExtensionDone = true;
+//     //       // } else {
+//     //       //   item.minBidIncrement *= 2;
+//     //      // }
+//     //     item.minBidIncrement *= 2;
+    
+//     //           // Save the updated subcategory and item
+//     //           await item.subcategoryId.save({ session });
+//     //           auctionNamespace.to(itemId).emit('auctionExtended', {
+//     //             item: item,
+//     //             itemId: item._id,
+//     //             newEndTime: item.subcategoryId.endDate,
+//     //             newMinBidIncrement: item.minBidIncrement,
+//     //           });
+//     //         }
+        
+//     //             await item.save({ session });
+    
+//     //     // Notify all users about the new bid
+//     //     const bidCount = await Bid.countDocuments({ item: itemId }).session(session);
+//     //     const bidusers = await Bid.findOne().sort({createdAt:-1}).limit(1).session(session);
+
+//     //     console.log(bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId)));
+
+//     //     const deposits = await Deposit.find({ subcategory: item.subcategoryId._id, status: 'approved' }).session(session);
+    
+//     //     const notificationPromises = deposits.map(deposit => {
+//     //       const notification = new Notification({
+//     //         userId: deposit.userId,
+//     //         message: `A new bid of ${amount} has been placed on item ${item.name} in subcategory ${item.subcategoryId.name}`,
+//     //         itemId,
+//     //       });
+//     //       return notification.save({ session });
+//     //     });
+    
+//     //     await Promise.all(notificationPromises);
+//     // console.log(item.startPrice)
+//     //     // Emit the new bid event to all users
+//     //     // auctionNamespace.to(itemId).emit('newBid', {
+//     //     //   userId: socket.userId,
+//     //     //   itemId: item._id,
+//     //     //   item: item,
+//     //     //   userCount: userCount,
+//     //     //   amount,
+//     //     //   newPrice: item.startPrice,
+//     //     //   bidCount: bidCount,
+//     //     // });
+    
+//     //     await session.commitTransaction(); // Commit the transaction
+
+//     //             auctionNamespace.to(itemId).emit('newBid', {
+//     //       userId: socket.userId,
+//     //       itemId: item._id,
+//     //       item: item,
+//     //       usercount:userCount,
+//     //       latsbid:bidusers?.userId,
+//     //       amount,
+//     //       newprice: item.startPrice,
+//     //       bidcount: bidCount
+//     //     });
+//     //     session.endSession(); // End the session
+//     // console.log( item.startPrice)
+//     //   } catch (error) {
+//     //     await session.abortTransaction(); // Abort the transaction on error
+//     //     session.endSession(); // End the session
+//     //     socket.emit('bidError', error.message); // Emit the error to the user
+//     //   }
+//     // });
+    
+
+// ///////////////////////////////////////////////////////////////////////withsesion///////////////////////////////////////
+
+
+
+
+// socket.on('placeBid', async (bidData) => {
+//   // const session = await mongoose.startSession(); // Start a MongoDB session for the transaction
+//   // session.startTransaction(); // Start a transaction
+//   try {
+//     const { itemId, amount } = bidData;
+//     const now = new Date();
+
+//     // Find item and populate subcategory details
+//     const item = await Item.findById(itemId).populate('subcategoryId');
+
+//     // Check if auction has ended
+//     if (now > item.subcategoryId.endDate) {
+//       socket.emit('bidError', 'The auction for this item has ended.');
+//       await session.abortTransaction();
+//       session.endSession();
+//       return;
+//     }
+
+//     // Check if auction has not started
+//     if (now < item.subcategoryId.startDate) {
+//       socket.emit('bidError', 'The auction for this item has not started.');
+//       // await session.abortTransaction();
+//       // session.endSession();
+//       return;
+//     }
+
+//     // Check if bid amount is valid
+//     if (amount < item.minBidIncrement) {
+//       socket.emit('bidError', `Bid amount must be greater than or equal to the minimum bid amount (${item.minBidIncrement}).`);
+//       // await session.abortTransaction();
+//       // session.endSession();
+//       return;
+//     }
+
+//     // Create and save the new bid
+//     const bid = new Bid({
+//       userId: socket.userId,
+//       item: itemId,
+//       subcategory:item.subcategoryId,
+//       amount,
+//       createdAt: now,
+//     });
+//     await bid.save();
+
+//     // Update the item's start price
+//     item.startPrice += amount;
+
+//     const timeRemaining = item.subcategoryId.endDate - now;
+//     const tenMinutes = 10 * 60 * 1000;
+//     const twentyMinutes = 10 * 60 * 1000;
+
+//     // Extend the auction end time if less than ten minutes remain
+//     if (timeRemaining <= tenMinutes) {
+//       item.subcategoryId.endDate = new Date(new Date(item.subcategoryId.endDate).getTime() + twentyMinutes).toISOString();
+//       // console.log('New end date:', item.subcategoryId.endDate);
+
+//       // if (!socket.firstExtensionDone) {
+//       //   socket.firstExtensionDone = true;
+//       // } else {
+//       //   item.minBidIncrement *= 2;
+//      // }
+//     item.minBidIncrement *= 2;
+
+//           // Save the updated subcategory and item
+//           await item.subcategoryId.save();
+//           auctionNamespace.to(itemId).emit('auctionExtended', {
+//             item: item,
+//             itemId: item._id,
+//             newEndTime: item.subcategoryId.endDate,
+//             newMinBidIncrement: item.minBidIncrement,
+//           });
+//         }
+    
+//             await item.save();
+
+//     // Notify all users about the new bid
+//     const bidCount = await Bid.countDocuments({ item: itemId });
+//     const bidusers = await Bid.findOne({ item: itemId }).sort({createdAt:-1}).limit(1);
+//     console.log("bidusers",bidusers)
+
+//     console.log(bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId)));
+
+//     const deposits = await Deposit.find({ item: item.subcategoryId, status: 'approved' }).populate('userId');
+
+//     const notificationPromises = deposits.map(deposit => {
+//       const notification = new Notification({
+//         userId: deposit.userId,
+//         message: `A new bid of ${amount} has been placed on item ${item.name} in subcategory ${item.subcategoryId.name}`,
+//         itemId,
+//         type:'bid'
+
+//       });
+//       return notification.save();
+//     });
+
+//     await Promise.all(notificationPromises);
+// console.log(item.startPrice)
+//     // Emit the new bid event to all users
+//     // auctionNamespace.to(itemId).emit('newBid', {
+//     //   userId: socket.userId,
+//     //   itemId: item._id,
+//     //   item: item,
+//     //   userCount: userCount,
+//     //   amount,
+//     //   newPrice: item.startPrice,
+//     //   bidCount: bidCount,
+//     // });
+
+//     // await session.commitTransaction(); // Commit the transaction
+
+//     const nowq = new Date().getTime();
+//     const endTime = new Date(item.subcategoryId.endDate).getTime();
+    
+//     const timeRemainingq = endTime - nowq;
+//     // console.log("newdate",timeRemaining)
+//     // console.log("date",socket.item.subcategoryId.endDate)
+//     const remainingDate = new Date(nowq + timeRemainingq);
+
+//     console.log("newdateaaaaaaaaaaaaaaa", remainingDate.toISOString()); // Log the remaining time as a date
+//     console.log("datsssssse", new Date(endTime).toISOString());
+
+
+
+
+
+
+
+//             auctionNamespace.to(itemId).emit('newBid', {
+//       userId: socket.userId,
+//       itemId: item._id,
+//       item: item,
+//       usercount:userCount,
+//       latsbid:bidusers?.userId,
+//       newdate: remainingDate.toISOString(),
+
+//       amount,
+//       newprice: item.startPrice,
+//       bidcount: bidCount
+//     });
+//     const fcmTokens = deposits.map(deposit => deposit.userId.fcmToken).filter(token => token);
+//     console.log(fcmTokens)
+//     if (fcmTokens.length > 0) {
+
+//       const message = {
+//         notification: {
+//           title: 'New Bid Placed',
+//           body: `A new bid of ${amount} has been placed on item ${item.name} in subcategory ${item.subcategoryId.name}`,
+//         },
+//         tokens: fcmTokens,
+//       };
+
+//       admin.messaging().sendMulticast(message)
+//         .then((response) => {
+//           console.log(`${response.successCount} messages were sent successfully`);
+//         })
+//         .catch((error) => {
+//           console.error('Error sending multicast message:', error);
+//         });
+//     }
+//     // session.endSession(); // End the session
+// // console.log( item.startPrice)
+//   } catch (error) {
+//     // await session.abortTransaction(); // Abort the transaction on error
+//     // session.endSession(); // End the session
+//     socket.emit('bidError', error.message); // Emit the error to the user
+//   }
+// });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//     socket.on('disconnect', () => {
+//       console.log('User disconnected:', socket.userId);
+
+//       const room = auctionNamespace.adapter.rooms.get(socket.item._id.toString());
+//       const userCount = room ? room.size : 0;
+//       auctionNamespace.to(socket.item._id.toString()).emit('usercount', { userCount });
+//     });
+//   });
+// };
+
+// module.exports = createAuctionNamespace;
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////with sessions/////////////////////////////////////////////
+
+
+const createAuctionNamespace = (io) => {
+  const auctionNamespace = io.of('/auction');
+  auctionNamespace.use(checkDepositAndItemStatus);
+
+  auctionNamespace.on('connection', async (socket) => {
+    console.log('User connected:', socket.userId);
+
+    socket.join(socket.item._id.toString());
+
+    const room = auctionNamespace.adapter.rooms.get(socket.item._id.toString());
+    const userCount = room ? room.size : 0;
+    const bidCount = await Bid.countDocuments({ item: socket.item._id });
+    const bidusers = await Bid.findOne({ item: socket.item._id }).sort({ createdAt: -1 }).limit(1);
+    console.log(bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId)));
+    const now = new Date().getTime();
+    const endTime = new Date(socket.item.subcategoryId.endDate).getTime();
+    
+    const timeRemaining = endTime - now;
+    const remainingDate = new Date(now + timeRemaining);
+
+    console.log("newdate", remainingDate.toISOString());
+    console.log("date", new Date(endTime).toISOString());
+    socket.emit('itemDetails', {
+      item: socket.item,
+      userCount,
+      bidCount,
+      newdate: remainingDate.toISOString(),
+      latsbid: bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId))
+    });
+
+    auctionNamespace.to(socket.item._id.toString()).emit('usercount', { userCount });
+
+    socket.on('placeBid', async (bidData) => {
+      const session = await mongoose.startSession();
+      session.startTransaction();
+      
+      try {
+        const { itemId, amount } = bidData;
+        const now = new Date();
+
+        // Find item and populate subcategory details
+        const item = await Item.findById(itemId).populate('subcategoryId').session(session);
+
+        // Check if auction has ended
+        if (now > item.subcategoryId.endDate) {
+          socket.emit('bidError', 'The auction for this item has ended.');
+          await session.abortTransaction();
+          session.endSession();
+          return;
+        }
+
+        // Check if auction has not started
+        if (now < item.subcategoryId.startDate) {
+          socket.emit('bidError', 'The auction for this item has not started.');
+          await session.abortTransaction();
+          session.endSession();
+          return;
+        }
+
+        // Check if bid amount is valid
+        if (amount < item.minBidIncrement) {
+          socket.emit('bidError', `Bid amount must be greater than or equal to the minimum bid amount (${item.minBidIncrement}).`);
+          await session.abortTransaction();
+          session.endSession();
+          return;
+        }
+
+        // Create and save the new bid
+        const bid = new Bid({
+          userId: socket.userId,
+          item: itemId,
+          subcategory: item.subcategoryId,
+          amount,
+          createdAt: now,
+        });
+        await bid.save({ session });
+
+        // Update the item's start price
+        item.startPrice += amount;
+
+        const timeRemaining = item.subcategoryId.endDate - now;
+        const tenMinutes = 10 * 60 * 1000;
+        const twentyMinutes = 20 * 60 * 1000;
+
+        // Extend the auction end time if less than ten minutes remain
+        if (timeRemaining <= tenMinutes) {
+          item.subcategoryId.endDate = new Date(new Date(item.subcategoryId.endDate).getTime() + twentyMinutes).toISOString();
+          item.minBidIncrement *= 2;
+
+          await item.subcategoryId.save({ session });
+          auctionNamespace.to(itemId).emit('auctionExtended', {
+            item: item,
+            itemId: item._id,
+            newEndTime: item.subcategoryId.endDate,
+            newMinBidIncrement: item.minBidIncrement,
+          });
+        }
+
+        await item.save({ session });
+
+        // Notify all users about the new bid
+        const bidCount = await Bid.countDocuments({ item: itemId });
+        const bidusers = await Bid.findOne({ item: itemId }).sort({ createdAt: -1 }).limit(1);
+        const deposits = await Deposit.find({ item: item.subcategoryId, status: 'approved' }).populate('userId').session(session);
+
+        const notificationPromises = deposits.map(deposit => {
+          const notification = new Notification({
+            userId: deposit.userId,
+            message: `A new bid of ${amount} has been placed on item ${item.name} in subcategory ${item.subcategoryId.name}`,
+            itemId,
+            type: 'bid'
+          });
+          return notification.save({ session });
+        });
+
+        await Promise.all(notificationPromises);
+
+        const nowq = new Date().getTime();
+        const endTime = new Date(item.subcategoryId.endDate).getTime();
+        const timeRemainingq = endTime - nowq;
+        const remainingDate = new Date(nowq + timeRemainingq);
+
+        auctionNamespace.to(itemId).emit('newBid', {
+          userId: socket.userId,
+          itemId: item._id,
+          item: item,
+          usercount: userCount,
+          latsbid: bidusers?.userId,
+          newdate: remainingDate.toISOString(),
+          amount,
+          newprice: item.startPrice,
+          bidcount: bidCount
+        });
+
+        const fcmTokens = deposits.map(deposit => deposit.userId.fcmToken).filter(token => token);
+        if (fcmTokens.length > 0) {
+          const message = {
+            notification: {
+              title: 'New Bid Placed',
+              body: `A new bid of ${amount} has been placed on item ${item.name} in subcategory ${item.subcategoryId.name}`,
+            },
+            tokens: fcmTokens,
+          };
+
+          admin.messaging().sendMulticast(message)
+            .then((response) => {
+              console.log(`${response.successCount} messages were sent successfully`);
+            })
+            .catch((error) => {
+              console.error('Error sending multicast message:', error);
+            });
+        }
+
+        await session.commitTransaction();
+        session.endSession();
+      } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
+        socket.emit('bidError', error.message);
+      }
+    });
+
+    socket.on('disconnect', () => {
+      console.log('User disconnected:', socket.userId);
+
+      const room = auctionNamespace.adapter.rooms.get(socket.item._id.toString());
+      const userCount = room ? room.size : 0;
+      auctionNamespace.to(socket.item._id.toString()).emit('usercount', { userCount });
+    });
+  });
+};
+
 module.exports = createAuctionNamespace;
+///////////////////////////////////////////////////////////////////////////////////////////////////////////

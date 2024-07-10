@@ -45,7 +45,7 @@ function generateValidFilePath(filename) {
 
 router.post('/',upload.fields([
     { name: 'coverphoto', maxCount: 1 },
-    { name: 'thubnailphoto', maxCount: 3 },
+    { name: 'thubnailphoto', maxCount: 100 },
 
   ])
   ,(req,res,next)=>{
