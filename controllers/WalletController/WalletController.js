@@ -21,7 +21,7 @@ exports.getAllTransactions = async (req, res) => {
     }
   };
 exports.withdrawFromWallet = async (req, res) => {
-  const { userId, amountوadminId } = req.body;
+  const { userId, amount,adminId } = req.body;
 //   const adminId = req.admin._id;
 const adminId = '668e669e2df2923c9d5f27e7';
  
@@ -75,7 +75,7 @@ const adminId = '668e669e2df2923c9d5f27e7';
 };
 
 exports.addToWallet = async (req, res) => {
-  const { userId, amountوadminId } = req.body;
+  const { userId, amount,adminId } = req.body;
   // const adminId = req.admin._id;
   // const adminId = '668e669e2df2923c9d5f27e7';
 
