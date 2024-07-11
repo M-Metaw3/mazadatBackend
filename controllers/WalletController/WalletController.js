@@ -94,7 +94,7 @@ exports.addToWallet = async (req, res) => {
       throw new Error('User not found');
     }
 
-    user.walletBalance += amount;
+    user.walletBalance +=parseInt(amount);
     user.walletTransactions.push({
       amount,
       type: 'deposit',
