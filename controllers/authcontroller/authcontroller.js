@@ -495,7 +495,10 @@ const loginUser = async (req, res, next) => {
     }
 
     const user = await User.findOne(query).select('+passwordHash');
-    user.fcmToken = fcmToken;
+    if(fcmToken){
+
+      user.fcmToken = fcmToken;
+    }
     await user.save({validateBeforeSave: false});
     if (!user) {
       return next(new AppError('Invalid credentials', 400));
