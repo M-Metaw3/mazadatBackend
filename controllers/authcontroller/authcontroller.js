@@ -475,62 +475,7 @@ console.log(lastOTP)
 //   }
 // };
 
-//////////////////////////////////////////
-// const loginUser = async (req, res, next) => {
-//   try {
-//     const { phoneNumber, password, idNumber, fcmToken } = req.body;
 
-//     if (!phoneNumber && !idNumber) {
-//       return res.status(400).json({ error: 'Phone number or ID number must be provided' });
-//     }
-
-//     let query;
-//     if (idNumber) {
-//       if (idNumber.length > 14) {
-//         return next(new AppError('Invalid ID number', 400));
-//       }
-//       query = { idNumber: idNumber };
-//     } else {
-//       query = { phoneNumber: phoneNumber };
-//     }
-
-//     const user = await User.findOne(query).select('+passwordHash');
-//     if(fcmToken){
-// user.fcmToken = fcmToken;
-//     }
-//     await user.save({validateBeforeSave: false});
-//     if (!user) {
-//       return next(new AppError('Invalid credentials', 400));
-//     }
-//     // await User.findByIdAndUpdate(user._id, { fcmToken });
-
-//     const isMatch = await bcrypt.compare(password, user.passwordHash);
-//     if (!isMatch) {
-//       return next(new AppError('Invalid credentials', 400));
-//     }
-
-//     if (!user.verified) {
-//       return next(new AppError('Please verify your phone number first', 400));
-//     }
-
-//     if (user.blocked) {
-//       return next(new AppError('You are blocked', 400));
-//     }
-
-//     if (!user.approved) {
-//       return next(new AppError('Your account has not been approved by the admin yet', 400));
-//     }
-
-//     user.passwordHash = undefined;
-
-//     return createSendToken(user, 200, res);
-//   } catch (error) {
-
-//     return next(new AppError(`Server error during login${error}` , 500));
-//   }
-// };
-
-/////////////////////////////////////////////////////////////////////
 const loginUser = async (req, res, next) => {
   try {
     const { phoneNumber, password, idNumber, fcmToken } = req.body;
@@ -550,15 +495,15 @@ const loginUser = async (req, res, next) => {
     }
 
     const user = await User.findOne(query).select('+passwordHash');
-
-    if (!user) {
-      return next(new AppError('Invalid credentials', 400));
-    }
-
     if(fcmToken){
       user.fcmToken = fcmToken;
       await user.save({validateBeforeSave: false});
     }
+    // await user.save({validateBeforeSave: false});
+    if (!user) {
+      return next(new AppError('Invalid credentials', 400));
+    }
+    // await User.findByIdAndUpdate(user._id, { fcmToken });
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
@@ -581,10 +526,11 @@ const loginUser = async (req, res, next) => {
 
     return createSendToken(user, 200, res);
   } catch (error) {
-    console.error('Server error during login:', error);
-    return next(new AppError(`Server error during login: ${error.message}`, 500));
+
+    return next(new AppError(`Server error during login${error}` , 500));
   }
 };
+
 
 
 
