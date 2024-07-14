@@ -295,7 +295,7 @@ const registerUser = async (req, res, next) => {
       companyname, adress, specialist, idbackImage,fcmToken
     } = req.body;
     
-    const existingUser = await User.findOne({ $or: [{ email }, { phoneNumber }] });
+    const existingUser = await User.findOne({ $or: [{ idNumber }, { phoneNumber }] });
     if (existingUser) {
       return next(new AppError('User already exists', 400));
     }
