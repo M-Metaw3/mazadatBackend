@@ -2006,8 +2006,8 @@ const createAuctionNamespace = (io) => {
         await item.save({ session });
 
         // Notify all users about the new bid
-        const bidCount = await Bid.countDocuments({ item: itemId });
-        const bidusers = await Bid.findOne({ item: itemId }).sort({ createdAt: -1 }).limit(1);
+        const bidCount = await Bid.countDocuments({ item: itemId }).session(session);
+        const bidusers = await Bid.findOne({ item: itemId }).sort({ createdAt: -1 }).limit(1).session(session);
         const deposits = await Deposit.find({ item: item.subcategoryId, status: 'approved' }).populate('userId').session(session);
 
         const notificationPromises = deposits.map(deposit => {
@@ -2046,7 +2046,7 @@ const createAuctionNamespace = (io) => {
               console.error('Error sending multicast message:', error);
             });
 
-            
+
           auctionNamespace.to(itemId).emit('newBid', {
             userId: socket.userId,
             itemId: item._id,
