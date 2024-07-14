@@ -4,7 +4,7 @@ const userValidator = {
 
   register : [
     body('name').notEmpty().withMessage('Name is required'),
-    body('email').isEmail().withMessage('Valid email is required'),
+    body('email'),
     // body('birthdate').isISO8601().withMessage('Valid birthdate is required'),
     body('phoneNumber').notEmpty().withMessage('Phone number is required'),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
