@@ -1932,7 +1932,7 @@ const createAuctionNamespace = (io) => {
       userCount,
       bidCount,
       newdate: remainingDate.toISOString(),
-      latsbid: bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId))
+      latsbid:bidusers?.userId.equals(new mongoose.Types.ObjectId(socket.userId))
     });
 
     auctionNamespace.to(socket.item._id.toString()).emit('usercount', { userCount });
@@ -2027,18 +2027,7 @@ const createAuctionNamespace = (io) => {
         const timeRemainingq = endTime - nowq;
         const remainingDate = new Date(nowq + timeRemainingq);
 
-        auctionNamespace.to(itemId).emit('newBid', {
-          userId: socket.userId,
-          itemId: item._id,
-          item: item,
-          usercount: userCount,
-          latsbid: bidusers?.userId,
-          newdate: remainingDate.toISOString(),
-          amount,
-          newprice: item.startPrice,
-          bidcount: bidCount
-        });
-
+        
         const fcmTokens = deposits.map(deposit => deposit.userId.fcmToken).filter(token => token);
         if (fcmTokens.length > 0) {
           const message = {
@@ -2048,14 +2037,27 @@ const createAuctionNamespace = (io) => {
             },
             tokens: fcmTokens,
           };
-
+          
           admin.messaging().sendMulticast(message)
-            .then((response) => {
-              console.log(`${response.successCount} messages were sent successfully`);
-            })
+          .then((response) => {
+            console.log(`${response.successCount} messages were sent successfully`);
+          })
             .catch((error) => {
               console.error('Error sending multicast message:', error);
             });
+
+            
+          auctionNamespace.to(itemId).emit('newBid', {
+            userId: socket.userId,
+            itemId: item._id,
+            item: item,
+            usercount: userCount,
+            latsbid: bidusers?.userId,
+            newdate: remainingDate.toISOString(),
+            amount,
+            newprice: item.startPrice,
+            bidcount: bidCount
+          });
         }
 
         await session.commitTransaction();
