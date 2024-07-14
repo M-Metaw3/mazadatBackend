@@ -139,6 +139,7 @@ const admin = require('../../firebase/firebaseAdmin'); // Firebase Admin SDK
 const catchAsync = require('../../utils/catchAsync');
 const factory = require('../../utils/apiFactory');
 const mongoose = require('mongoose');
+const AppError = require('../../utils/appError');
 
 exports.getChargingRequests = factory.getAll(WalletCharger);
 exports.getChargingRequestdetails = factory.getOne(WalletCharger);
