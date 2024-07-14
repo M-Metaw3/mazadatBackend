@@ -523,7 +523,8 @@ const loginUser = async (req, res, next) => {
 
     return createSendToken(user, 200, res);
   } catch (error) {
-    return next(new AppError('Server error during login', 500));
+
+    return next(new AppError(`Server error during login${error}` , 500));
   }
 };
 
