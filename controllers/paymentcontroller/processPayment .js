@@ -178,7 +178,9 @@ const User = require('../../models/User');
 const Notification = require('../../models/notification');
 const AppError = require('../../utils/appError');
 const admin = require('../../firebase/firebaseAdmin'); // Firebase Admin SDK
+const factory = require('../../utils/apiFactory');
 
+const getprocessPayment = factory.getAll(Payment);
 // Helper function to send Firebase notifications
 const sendFirebaseNotification = async (user, title, body) => {
   if (user && user.fcmToken) {

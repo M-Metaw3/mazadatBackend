@@ -112,6 +112,15 @@ const paymentSchema = new mongoose.Schema({
 
 paymentSchema.index({ winnerid: 1 }, { unique: true });
 
+paymentSchema.pre('save', async function(next) {
+  this.populate({
+    path: 'winnerid',
+    // select: 'name'
+  });
+
+})
+
+
 // paymentSchema.pre('save', async function(next) {
 //   try {
 //     // Find the related subcategory

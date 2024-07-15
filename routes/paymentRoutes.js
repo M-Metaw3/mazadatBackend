@@ -1,9 +1,11 @@
 const express = require('express');
+
 const router = express.Router();
 const { processPayment ,approvePayment} = require('../controllers/paymentcontroller/processPayment ');
 const mult = require('../utils/multer');
 const AppError = require('../utils/appError');
 const upload = mult('images/lastpayforauctions');
+
 function generateValidFilePath(filename) {
     const parts = filename.split(/[\\/]/); // Split the filename by both forward slash (/) and backslash (\)
     const formattedParts = parts.map(part => part.replace(/\\/g, '/')); // Replace backslashes (\) with forward slashes (/)
