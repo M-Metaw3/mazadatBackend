@@ -47,6 +47,7 @@ categorySchema.pre('findOneAndDelete', async function (next) {
     const itemId = this.getQuery()._id;
     console.log(itemId)
     await subcategory.deleteMany({ categoryId: itemId });
+  
     next();
   } catch (err) {
     console.log(err)

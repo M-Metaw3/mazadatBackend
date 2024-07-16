@@ -235,6 +235,18 @@
 
 const mongoose = require('mongoose');
 const item = require('./item');
+const Deposit = require('./Deposit');
+const Bid = require('./Bid');
+const Winner = require('./Winner');
+const bookenigfile = require('./bookenigfile');
+const SubcategoryResult = require('./SubcategoryResult');
+
+
+
+
+
+
+
 
 const imageSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -339,7 +351,30 @@ subcategorySchema.pre('findOne', function(next) {
 subcategorySchema.pre('findOneAndDelete', async function (next) {
   try {
     const itemId = this.getQuery()._id;
+    await Deposit.deleteMany({ item: itemId });
     await item.deleteMany({ subcategoryId: itemId });
+
+    await Bid.deleteMany({ subcategory: itemId });
+    await SubcategoryResult.deleteMany({ subcategory: itemId });
+    await Winner.deleteMany({ subcategory: itemId });
+    await bookenigfile.deleteMany({ item: itemId });
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
+subcategorySchema.pre('deleteMany', async function (next) {
+  try {
+    const itemId = this.getQuery()._id;
+    await Deposit.deleteMany({ item: itemId });
+    await item.deleteMany({ subcategoryId: itemId });
+    await Bid.deleteMany({ subcategory: itemId });
+    await SubcategoryResult.deleteMany({ subcategory: itemId });
+    await Winner.deleteMany({ subcategory: itemId });
+    await bookenigfile.deleteMany({ item: itemId });
+
+
     next();
   } catch (err) {
     next(err);

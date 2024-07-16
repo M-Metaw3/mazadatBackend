@@ -31,7 +31,7 @@ winnerSchema.pre('find', function(next) {
     select: 'name email photo'
   }).populate({
     path: 'itemId',
-    select: 'imagecover name endDate startDate subcategoryId'
+    select: 'imagecover name endDate mainlystartPrice startDate subcategoryId'
   });
 
   next();

@@ -32,4 +32,6 @@ router.post('/',upload.single('coverphoto'),(req,res,next)=>{
   }, splashcontroller.createsplash);
 
   router.get('/',splashcontroller.getAllsplash);
+  router.delete('/:id',splashcontroller.splash);
+
 module.exports = router;

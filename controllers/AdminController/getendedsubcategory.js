@@ -368,7 +368,7 @@ exports.getItemsBySubcategory = async (req, res) => {
   
     try {
       const winnersOrLosers = await Winner.find({ itemId, status })
-        .populate('userId', 'name email fcmToken')
+        .populate('userId', 'name email phoneNumber fcmToken')
         .populate('itemId', 'name');
   
       res.status(200).json({
