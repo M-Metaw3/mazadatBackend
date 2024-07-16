@@ -509,7 +509,7 @@ const loginUser = async (req, res, next) => {
     }
 
     if (!user.verified) {
-      return next(new AppError('Please verify your phone number first', 101));
+      return next(new AppError('Please verify your phone number first', 406));
     }
 
     if (user.blocked) {
