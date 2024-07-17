@@ -28,7 +28,7 @@ winnerSchema.index({ adminApproval: 1 });
 winnerSchema.pre('find', function(next) {
   this.populate({
     path: 'userId',
-    select: 'name email photo'
+    select: 'name email photo phoneNumber'
   }).populate({
     path: 'itemId',
     select: 'imagecover name endDate mainlystartPrice startDate subcategoryId'
