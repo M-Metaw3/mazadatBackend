@@ -864,6 +864,6 @@ module.exports = {
   resetPassword,
   changePassword,
   resendOTP,
-  deleteuser,
+  deleteUser,
   updateProfile,getuser,blockUser,getme,approveUser
 };
