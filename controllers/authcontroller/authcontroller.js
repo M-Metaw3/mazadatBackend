@@ -798,34 +798,45 @@ const blockUser = async (req, res) => {
 
 
 
-        const { id } = req.params;
-
-    // Find the user
-    const user = await User.findById(id).session(session);
-    if (!user) {
-      throw new AppError('User not found', 404);
-    }
-
-    // Delete associated data
-    await Promise.all([
-      Bid.deleteMany({ userId: user._id }).session(session),
-      Deposit.deleteMany({ userId: user._id }).session(session),
-      FileBooking.deleteMany({ userId: user._id }).session(session),
-      Winner.deleteMany({ userId: user._id }).session(session),
-      SubcategoryResult.deleteMany({ userId: user._id }).session(session),
-      WalletCharger.deleteMany({ userId: user._id }).session(session),
-      Payment.deleteMany({ userId: user._id }).session(session),
-      Notification.deleteMany({ userId: user._id }).session(session),
-    ]);
-
-    // Delete the user
-    await User.deleteOne({ _id: user._id }).session(session);
-
-    // Commit the transaction
-    await session.commitTransaction();
-    session.endSession();
-
-    res.status(200).json({ message: 'User and associated data deleted successfully.' });
+    
+        // Find the user
+        const user = await User.findById({ id }).session(session);
+        if (!user) {
+          throw new AppError('User not found', 404);
+        }
+    
+        // Delete bids
+        await Bid.deleteMany({ userId: user._id }).session(session);
+    
+        // Delete deposits
+        await Deposit.deleteMany({ userId: user._id }).session(session);
+    
+        // Delete file bookings
+        await FileBooking.deleteMany({ userId: user._id }).session(session);
+    
+        // Delete winners
+        await Winner.deleteMany({ userId: user._id }).session(session);
+    
+        // Delete subcategory results
+        await SubcategoryResult.deleteMany({ userId: user._id }).session(session);
+    
+        // Delete wallet charges
+        await WalletCharger.deleteMany({ userId: user._id }).session(session);
+    
+        // Delete payments
+        await Payment.deleteMany({ userId: user._id }).session(session);
+    
+        // Delete notifications
+        await Notification.deleteMany({ userId: user._id }).session(session);
+    
+        // Delete the user
+        await User.deleteOne({ _id: user._id }).session(session);
+    
+        // Commit the transaction
+        await session.commitTransaction();
+        session.endSession();
+    
+        res.status(200).json({ message: 'User and associated data deleted successfully.' });
     
       } catch (error) {
         await session.abortTransaction();
