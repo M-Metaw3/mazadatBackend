@@ -1,8 +1,8 @@
+const mongoose = require('mongoose');
 const passport = require('passport');
 const uservalidation = require('../../validations/Uservalidation/uservalidation');
 const joifunctions = require('../../validations/mainjoivalidations');
 const { promisify } = require('util');
-
 const crypto = require('crypto');
 // const { promisify } = require('util');
 
