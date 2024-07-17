@@ -795,8 +795,8 @@ const blockUser = async (req, res) => {
       session.startTransaction();
     
       try {
-
-
+        const { phoneNumber } = req.body;
+        const { id } = req.params
 
     
         // Find the user
