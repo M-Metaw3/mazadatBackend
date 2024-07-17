@@ -800,7 +800,7 @@ const blockUser = async (req, res) => {
 
     
         // Find the user
-        const user = await User.findById({ id }).session(session);
+        const user = await User.findById(id).session(session);
         if (!user) {
           throw new AppError('User not found', 404);
         }
