@@ -9,7 +9,14 @@ const crypto = require('crypto');
 const User = require('../../models/User');
 const AppError = require('../../utils/appError');
 const catchAsync = require('../../utils/catchAsync');
-
+const Bid = require('../../models/Bid');
+const Deposit = require('../../models/Deposit');
+const FileBooking = require('../../models/bookenigfile');
+const Winner = require('../../models/Winner');
+const SubcategoryResult = require('../../models/SubcategoryResult');
+const WalletCharger = require('../../models/WalletCharger');
+const Payment = require('../../models/Payment');
+const Notification = require('../../models/notification');
 
 const signToken = id => {
   return jwt.sign({ id }, process.env.JWT_SECRET)
@@ -772,21 +779,81 @@ const blockUser = async (req, res) => {
         res.status(500).json({ message: 'An error occurred during logout.', error: error.message });
       }
     };
-    const deleteuser = async (req, res) => {
+
+
+
+
+
+
+
+
+
+
+
+    const deleteUser = async (req, res, next) => {
+      const session = await mongoose.startSession();
+      session.startTransaction();
+    
       try {
-       
+        const { phoneNumber } = req.body;
+        const { id } = req.params
+
     
-        // Update isLogin status to false
-        await User.findOneAndDelete({ phoneNumber:req.body.phoneNumber })
+        // Find the user
+        const user = await User.findById({ id }).session(session);
+        if (!user) {
+          throw new AppError('User not found', 404);
+        }
     
-        // Optionally, you can also invalidate the token if you're using token-based authentication
-        // For example, add the token to a blacklist (implementation depends on your token strategy)
+        // Delete bids
+        await Bid.deleteMany({ userId: user._id }).session(session);
     
-        res.status(200).json({ message: 'deleted out successfully.' });
+        // Delete deposits
+        await Deposit.deleteMany({ userId: user._id }).session(session);
+    
+        // Delete file bookings
+        await FileBooking.deleteMany({ userId: user._id }).session(session);
+    
+        // Delete winners
+        await Winner.deleteMany({ userId: user._id }).session(session);
+    
+        // Delete subcategory results
+        await SubcategoryResult.deleteMany({ userId: user._id }).session(session);
+    
+        // Delete wallet charges
+        await WalletCharger.deleteMany({ userId: user._id }).session(session);
+    
+        // Delete payments
+        await Payment.deleteMany({ userId: user._id }).session(session);
+    
+        // Delete notifications
+        await Notification.deleteMany({ userId: user._id }).session(session);
+    
+        // Delete the user
+        await User.deleteOne({ _id: user._id }).session(session);
+    
+        // Commit the transaction
+        await session.commitTransaction();
+        session.endSession();
+    
+        res.status(200).json({ message: 'User and associated data deleted successfully.' });
+    
       } catch (error) {
-        res.status(500).json({ message: 'An error occurred during logout.', error: error.message });
+        await session.abortTransaction();
+        session.endSession();
+        next(new AppError('An error occurred during user deletion.', 500));
       }
     };
+    
+    module.exports = deleteUser;
+    
+
+
+
+
+
+
+
 module.exports = {
   getallusers,
   logoutUser,
