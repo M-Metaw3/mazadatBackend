@@ -307,6 +307,8 @@ exports.getItemsBySubcategory = async (req, res) => {
             description: 1,
             subcategoryId: 1,
             startPrice: 1,
+            mainlystartPrice: 1,
+
             minBidIncrement: 1,
             coverphoto: 1,
             status: 1,
@@ -370,7 +372,7 @@ exports.getItemsBySubcategory = async (req, res) => {
       const winnersOrLosers = await Winner.find({ itemId, status })
         .populate('userId', 'name email phoneNumber fcmToken')
         .populate('itemId', 'name');
-  
+  console.log("winnersOrLosers" ,winnersOrLosers)
       res.status(200).json({
         status: 'success',
         data: winnersOrLosers,
