@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const AppShareLinkSchema = new mongoose.Schema({
-  en: { type: String, required: true },
-  ar: { type: String, required: true }
+  en: { type: String },
+  ar: { type: String }
 }, { timestamps: true });
 
 const AppShareLink = mongoose.model('AppShareLink', AppShareLinkSchema);
