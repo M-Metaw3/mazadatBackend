@@ -111,9 +111,9 @@ app.use((req, res, next) => {
   next();
 });
 
-app.get('/', (req, res) => {
-  res.send('Welcome to the Online Auction System API MAZADAsssT'+ process.env.NODE_ENV_docker);
-});
+// app.get('/', (req, res) => {
+//   res.send('Welcome to the Online Auction System API MAZADAsssT'+ process.env.NODE_ENV_docker);
+// });
 
 
 
