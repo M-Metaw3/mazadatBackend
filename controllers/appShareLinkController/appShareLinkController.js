@@ -2,6 +2,7 @@ const AppShareLinkService = require('./appShareLinkService');
 const catchAsync = require('../../utils/catchAsync');
 
 exports.createAppShareLink = catchAsync(async (req, res) => {
+  console.log(req.body)
   const appShareLink = await AppShareLinkService.createAppShareLink(req.body);
   res.status(201).json({ status: 'success', data: appShareLink });
 });
