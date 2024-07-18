@@ -11,12 +11,18 @@ exports.getAllAppShareLinks = catchAsync(async (req, res) => {
   const appShareLinks = await AppShareLinkService.getAllAppShareLinks();
   const language = req.language;
 
-  // const formattedLinks = appShareLinks.map(doc => ({
-  //   appShareLink: doc[language]
-  // }));
+  const formattedLinks = appShareLinks.map(doc => {
+    if (doc[language]) {
+      return {
+        appShareLink: doc[language]
+      };
+    }
+    return doc;
+  });
 
-  res.status(200).json({ status: 'success', data: appShareLinks });
+  res.status(200).json({ status: 'success', data: formattedLinks });
 });
+
 
 exports.getAppShareLinkById = catchAsync(async (req, res) => {
   const appShareLink = await AppShareLinkService.getAppShareLinkById(req.params.id);

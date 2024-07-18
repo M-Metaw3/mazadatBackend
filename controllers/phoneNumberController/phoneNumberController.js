@@ -10,12 +10,18 @@ exports.getAllPhoneNumbers = catchAsync(async (req, res) => {
   const phoneNumbers = await PhoneNumberService.getAllPhoneNumbers();
   const language = req.language;
 
-  const formattedNumbers = phoneNumbers.map(doc => ({
-    phoneNumber: doc[language]
-  }));
+  const formattedNumbers = phoneNumbers.map(doc => {
+    if (doc[language]) {
+      return {
+        phoneNumber: doc[language]
+      };
+    }
+    return doc;
+  });
 
   res.status(200).json({ status: 'success', data: formattedNumbers });
 });
+
 
 exports.getPhoneNumberById = catchAsync(async (req, res) => {
   const phoneNumber = await PhoneNumberService.getPhoneNumberById(req.params.id);

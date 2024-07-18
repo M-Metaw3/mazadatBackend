@@ -6,13 +6,28 @@ exports.createSocialMediaLink = catchAsync(async (req, res) => {
   res.status(201).json({ status: 'success', data: socialMediaLink });
 });
 
+// exports.getAllSocialMediaLinks = catchAsync(async (req, res) => {
+//   const socialMediaLinks = await SocialMediaLinkService.getAllSocialMediaLinks();
+//   const language = req.language;
+
+//   const formattedLinks = socialMediaLinks.map(doc => ({
+//     socialMediaLink: doc[language]
+//   }));
+
+//   res.status(200).json({ status: 'success', data: formattedLinks });
+// });
 exports.getAllSocialMediaLinks = catchAsync(async (req, res) => {
   const socialMediaLinks = await SocialMediaLinkService.getAllSocialMediaLinks();
   const language = req.language;
 
-  const formattedLinks = socialMediaLinks.map(doc => ({
-    socialMediaLink: doc[language]
-  }));
+  const formattedLinks = socialMediaLinks.map(doc => {
+    if (doc[language]) {
+      return {
+        socialMediaLink: doc[language]
+      };
+    }
+    return doc;
+  });
 
   res.status(200).json({ status: 'success', data: formattedLinks });
 });

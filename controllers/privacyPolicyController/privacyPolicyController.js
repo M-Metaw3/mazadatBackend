@@ -6,16 +6,32 @@ exports.createPrivacyPolicy = catchAsync(async (req, res) => {
   res.status(201).json({ status: 'success', data: privacyPolicy });
 });
 
+// exports.getAllPrivacyPolicies = catchAsync(async (req, res) => {
+//   const privacyPolicies = await PrivacyPolicyService.getAllPrivacyPolicies();
+//   const language = req.language;
+
+//   const formattedPolicies = privacyPolicies.map(doc => ({
+//     privacyPolicy: doc[language]
+//   }));
+
+//   res.status(200).json({ status: 'success', data: formattedPolicies });
+// });
 exports.getAllPrivacyPolicies = catchAsync(async (req, res) => {
   const privacyPolicies = await PrivacyPolicyService.getAllPrivacyPolicies();
   const language = req.language;
 
-  const formattedPolicies = privacyPolicies.map(doc => ({
-    privacyPolicy: doc[language]
-  }));
+  const formattedPolicies = privacyPolicies.map(doc => {
+    if (doc[language]) {
+      return {
+        privacyPolicy: doc[language]
+      };
+    }
+    return doc;
+  });
 
   res.status(200).json({ status: 'success', data: formattedPolicies });
 });
+
 
 exports.getPrivacyPolicyById = catchAsync(async (req, res) => {
   const privacyPolicy = await PrivacyPolicyService.getPrivacyPolicyById(req.params.id);
