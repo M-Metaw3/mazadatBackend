@@ -862,7 +862,7 @@ const logoutUser = async (req, res) => {
       authToken: null,
       deviceDetails: {}
     });
-console.log(a)
+
     res.status(200).json({ message: 'Logged out successfully.' });
   } catch (error) {
     res.status(500).json({ message: 'An error occurred during logout.', error: error.message });
