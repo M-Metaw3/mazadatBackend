@@ -857,7 +857,7 @@ const logoutUser = async (req, res) => {
     console.log(userId)
 
     // Update isLogin status to false
-  const a=  await User.findByIdAndUpdate(userId, {
+   await User.findByIdAndUpdate(userId, {
       isLogin: false,
       authToken: null,
       deviceDetails: {}
