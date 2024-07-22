@@ -25,7 +25,7 @@ const signToken = id => {
 
 
 
-const createSendToken = (user, statusCode, res) => {
+const createSendToken = (user, statusCode, res,session) => {
 
   console.log(user)
   const token = signToken(user._id);
@@ -38,7 +38,8 @@ const createSendToken = (user, statusCode, res) => {
   if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
   res.cookie('jwt', token, cookieOptions);
-
+  user.authToken = token;
+  await user.save({ session }); 
   // Remove password from output
   user.password = undefined;
 
@@ -665,7 +666,7 @@ const loginUser = catchAsync(async (req, res, next) => {
       return next(new AppError('You are already logged in from another device', 400));
     }
 
-    user.authToken = signToken(user._id);
+   
     user.deviceDetails = deviceDetails;
 
     await user.save({ session });
@@ -675,7 +676,7 @@ const loginUser = catchAsync(async (req, res, next) => {
 
     user.passwordHash = undefined;
 
-    return createSendToken(user, 200, res);
+    return createSendToken(user, 200, res,session);
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
