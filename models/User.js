@@ -60,6 +60,9 @@ const userSchema = new Schema({
 });
 
 userSchema.virtual('age').get(function () {
+  if (!this.birthdate) {
+    return null;
+  }
   const today = new Date();
   const birthDate = new Date(this.birthdate);
   let age = today.getFullYear() - birthDate.getFullYear();
