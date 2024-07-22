@@ -101,8 +101,9 @@ const authMiddleware = catchAsync(async (req, res, next) => {
   }
 
   // 4) Check if the token is the same as the one stored in the database
-  if (currentUser.authToken !== token) {
-    return next(new AppError('Token is invalid or has been logged out from another device.', 401));
+  if (currentUser?.authToken !== token) {
+    console.log('authToken', currentUser.authToken,"token",token);
+    return next(new AppError('Token is invalid or has been logged out from metawea.', 401));
   }
 
   // Grant access to the protected route
