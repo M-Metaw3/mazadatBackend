@@ -96,9 +96,7 @@ const authMiddleware = catchAsync(async (req, res, next) => {
   
   // 3) Check if user still exists
   const currentUser = await User.findById(decoded.id);
-  console.log('currentUser', currentUser);
 
-  console.log('authToken', currentUser.authToken,"token",token);
   if (!currentUser) {
     return next(new AppError('The user belonging to this token does no longer exist.', 401));
   }
