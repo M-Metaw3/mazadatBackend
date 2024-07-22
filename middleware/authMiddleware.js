@@ -34,42 +34,80 @@ const catchAsync = require('../utils/catchAsync');
 
 // module.exports = authMiddleware;
 
+//////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+// const authMiddleware = catchAsync(async (req, res, next) => {
+//   // 1) Getting token and check of it's there
+
+//   let token;
+//   if (
+//     req.headers.authorization &&
+//     req.headers.authorization.startsWith('Bearer')
+//   ) {
+//     token = req.headers.authorization.split(' ')[1];
+//   } else if (req.cookies.jwt) {
+//     token = req.cookies.jwt;
+//   }
+
+//   if (!token) {
+//     return next(
+//       new AppError('You are not logged in! Please log in to get access.', 401)
+//     );
+//   }
+
+//   // 2) Verification token
+//   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+// console.log(decoded)
+//   // 3) Check if user still exists
+//   const currentUser = await User.findById(decoded.id);
+//   if (!currentUser) {
+//     return next(
+//       new AppError(
+//         'The user belonging to this token does no longer exist.',
+//         401
+//       )
+//     );
+//   }
+
+//   req.user = currentUser;
+
+// next();
+// })
+// module.exports = authMiddleware;
+///////////////////////////////////////////////////////////////////
 
 const authMiddleware = catchAsync(async (req, res, next) => {
-  // 1) Getting token and check of it's there
-
+  // 1) Getting token and check if it's there
   let token;
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
-  ) {
+  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
   } else if (req.cookies.jwt) {
     token = req.cookies.jwt;
   }
 
   if (!token) {
-    return next(
-      new AppError('You are not logged in! Please log in to get access.', 401)
-    );
+    return next(new AppError('You are not logged in! Please log in to get access.', 401));
   }
 
   // 2) Verification token
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-console.log(decoded)
+
   // 3) Check if user still exists
   const currentUser = await User.findById(decoded.id);
   if (!currentUser) {
-    return next(
-      new AppError(
-        'The user belonging to this token does no longer exist.',
-        401
-      )
-    );
+    return next(new AppError('The user belonging to this token does no longer exist.', 401));
   }
 
-  req.user = currentUser;
+  // 4) Check if the token is the same as the one stored in the database
+  if (currentUser.authToken !== token) {
+    return next(new AppError('Token is invalid or has been logged out from another device.', 401));
+  }
 
-next();
-})
+  // Grant access to the protected route
+  req.user = currentUser;
+  next();
+});
+
 module.exports = authMiddleware;

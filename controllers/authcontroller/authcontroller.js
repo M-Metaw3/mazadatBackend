@@ -480,10 +480,70 @@ console.log(lastOTP)
 //   }
 // };
 
+////////////////////////////////this is work //////////////////////////////////////
+
+
+// const loginUser = async (req, res, next) => {
+//   try {
+//     const { phoneNumber, password, idNumber, fcmToken } = req.body;
+
+//     if (!phoneNumber && !idNumber) {
+//       return res.status(400).json({ error: 'Phone number or ID number must be provided' });
+//     }
+
+//     let query;
+//     if (idNumber) {
+//       if (idNumber.length > 14) {
+//         return next(new AppError('Invalid ID number', 400));
+//       }
+//       query = { idNumber: idNumber };
+//     } else {
+//       query = { phoneNumber: phoneNumber };
+//     }
+
+//     const user = await User.findOne(query).select('+passwordHash');
+//     if(fcmToken){
+//       user.fcmToken = fcmToken;
+//       await user.save({validateBeforeSave: false});
+//     }
+//     // await user.save({validateBeforeSave: false});
+//     if (!user) {
+//       return next(new AppError('Invalid credentials', 400));
+//     }
+//     // await User.findByIdAndUpdate(user._id, { fcmToken });
+
+//     const isMatch = await bcrypt.compare(password, user.passwordHash);
+//     if (!isMatch) {
+//       return next(new AppError('Invalid credentials', 400));
+//     }
+
+//     if (!user.verified) {
+//       return next(new AppError('Please verify your phone number first', 406));
+//     }
+
+//     if (user.blocked) {
+//       return next(new AppError('You are blocked', 400));
+//     }
+
+//     if (!user.approved) {
+//       return next(new AppError('Your account has not been approved by the admin yet', 400));
+//     }
+
+//     user.passwordHash = undefined;
+
+//     return createSendToken(user, 200, res);
+//   } catch (error) {
+
+//     return next(new AppError(`Server error during login${error}` , 500));
+//   }
+// };
+
+////////////////////////////////this is work //////////////////////////////////////
+
 
 const loginUser = async (req, res, next) => {
   try {
-    const { phoneNumber, password, idNumber, fcmToken } = req.body;
+    const { phoneNumber, password, idNumber, fcmToken, deviceDetails } = req.body;
 
     if (!phoneNumber && !idNumber) {
       return res.status(400).json({ error: 'Phone number or ID number must be provided' });
@@ -500,15 +560,9 @@ const loginUser = async (req, res, next) => {
     }
 
     const user = await User.findOne(query).select('+passwordHash');
-    if(fcmToken){
-      user.fcmToken = fcmToken;
-      await user.save({validateBeforeSave: false});
-    }
-    // await user.save({validateBeforeSave: false});
     if (!user) {
       return next(new AppError('Invalid credentials', 400));
     }
-    // await User.findByIdAndUpdate(user._id, { fcmToken });
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
@@ -527,16 +581,25 @@ const loginUser = async (req, res, next) => {
       return next(new AppError('Your account has not been approved by the admin yet', 400));
     }
 
+    // Check if the user is already logged in from another device
+    if (user.deviceDetails.deviceId && user.deviceDetails.deviceId !== deviceDetails.deviceId) {
+      user.authToken = null; // Invalidate the previous session
+    }
+
+    user.authToken = jwt.sign({ userId: user._id }, SECRET_KEY, { expiresIn: '1h' });
+    user.deviceDetails = deviceDetails;
+    if (fcmToken) {
+      user.fcmToken = fcmToken;
+    }
+    await user.save();
+
     user.passwordHash = undefined;
 
     return createSendToken(user, 200, res);
   } catch (error) {
-
-    return next(new AppError(`Server error during login${error}` , 500));
+    return next(new AppError(`Server error during login: ${error.message}`, 500));
   }
 };
-
-
 
 
 
@@ -763,25 +826,41 @@ const blockUser = async (req, res) => {
   
     res.json({status:"success",data:user})};
 
-
-    const logoutUser = async (req, res) => {
-      try {
-        const userId = req.user.id;
+/////////////////////////////////////////////////////////////////////////////////////////////
+    // const logoutUser = async (req, res) => {
+    //   try {
+    //     const userId = req.user.id;
     
-        // Update isLogin status to false
-        await User.findByIdAndUpdate(userId, { isLogin: false });
+    //     // Update isLogin status to false
+    //     await User.findByIdAndUpdate(userId, { isLogin: false });
     
-        // Optionally, you can also invalidate the token if you're using token-based authentication
-        // For example, add the token to a blacklist (implementation depends on your token strategy)
+    //     // Optionally, you can also invalidate the token if you're using token-based authentication
+    //     // For example, add the token to a blacklist (implementation depends on your token strategy)
     
-        res.status(200).json({ message: 'Logged out successfully.' });
-      } catch (error) {
-        res.status(500).json({ message: 'An error occurred during logout.', error: error.message });
-      }
-    };
+    //     res.status(200).json({ message: 'Logged out successfully.' });
+    //   } catch (error) {
+    //     res.status(500).json({ message: 'An error occurred during logout.', error: error.message });
+    //   }
+    // };
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+const logoutUser = async (req, res) => {
+  try {
+    const userId = req.user.id;
 
+    // Update isLogin status to false
+    await User.findByIdAndUpdate(userId, {
+      isLogin: false,
+      authToken: null,
+      deviceDetails: {}
+    });
+
+    res.status(200).json({ message: 'Logged out successfully.' });
+  } catch (error) {
+    res.status(500).json({ message: 'An error occurred during logout.', error: error.message });
+  }
+};
 
 
 

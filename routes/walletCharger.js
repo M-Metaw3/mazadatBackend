@@ -25,7 +25,7 @@ router.post('/charge-wallet',upload.single('billImage'),(req,res,next)=>{
   
   next()
   
-  },chargeWallet);
+  },authMiddleware,chargeWallet);
 
 // Route for admin to review wallet charging request
 router.post('/review-wallet-charger', reviewWalletCharger);

@@ -8,6 +8,7 @@ const bookingValidator = require('../validationswithexpress/bookingValidator');
 const mult = require('../utils/multer');
 const AppError = require('../utils/appError');
 const validationMiddleware = require('../middleware/validationMiddleware');
+const authMiddleware = require('../middleware/authMiddleware');
 
 const upload = mult('images/billingimage');
 function generateValidFilePath(filename) {
@@ -31,7 +32,7 @@ router.post('/book',upload.single('billImage'),(req,res,next)=>{
   
   next()
   
-  }, validateBookingData, checkWalletBalance,bookingValidator.createBooking,validationMiddleware, bookingController.bookFile);
+  }, validateBookingData, checkWalletBalance,bookingValidator.createBooking,validationMiddleware,authMiddleware, bookingController.bookFile);
 router.get('/bookings', bookingController.getAllBookings);
 router.patch('/bookings/:id/approve', bookingController.approveBooking);
 router.get('/bookings/:userid', bookingController.getbookinghistory);
