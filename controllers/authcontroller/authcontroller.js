@@ -590,6 +590,8 @@ const loginUser = async (req, res, next) => {
       return next(new AppError('You are already logged in from another device', 400));
       // Invalidate the previous session
     }
+    console.log("user","user.deviceDetails.deviceId","deviceDetails.deviceId","deviceDetails.deviceId","errors")
+
     user.authToken = signToken(user?.id);
     user.deviceDetails = deviceDetails;
     // if (fcmToken) {
