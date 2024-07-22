@@ -25,7 +25,7 @@ const signToken = id => {
 
 
 
-const createSendToken = (user, statusCode, res,session) => {
+const createSendToken =async (user, statusCode, res,session) => {
 
   console.log(user)
   const token = signToken(user._id);
