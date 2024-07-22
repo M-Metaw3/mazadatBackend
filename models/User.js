@@ -60,8 +60,7 @@ const userSchema = new Schema({
 });
 
 userSchema.virtual('age').get(function () {
-  if (!this?.birthdate) {
-    this?.birthdate=null
+  if (!this.birthdate) {
     return null;
   }
   const today = new Date();
@@ -73,6 +72,5 @@ userSchema.virtual('age').get(function () {
   }
   return age;
 });
-
 const User = mongoose.model('User', userSchema);
 module.exports = User;
