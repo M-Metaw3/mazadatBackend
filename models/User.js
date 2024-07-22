@@ -60,7 +60,8 @@ const userSchema = new Schema({
 });
 
 userSchema.virtual('age').get(function () {
-  if (!this.birthdate) {
+  if (!this?.birthdate) {
+    this?.birthdate=null
     return null;
   }
   const today = new Date();
