@@ -90,19 +90,21 @@ const authMiddleware = catchAsync(async (req, res, next) => {
   if (!token) {
     return next(new AppError('You are not logged in! Please log in to get access.', 401));
   }
-
+  
   // 2) Verification token
   const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-
+  
   // 3) Check if user still exists
   const currentUser = await User.findById(decoded.id);
+  console.log('currentUser', currentUser);
+
+  console.log('authToken', currentUser.authToken,"token",token);
   if (!currentUser) {
     return next(new AppError('The user belonging to this token does no longer exist.', 401));
   }
 
   // 4) Check if the token is the same as the one stored in the database
   if (currentUser?.authToken !== token) {
-    console.log('authToken', currentUser.authToken,"token",token);
     return next(new AppError('Token is invalid or has been logged out from metawea.', 401));
   }
 
