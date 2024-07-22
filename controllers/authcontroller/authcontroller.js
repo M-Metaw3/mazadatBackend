@@ -583,14 +583,13 @@ const loginUser = async (req, res, next) => {
     if (!user.approved) {
       return next(new AppError('Your account has not been approved by the admin yet', 400));
     }
-
     // Check if the user is already logged in from another device
     if (user.deviceDetails.deviceId && user.deviceDetails.deviceId !== deviceDetails.deviceId) {
       user.authToken = null;
       return next(new AppError('You are already logged in from another device', 400));
       // Invalidate the previous session
     }
-
+console.log("user",user.deviceDetails.deviceId,"deviceDetails.deviceId",deviceDetails.deviceId)
     user.authToken = signToken(user?.id);
     user.deviceDetails = deviceDetails;
     // if (fcmToken) {
