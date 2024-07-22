@@ -711,7 +711,7 @@ const loginUser = catchAsync(async (req, res, next) => {
 
     // Check if the user is already logged in from another device
     if (user.deviceDetails.deviceId && user.deviceDetails.deviceId !== deviceDetails.deviceId) {
-      user.authToken = null;
+      // user.authToken = null;
       await user.save({ session, validateBeforeSave: false });
       await session.commitTransaction();
       session.endSession();
