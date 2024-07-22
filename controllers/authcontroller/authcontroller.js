@@ -541,12 +541,82 @@ console.log(lastOTP)
 ////////////////////////////////this is work //////////////////////////////////////
 
 
-const loginUser = async (req, res, next) => {
+// const loginUser = async (req, res, next) => {
+//   try {
+//     const { phoneNumber, password, idNumber, fcmToken, deviceDetails } = req.body;
+
+//     if (!phoneNumber && !idNumber) {
+//       return res.status(400).json({ error: 'Phone number or ID number must be provided' });
+//     }
+
+//     let query;
+//     if (idNumber) {
+//       if (idNumber.length > 14) {
+//         return next(new AppError('Invalid ID number', 400));
+//       }
+//       query = { idNumber: idNumber };
+//     } else {
+//       query = { phoneNumber: phoneNumber };
+//     }
+
+//     const user = await User.findOne(query).select('+passwordHash');
+//     if (!user) {
+//       return next(new AppError('Invalid credentials', 400));
+//     }
+//     if(fcmToken){
+//       user.fcmToken = fcmToken;
+//       await user.save({validateBeforeSave: false});
+//     }
+//     const isMatch = await bcrypt.compare(password, user.passwordHash);
+//     if (!isMatch) {
+//       return next(new AppError('Invalid credentials', 400));
+//     }
+
+//     if (!user.verified) {
+//       return next(new AppError('Please verify your phone number first', 406));
+//     }
+
+//     if (user.blocked) {
+//       return next(new AppError('You are blocked', 400));
+//     }
+
+//     if (!user.approved) {
+//       return next(new AppError('Your account has not been approved by the admin yet', 400));
+//     }
+//     // Check if the user is already logged in from another device
+//     console.log("user",user.deviceDetails.deviceId,"deviceDetails.deviceId",deviceDetails.deviceId)
+//     if (user.deviceDetails.deviceId && user.deviceDetails.deviceId !== deviceDetails.deviceId) {
+//       user.authToken = null;
+//       return next(new AppError('You are already logged in from another device', 400));
+//       // Invalidate the previous session
+//     }
+//     console.log("user","user.deviceDetails.deviceId","deviceDetails.deviceId","deviceDetails.deviceId","errors")
+
+//     user.authToken = signToken(user?.id);
+//     user.deviceDetails = deviceDetails;
+//     // if (fcmToken) {
+//     //   user.fcmToken = fcmToken;
+//     // }
+//     await user.save();
+
+//     user.passwordHash = undefined;
+
+//     return createSendToken(user, 200, res);
+//   } catch (error) {
+//     return next(new AppError(`Server error during login: ${error.message}`, 500));
+//   }
+// };
+
+
+const loginUser = catchAsync(async (req, res, next) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
   try {
     const { phoneNumber, password, idNumber, fcmToken, deviceDetails } = req.body;
 
     if (!phoneNumber && !idNumber) {
-      return res.status(400).json({ error: 'Phone number or ID number must be provided' });
+      return next(new AppError('Phone number or ID number must be provided', 400));
     }
 
     let query;
@@ -559,14 +629,16 @@ const loginUser = async (req, res, next) => {
       query = { phoneNumber: phoneNumber };
     }
 
-    const user = await User.findOne(query).select('+passwordHash');
+    const user = await User.findOne(query).select('+passwordHash').session(session);
     if (!user) {
       return next(new AppError('Invalid credentials', 400));
     }
-    if(fcmToken){
+
+    if (fcmToken) {
       user.fcmToken = fcmToken;
-      await user.save({validateBeforeSave: false});
+      await user.save({ session, validateBeforeSave: false });
     }
+
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
       return next(new AppError('Invalid credentials', 400));
@@ -583,31 +655,33 @@ const loginUser = async (req, res, next) => {
     if (!user.approved) {
       return next(new AppError('Your account has not been approved by the admin yet', 400));
     }
+
     // Check if the user is already logged in from another device
-    console.log("user",user.deviceDetails.deviceId,"deviceDetails.deviceId",deviceDetails.deviceId)
     if (user.deviceDetails.deviceId && user.deviceDetails.deviceId !== deviceDetails.deviceId) {
       user.authToken = null;
+      await user.save({ session, validateBeforeSave: false });
+      await session.commitTransaction();
+      session.endSession();
       return next(new AppError('You are already logged in from another device', 400));
-      // Invalidate the previous session
     }
-    console.log("user","user.deviceDetails.deviceId","deviceDetails.deviceId","deviceDetails.deviceId","errors")
 
-    user.authToken = signToken(user?.id);
+    user.authToken = signToken(user._id);
     user.deviceDetails = deviceDetails;
-    // if (fcmToken) {
-    //   user.fcmToken = fcmToken;
-    // }
-    await user.save();
+
+    await user.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
 
     user.passwordHash = undefined;
 
     return createSendToken(user, 200, res);
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
     return next(new AppError(`Server error during login: ${error.message}`, 500));
   }
-};
-
-
+});
 
 
 
