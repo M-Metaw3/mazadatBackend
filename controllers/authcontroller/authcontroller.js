@@ -586,7 +586,7 @@ const loginUser = async (req, res, next) => {
       user.authToken = null; // Invalidate the previous session
     }
 
-    user.authToken = jwt.sign({ userId: user._id }, "SECRET_KEY", { expiresIn: '1h' });
+    user.authToken = jwt.sign({ userId: user._id }, "SECRET_KEY", { expiresIn: '28d' });
     user.deviceDetails = deviceDetails;
     if (fcmToken) {
       user.fcmToken = fcmToken;
