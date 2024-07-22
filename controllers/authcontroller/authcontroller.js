@@ -563,7 +563,10 @@ const loginUser = async (req, res, next) => {
     if (!user) {
       return next(new AppError('Invalid credentials', 400));
     }
-
+    if(fcmToken){
+      user.fcmToken = fcmToken;
+      await user.save({validateBeforeSave: false});
+    }
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
       return next(new AppError('Invalid credentials', 400));
@@ -590,9 +593,9 @@ const loginUser = async (req, res, next) => {
 
     user.authToken = signToken(user?.id);
     user.deviceDetails = deviceDetails;
-    if (fcmToken) {
-      user.fcmToken = fcmToken;
-    }
+    // if (fcmToken) {
+    //   user.fcmToken = fcmToken;
+    // }
     await user.save();
 
     user.passwordHash = undefined;
