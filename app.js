@@ -36,7 +36,7 @@ const phoneNumberRoutes = require('./routes/phoneNumber');
 const appShareLinkRoutes = require('./routes/appShareLink');
 const chargewallet = require('./routes/walletCharger');
 const walletcontroller = require('./routes/WalletControllerRoute');
-
+const refundRoutes = require('./routes/refundRoutes');
 const paymentMethodinfo = require('./routes/paymentMethodRoutes');
 const notificationAdminRoutes = require('./routes/notificationAdminRoutes');
 require('./controllers/NotifcationAdminController/sendScheduledNotifications');
@@ -119,7 +119,7 @@ app.use((req, res, next) => {
 
 app.use('/api/v1/privacyPolicy', privacyPolicyRoutes);
 app.use('/api/v1/walletcontroller', walletcontroller);
-
+app.use('/api/v1', refundRoutes);
 app.use('/api/v1/paymentmethodinfo', paymentMethodinfo);
 
 app.use('/api/v1/walletcharge', chargewallet);
