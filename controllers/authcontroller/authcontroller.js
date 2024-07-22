@@ -24,24 +24,19 @@ const signToken = id => {
 
 
 
-
-const createSendToken =async (user, statusCode, res,session) => {
-
-  console.log(user)
+const createSendToken = async (user, statusCode, res, session) => {
   const token = signToken(user._id);
   const cookieOptions = {
-    // expires: new Date(
-    //   Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-    // ),
     httpOnly: true
   };
   if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
 
   res.cookie('jwt', token, cookieOptions);
   user.authToken = token;
-  await user.save({ session }); 
-  // Remove password from output
-  user.password = undefined;
+
+  await user.save({ session }); // Save the user with the new token
+
+  user.passwordHash = undefined; // Remove password from output
 
   res.status(statusCode).json({
     status: 'success',
@@ -51,6 +46,33 @@ const createSendToken =async (user, statusCode, res,session) => {
     }
   });
 };
+
+// const createSendToken =async (user, statusCode, res,session) => {
+
+//   console.log(user)
+//   const token = signToken(user._id);
+//   const cookieOptions = {
+//     // expires: new Date(
+//     //   Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+//     // ),
+//     httpOnly: true
+//   };
+//   if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
+
+//   res.cookie('jwt', token, cookieOptions);
+//   user.authToken = token;
+//   await user.save({ session }); 
+//   // Remove password from output
+//   user.password = undefined;
+
+//   res.status(statusCode).json({
+//     status: 'success',
+//     token,
+//     data: {
+//       user
+//     }
+//   });
+// };
 
 
 
@@ -542,12 +564,17 @@ console.log(lastOTP)
 ////////////////////////////////this is work //////////////////////////////////////
 
 
-// const loginUser = async (req, res, next) => {
+
+
+// const loginUser = catchAsync(async (req, res, next) => {
+//   const session = await mongoose.startSession();
+//   session.startTransaction();
+
 //   try {
 //     const { phoneNumber, password, idNumber, fcmToken, deviceDetails } = req.body;
 
 //     if (!phoneNumber && !idNumber) {
-//       return res.status(400).json({ error: 'Phone number or ID number must be provided' });
+//       return next(new AppError('Phone number or ID number must be provided', 400));
 //     }
 
 //     let query;
@@ -560,14 +587,16 @@ console.log(lastOTP)
 //       query = { phoneNumber: phoneNumber };
 //     }
 
-//     const user = await User.findOne(query).select('+passwordHash');
+//     const user = await User.findOne(query).select('+passwordHash').session(session);
 //     if (!user) {
 //       return next(new AppError('Invalid credentials', 400));
 //     }
-//     if(fcmToken){
+
+//     if (fcmToken) {
 //       user.fcmToken = fcmToken;
-//       await user.save({validateBeforeSave: false});
+//       await user.save({ session, validateBeforeSave: false });
 //     }
+
 //     const isMatch = await bcrypt.compare(password, user.passwordHash);
 //     if (!isMatch) {
 //       return next(new AppError('Invalid credentials', 400));
@@ -584,29 +613,38 @@ console.log(lastOTP)
 //     if (!user.approved) {
 //       return next(new AppError('Your account has not been approved by the admin yet', 400));
 //     }
+
 //     // Check if the user is already logged in from another device
-//     console.log("user",user.deviceDetails.deviceId,"deviceDetails.deviceId",deviceDetails.deviceId)
 //     if (user.deviceDetails.deviceId && user.deviceDetails.deviceId !== deviceDetails.deviceId) {
 //       user.authToken = null;
+//       await user.save({ session, validateBeforeSave: false });
+//       await session.commitTransaction();
+//       session.endSession();
 //       return next(new AppError('You are already logged in from another device', 400));
-//       // Invalidate the previous session
 //     }
-//     console.log("user","user.deviceDetails.deviceId","deviceDetails.deviceId","deviceDetails.deviceId","errors")
 
-//     user.authToken = signToken(user?.id);
+   
 //     user.deviceDetails = deviceDetails;
-//     // if (fcmToken) {
-//     //   user.fcmToken = fcmToken;
-//     // }
-//     await user.save();
+
+//     await user.save({ session,validateBeforeSave: false });
+
+  
 
 //     user.passwordHash = undefined;
 
-//     return createSendToken(user, 200, res);
+//     await createSendToken(user, 200, res,session);
+//     await session.commitTransaction();
+//     session.endSession();
 //   } catch (error) {
+//     await session.abortTransaction();
+//     session.endSession();
 //     return next(new AppError(`Server error during login: ${error.message}`, 500));
 //   }
-// };
+// });
+
+
+
+
 
 
 const loginUser = catchAsync(async (req, res, next) => {
@@ -617,12 +655,16 @@ const loginUser = catchAsync(async (req, res, next) => {
     const { phoneNumber, password, idNumber, fcmToken, deviceDetails } = req.body;
 
     if (!phoneNumber && !idNumber) {
+      await session.abortTransaction();
+      session.endSession();
       return next(new AppError('Phone number or ID number must be provided', 400));
     }
 
     let query;
     if (idNumber) {
       if (idNumber.length > 14) {
+        await session.abortTransaction();
+        session.endSession();
         return next(new AppError('Invalid ID number', 400));
       }
       query = { idNumber: idNumber };
@@ -632,6 +674,8 @@ const loginUser = catchAsync(async (req, res, next) => {
 
     const user = await User.findOne(query).select('+passwordHash').session(session);
     if (!user) {
+      await session.abortTransaction();
+      session.endSession();
       return next(new AppError('Invalid credentials', 400));
     }
 
@@ -642,18 +686,26 @@ const loginUser = catchAsync(async (req, res, next) => {
 
     const isMatch = await bcrypt.compare(password, user.passwordHash);
     if (!isMatch) {
+      await session.abortTransaction();
+      session.endSession();
       return next(new AppError('Invalid credentials', 400));
     }
 
     if (!user.verified) {
+      await session.abortTransaction();
+      session.endSession();
       return next(new AppError('Please verify your phone number first', 406));
     }
 
     if (user.blocked) {
+      await session.abortTransaction();
+      session.endSession();
       return next(new AppError('You are blocked', 400));
     }
 
     if (!user.approved) {
+      await session.abortTransaction();
+      session.endSession();
       return next(new AppError('Your account has not been approved by the admin yet', 400));
     }
 
@@ -666,29 +718,19 @@ const loginUser = catchAsync(async (req, res, next) => {
       return next(new AppError('You are already logged in from another device', 400));
     }
 
-   
     user.deviceDetails = deviceDetails;
+    await user.save({ session, validateBeforeSave: false });
 
-    await user.save({ session });
+    await createSendToken(user, 200, res, session);
 
     await session.commitTransaction();
     session.endSession();
-
-    user.passwordHash = undefined;
-
-    return createSendToken(user, 200, res,session);
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
     return next(new AppError(`Server error during login: ${error.message}`, 500));
   }
 });
-
-
-
-
-
-
 
 
 
