@@ -583,7 +583,9 @@ const loginUser = async (req, res, next) => {
 
     // Check if the user is already logged in from another device
     if (user.deviceDetails.deviceId && user.deviceDetails.deviceId !== deviceDetails.deviceId) {
-      user.authToken = null; // Invalidate the previous session
+      user.authToken = null;
+      return next(new AppError('You are already logged in from another device', 400));
+      // Invalidate the previous session
     }
 
     user.authToken = signToken(user?.id);
