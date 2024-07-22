@@ -138,6 +138,8 @@ const userSchema = new Schema({
     model: { type: String, default: null },
     version: { type: String, default: null },
   }
+
+
 }, {
   toJSON: { virtuals: true },
   toObject: { virtuals: true },
