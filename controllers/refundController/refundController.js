@@ -10,7 +10,7 @@ exports.createRefundRequest = catchAsync(async (req, res, next) => {
   // Check if the user has already made two requests today
   const count = await RefundRequest.countDocuments({
     user: user._id,
-    requestDate: { $gte: today }
+    // requestDate: { $gte: today }
   });
 
 //   if (count >= 1) {
