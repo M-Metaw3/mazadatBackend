@@ -3,7 +3,7 @@ const AppError = require('../../utils/appError'); // Ensure you have an AppError
 const catchAsync = require('../../utils/catchAsync'); // Ensure you have a utility function for catching errors in async functions
 
 exports.createRefundRequest = catchAsync(async (req, res, next) => {
-  const { user } = req;
+  const { user } = req.user._id;
 //   const today = new Date();
 //   today.setHours(0, 0, 0, 0);
 
