@@ -4,8 +4,8 @@ const catchAsync = require('../../utils/catchAsync'); // Ensure you have a utili
 
 exports.createRefundRequest = catchAsync(async (req, res, next) => {
   const { user } = req;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+//   const today = new Date();
+//   today.setHours(0, 0, 0, 0);
 
   // Check if the user has already made two requests today
   const count = await RefundRequest.countDocuments({
@@ -13,9 +13,9 @@ exports.createRefundRequest = catchAsync(async (req, res, next) => {
     requestDate: { $gte: today }
   });
 
-  if (count >= 1) {
-    return next(new AppError('You have reached your limit of one refund requests per day.', 400));
-  }
+//   if (count >= 1) {
+//     return next(new AppError('You have reached your limit of one refund requests per day.', 400));
+//   }
 
   const newRequest = await RefundRequest.create({
     user: user._id

@@ -17,7 +17,7 @@ const refundController = require('../controllers/refundController/refundControll
 
 // router.use(authMiddleware);
 
-router.post('/refund',authMiddleware, refundController.createRefundRequest);
+router.post('/request-refund',authMiddleware, refundController.createRefundRequest);
 router.get('/refunds', refundController.getAllRefundRequests);
 router.patch('/refund/:requestId/complete', refundController.updateRefundRequestToCompleted);
 router.delete('/refund/:requestId', refundController.deleteRefundRequest);
