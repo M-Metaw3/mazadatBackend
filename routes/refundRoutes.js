@@ -29,16 +29,16 @@ router.get('/refund-requests', catchAsync(async (req, res, next) => {
   router.patch('/refund-requests/:id', catchAsync(async (req, res, next) => {
     const { id } = req.params;
     const { status } = req.body;
-  
+  console.log(id, status)
     if (!['completed', 'rejected'].includes(status)) {
       return next(new AppError('Invalid status', 400));
     }
   
     const refundRequest = await RefundRequest.findByIdAndUpdate(id, { status }, { new: true }).populate('user', 'name phoneNumber idNumber');
   
-    if (!refundRequest) {
-      return next(new AppError('Refund request not found', 404));
-    }
+    // if (!refundRequest) {
+    //   return next(new AppError('Refund request not found', 404));
+    // }
   
     res.status(200).json({
       status: 'success',
