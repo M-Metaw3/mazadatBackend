@@ -34,7 +34,8 @@ exports.getAllRefundRequests = catchAsync(async (req, res, next) => {
   const filter = status ? { status } : {};
 
 //   const refundRequests = await RefundRequest.find().populate('user', 'name phoneNumber');
-    const refundRequests = await RefundRequest.find().populate('user', 'name phoneNumber idNumber')
+    const refundRequests = await RefundRequest.find({}).populate('user', 'name phoneNumber idNumber')
+    console.log("refundRequests",refundRequests)
   res.status(200).send({
     status: 'success',
     results: refundRequests.length,
