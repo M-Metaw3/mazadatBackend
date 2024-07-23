@@ -5,7 +5,7 @@ const RefundRequest = require('../models/RefundReques');
 const User = require('../models/User');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
-
+const factory = require('../utils/apiFactory');
 
 
 
@@ -16,7 +16,7 @@ const catchAsync = require('../utils/catchAsync');
 
 
 router.get('/refund-requests', catchAsync(async (req, res, next) => {
-    const refundRequests = await RefundRequest.find().populate('user', 'name phoneNumber idNumber');
+    const refundRequests = await RefundRequest.find().populate('user', 'name phoneNumber idNumber').sort;
   
     res.status(200).json({
       status: 'success',
@@ -48,21 +48,7 @@ router.get('/refund-requests', catchAsync(async (req, res, next) => {
     });
   }));
   
-  router.delete('/refund-requests/:id', catchAsync(async (req, res, next) => {
-    const { id } = req.params;
-  
-    const refundRequest = await RefundRequest.findByIdAndDelete(id);
-  
-    if (!refundRequest) {
-      return next(new AppError('Refund request not found', 404));
-    }
-  
-    res.status(204).json({
-      status: 'success',
-      data: null
-    });
-  }));
-
+  router.delete('/refund-requests/:id',factory.deleteOne(RefundRequest))
 
 
 
