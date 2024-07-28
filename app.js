@@ -103,6 +103,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(express.json());
 // app.use(express.static(`${__dirname}/public`));
+app.use('/images', express.static(path.join(__dirname, 'Mazdadat Masr/images')));
 app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use((req, res, next) => {
 
@@ -158,7 +159,9 @@ app.use('/api/v1/deposite', DepositRoute);
 app.use('/api/v1/items', ItemsRoute);
 app.use('/api/v1/auth', authRoute);
 
-
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'Mazdadat Masr', 'index.html'));
+});
 
 app.use(express.static(path.join(__dirname, './build')));
 app.get('/*', async(req, res) => {

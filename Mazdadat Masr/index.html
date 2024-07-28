@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon_io/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon_io/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon_io/favicon-16x16.png">
+    <link rel="manifest" href="favicon_io/site.webmanifest">
+    <title>مزدادت مصر</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link
+      rel="stylesheet"
+      href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css"
+      integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="./web.css" />
+    <style>
+        body {
+    overflow-x: hidden;
+    color: #000;
+    direction: rtl;
+}
+
+a {
+    text-decoration: none;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.navbar {
+    padding: 0.6rem 0;
+}
+
+.nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.nav-brand img {
+    max-width: 120px;
+    object-fit: cover;
+    height: auto;
+}
+
+.nav-links ul {
+    display: flex;
+    align-items: center;
+}
+
+.nav-links ul li a {
+    font-size: 16px;
+    color: #000;
+    margin: 0 1rem;
+}
+
+.download {
+    background-color: #000;
+    color: #FFF;
+    border-radius: 4px;
+    padding: 0.6rem 2rem;
+}
+
+.hero {
+    padding: 5rem 0 0 0;
+}
+
+.hero h1 {
+    font-size: 34px;
+    font-weight: bold;
+}
+
+.hero p {
+    font-size: 16px;
+    margin: 3rem 0;
+}
+
+.best {
+    background-color: #F8F8FA;
+    padding: 1rem 0;
+}
+
+.download-app {
+    display: flex;
+    align-items: center;
+}
+
+.download-app img {
+    width: 120px;
+    margin-left: 1rem;
+}
+
+.main-span {
+    font-size: 16px;
+    color: #D84830;
+    font-weight: bold;
+}
+
+.scoop-block {
+    padding-top: 3rem;
+}
+
+.main-heading {
+    font-size: 32px;
+    font-weight: bold;
+    color: #000;
+    margin: 1rem 0 3rem 0;
+}
+
+.main-des {
+    font-size: 16px;
+    color: #000;
+    margin-bottom: 3rem;
+}
+
+.download-link {
+    font-size: 16px;
+    color: #FFF;
+    border-radius: 19px;
+    background: #E1002A;
+    padding: .6rem 2.6rem;
+}
+
+.about p {
+    margin-bottom: 0.5rem;
+}
+
+.services p {
+    margin-bottom: 0.5rem;
+}
+
+.services {
+    /* padding: 1rem 0; */
+}
+
+.about {
+    /* padding: 1rem 0; */
+}
+
+.about ul {
+    list-style: circle;
+}
+
+.features {
+    background-color: #F8F8FA;
+    /* padding: 1rem 0; */
+}
+
+.download-section {
+    background-color: #F8F8FA;
+    /* padding: 1rem 0; */
+}
+
+.about ul {
+    list-style: circle;
+}
+
+footer {
+    background-color: #292929;
+}
+
+.footer { 
+    padding: 5rem 0;
+}
+
+.footer-links {
+    display: flex;
+    flex-flow: column;
+    padding-left: 1rem;
+}
+
+.footer-links a i {
+    color: #E1002A;
+    margin-left: 0.6rem;
+}
+
+.footer-links a {
+    color: #FFF;
+    font-size: 16px;
+    margin-bottom: 1rem;
+}
+
+.footer .form-group {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #FFF;
+    border-radius: 4px;
+    box-shadow: -13.011px 13.011px 104.089px 0px rgba(161, 161, 161, 0.10);
+    padding: .6rem 1.2rem;
+}
+
+.footer .form-group input {
+    border: none;
+    box-shadow: none;
+}
+
+.footer .form-group a {
+    background-color: #000;
+    color: #FFF;
+    border-radius: 4px;
+    white-space: nowrap;
+    padding: .6rem 2rem;
+}
+
+.copyRight {
+    border-top: 1px solid rgba(189, 189, 189, 0.401);
+    padding: 2rem 0;
+}
+
+.copyRight p {
+    font-size: 14px;
+    color: #FFF;
+    text-align: center;
+    margin-bottom: 0;
+}
+
+.copyRight p a {
+    color: #E1002A;
+}
+
+.photo {
+    width: 100%;
+    object-fit: cover;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+@media (max-width: 768px) {
+    .nav {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-flow: column;
+        width: 100%;
+    }
+    
+    .nav-links ul {
+        margin: 1rem;
+    }
+
+    .footer-links {
+        margin: 1rem;
+    }
+    .seaction {
+        padding: 2rem 0;
+    }
+}
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="container">
+            <div class="nav">
+                <div class="nav-brand">
+                    <img src="images/Background.png" alt="">
+                </div>
+                <div class="nav-links">
+                    <ul>
+                        <li>
+                            <a href="#!">عن مزادات مصر</a>
+                        </li>
+                        <li>
+                            <a href="#services">الخدمات</a>
+                        </li>
+                        <li>
+                            <a href="#features">المميزات</a>
+                        </li>
+                    </ul>
+                </div>
+                <a href="#!" class="download">حمل التطبيق الان</a>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        <div class="hero seaction">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="scoop-block">
+                            <h1>اكتشف مجريات المزادات بسهولة عبر تطبيق "مزادات" الذي يجعلك تصل إلى أروع الصفقات والمنتجات المميزة</h1>
+                            <p>لا تفوت الفرصه للمشاركه في افضل التسوقيه عبر الانترنت حمل التطبيق الان واباد بالمزايده بنقره واحده</p>
+                            <div class="download-app">
+                                <a href="#!" class="">
+                                    <img src="images/Google download button (2).svg" alt="Google">
+                                </a>
+                                <a href="#!">
+                                    <img src="images/Apple download button (1).svg" alt="Apple">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <img src="images/Group 1000004719.png" alt="photo" class="photo">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="best seaction">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="scoop-block">
+                            <span class="main-span"> أفضل التجارب التسويقية</span>
+                            <h2 class="main-heading">بناءً على تطبيق "مزادات"، اكتشف عالمًا جديدًا من المزادات عبر الإنترنت!</h2>
+                            <p class="main-des">. لا تفوت الفرصة للمشاركة في أفضل التجارب التسويقية عبر الإنترنت. حمّل التطبيق الآن وابدأ بالمزايدة بنقرة واحدة!
+                            </p>
+                            <a href="#!" class="download-link">حمل الان</a>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <img src="images/Phone.png" alt="photo" class="photo">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="about seaction">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <img src="images/content.png" alt="photo" class="photo">
+                    </div>
+                    <div class="col-md-6">
+                        <div class="scoop-block">
+                            <span class="main-span">عن مزادات مصر</span>
+                            <h2 class="main-heading">بناءً على تطبيق "مزادات"، اكتشف عالمًا جديدًا من المزادات عبر الإنترنت!</h2>
+                            <ul>
+                                <li>
+                                    <p class="main-des">. لا تفوت الفرصة للمشاركة في أفضل التجارب </p>
+                                </li>
+                                <li>
+                                    <p class="main-des">التسويقية عبر الإنترنت. حمّل التطبيق الآن وابدأ </p>
+                                </li>
+                                <li>
+                                    <p class="main-des">بالمزايدة بنقرة واحدة!</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="features seaction" id="features">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="scoop-block">
+                            <span class="main-span">مميزات التطبيق</span>
+                            <h2 class="main-heading">بناءً على تطبيق "مزادات"، اكتشف عالمًا جديدًا من المزادات عبر الإنترنت!</h2>
+                            <p class="main-des">. لا تفوت الفرصة للمشاركة في أفضل التجارب التسويقية عبر الإنترنت. حمّل التطبيق الآن وابدأ بالمزايدة بنقرة واحدة!
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <img src="images/Phone2.png" alt="photo" class="photo">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="services seaction" id="services">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <img src="images/Phone3.png" alt="photo" class="photo">
+                    </div>
+                    <div class="col-md-6">
+                        <div class="scoop-block">
+                            <span class="main-span">خدمات </span>
+                            <h2 class="main-heading">بناءً على تطبيق "مزادات"، اكتشف عالمًا جديدًا من المزادات عبر الإنترنت!</h2>
+                            <ul>
+                                <li>
+                                    <p class="main-des">. لا تفوت الفرصة للمشاركة في أفضل التجارب </p>
+                                </li>
+                                <li>
+                                    <p class="main-des">التسويقية عبر الإنترنت. حمّل التطبيق الآن وابدأ </p>
+                                </li>
+                                <li>
+                                    <p class="main-des">بالمزايدة بنقرة واحدة!</p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="download-section seaction">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">
+                        <img src="images/iphone (1).png" alt="photo" class="photo">
+                    </div>
+                    <div class="col-md-6">
+                        <div class="scoop-block">
+                            <span class="main-span">حمل التطبيق الان  </span>
+                            <h2 class="main-heading">بناءً على تطبيق "مزادات"، اكتشف عالمًا جديدًا من المزادات عبر الإنترنت!</h2>
+                            <p>لا تفوت الفرصه للمشاركه في افضل التسوقيه عبر الانترنت حمل التطبيق الان واباد بالمزايده بنقره واحده</p>
+                            <div class="download-app">
+                                <a href="#!" class="">
+                                    <img src="images/Google download button (2).svg" alt="Google">
+                                </a>
+                                <a href="#!">
+                                    <img src="images/Apple download button (1).svg" alt="Apple">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer">
+                <div class="row">
+                    <div class="col-md-2">
+                        <img src="images/Background (2).png" alt="logo" class="footer-logo">
+                    </div>
+                    <div class="col-md-6">
+                        <div class="footer-links">
+                            <a href="mailto:help@mzadat.com"><i class="fa fa-envelope"></i>help@mzadat.com</a>
+                            <a href="tel:+1 234 456 678 89"><i class="fa fa-phone"></i>+1 234 456 678 89</a>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <form action="#!">
+                            <div class="form-group">
+                                <input type="mail" name="mail" id="mail" placeholder="البريد الالكتروني">
+                                <a href="#!" class="sub">اشترك الان</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="copyRight">
+                <p>Copyright 2024 Mazadat all rights reserved || طور بشغف بواسطة <a href="addictaco.com">Addicta</a></p>
+            </div>
+        </div>
+    </footer>
+    
+</body>
+</html>
