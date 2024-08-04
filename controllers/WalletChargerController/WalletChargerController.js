@@ -215,7 +215,7 @@ exports.reviewWalletCharger = catchAsync(async (req, res, next) => {
       walletCharger.amount = amount;
 
       // Update user wallet balance
-      user.walletBalance += amount;
+      user.walletBalance += parseInt(amount);
       user.walletTransactions.push({
         amount,
         type: 'deposit',
