@@ -40,10 +40,10 @@ login : [
     body('newPassword').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
   ],
   updateProfile: [
-    body('name').optional().notEmpty().withMessage('Name is required'),
-    body('birthdate').optional().isDate().withMessage('Invalid birthdate'),
-    body('phoneNumber').optional().notEmpty().withMessage('Phone number is required'),
-    body('idNumber').optional().notEmpty().withMessage('ID number is required')
+    // body('name').optional().notEmpty().withMessage('Name is required'),
+    // body('birthdate').optional().isDate().withMessage('Invalid birthdate'),
+    // body('phoneNumber').optional().notEmpty().withMessage('Phone number is required'),
+    // body('idNumber').optional().notEmpty().withMessage('ID number is required')
   ]
 };
 
