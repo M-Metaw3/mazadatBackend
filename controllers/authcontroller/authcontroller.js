@@ -912,6 +912,7 @@ const changePassword = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
+    console.log(req.body)
     const { userId } = req.params;
     const { name, birthdate, phoneNumber, idNumber ,profileImage,specialist,companyname,address,idImage,idbackImage} = req.body;
     // const profileImage = req.files.profileImage ? req.files.profileImage[0].path : null;
