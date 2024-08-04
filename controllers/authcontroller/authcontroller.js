@@ -913,12 +913,12 @@ const changePassword = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const { userId } = req.params;
-    const { name, birthdate, phoneNumber, idNumber ,profileImage,specialist,companyname,address,idImage} = req.body;
+    const { name, birthdate, phoneNumber, idNumber ,profileImage,specialist,companyname,address,idImage,idbackImage} = req.body;
     // const profileImage = req.files.profileImage ? req.files.profileImage[0].path : null;
     // const idImage = req.files && req.files.idImage ? req.files.idImage[0].path : null;
 
     const updates = { name, birthdate, phoneNumber, idNumber,specialist, companyname,address};
-    if (profileImage) updates.profileImage = profileImage;
+    if (idbackImage) updates.idbackImage = idbackImage;
     if (idImage) updates.idImage = idImage;
 
   const asd=  await User.findByIdAndUpdate(userId, updates, { new: true });
