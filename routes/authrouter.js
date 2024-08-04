@@ -104,7 +104,9 @@ router.put('/update-profile/:userId', upload.fields([
   { name: 'idbackImage', maxCount: 1 },
   { name: 'idImage', maxCount: 1 }
 ]), (req, res, next) => {
-  console.log(req.files);
+  console.log(req.files.idImage);
+  console.log("idbackImage",req.files.idbackImage);
+
 
   if (req.files && req.files.idImage && req.files.idImage.length > 0) {
     req.body.idImage = {
