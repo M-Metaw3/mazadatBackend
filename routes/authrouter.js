@@ -100,6 +100,8 @@ router.post('/login', loginUser);
 router.post('/forgot-password', forgotPassword);
 router.post('/reset-password', userValidator.resetPassword, validationMiddleware, resetPassword);
 router.post('/change-password', authMiddleware, userValidator.changePassword, validationMiddleware, changePassword);
+
+
 router.put('/update-profile/:userId', upload.fields([
   { name: 'idbackImage', maxCount: 1 },
   { name: 'idImage', maxCount: 1 }
